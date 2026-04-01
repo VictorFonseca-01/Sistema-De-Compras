@@ -10,7 +10,8 @@ import {
   ChevronRight,
   ShieldCheck,
   HardDrive,
-  UserCheck
+  UserCheck,
+  Truck
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';

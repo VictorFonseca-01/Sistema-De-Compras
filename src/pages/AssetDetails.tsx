@@ -1,21 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
   ArrowLeft, 
+  Package, 
   Tag, 
   History, 
   User, 
-  Calendar, 
-  ShieldCheck, 
-  AlertCircle,
   Truck,
   RotateCcw,
   Wrench,
   Ban,
   MoreVertical,
-  Activity,
-  Package
+  Activity
 } from 'lucide-react';
 import { clsx } from 'clsx';
 

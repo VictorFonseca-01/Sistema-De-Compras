@@ -6,15 +6,15 @@ import { useProfile } from '../hooks/useProfile';
 import { 
   Truck, 
   ArrowLeft, 
-  User, 
   Package, 
+  User, 
   CheckCircle, 
   AlertCircle,
-  Search,
-  FileText
+  FileText,
+  Barcode
 } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
-import { clsx } from 'clsx';
+import { BarcodeScanner } from '../components/BarcodeScanner';
 
 export default function AssetDelivery() {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export default function AssetDelivery() {
   const [selectedAssetId, setSelectedAssetId] = useState(location.state?.assetId || '');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [notes, setNotes] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -41,7 +42,7 @@ export default function AssetDelivery() {
     // 1. Buscar ativos em estoque
     const { data: assetData } = await supabase
       .from('assets')
-      .select('id, nome_item, numero_patrimonio, status')
+      .select('id, nome_item, numero_patrimonio, codigo_barras, status')
       .eq('status', 'em_estoque');
     
     if (assetData) setAssets(assetData);
@@ -55,6 +56,21 @@ export default function AssetDelivery() {
     if (userData) setUsers(userData);
     setLoading(false);
   }
+
+  const handleScanAsset = (decodedText: string) => {
+    // Tenta encontrar o ativo pelo patrimônio ou código de barras
+    const found = assets.find(a => 
+      a.numero_patrimonio === decodedText || 
+      a.codigo_barras === decodedText
+    );
+    if (found) {
+      setSelectedAssetId(found.id);
+      setShowScanner(false);
+    } else {
+      alert('Ativo não encontrado ou não está em estoque.');
+      setShowScanner(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,16 +152,33 @@ export default function AssetDelivery() {
                </div>
                Equipamento Selecionado
              </h3>
-             <div className="space-y-3">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ativo disponível</label>
-               <SearchableSelect 
-                 options={assetOptions}
-                 value={selectedAssetId}
-                 onChange={setSelectedAssetId}
-                 placeholder="Selecione o patrimônio..."
-               />
-               <p className="text-[10px] text-slate-400 font-bold italic ml-1">Somente itens com status "Em Estoque" aparecem nesta lista.</p>
+             <div className="flex gap-4 items-end">
+               <div className="flex-1 space-y-3">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ativo disponível</label>
+                 <SearchableSelect 
+                   options={assetOptions}
+                   value={selectedAssetId}
+                   onChange={setSelectedAssetId}
+                   placeholder="Selecione o patrimônio..."
+                 />
+               </div>
+               <button 
+                 type="button"
+                 onClick={() => setShowScanner(true)}
+                 className="h-[60px] px-6 bg-slate-900 text-white rounded-2xl flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg"
+               >
+                 <Barcode size={20} />
+                 Scan
+               </button>
              </div>
+             <p className="text-[10px] text-slate-400 font-bold italic ml-1">Somente itens com status "Em Estoque" aparecem nesta lista.</p>
+
+             {showScanner && (
+               <BarcodeScanner 
+                 onScan={handleScanAsset}
+                 onClose={() => setShowScanner(false)} 
+               />
+             )}
           </section>
 
           <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">

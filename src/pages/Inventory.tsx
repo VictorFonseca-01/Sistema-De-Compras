@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { 
-  Package, 
   Search, 
-  Filter, 
   Barcode, 
   Plus, 
-  FileDown, 
   ExternalLink,
   Tag,
-  Warehouse,
-  History
+  Warehouse
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { BarcodeScanner } from '../components/BarcodeScanner';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -21,6 +18,7 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     fetchAssets();
@@ -84,6 +82,7 @@ export default function Inventory() {
             Importar Excel
           </button>
           <button 
+            onClick={() => setShowScanner(true)}
             className="bg-slate-950 dark:bg-white dark:text-slate-950 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl active:scale-95"
           >
             <Barcode size={20} strokeWidth={3} />
@@ -91,6 +90,16 @@ export default function Inventory() {
           </button>
         </div>
       </header>
+
+      {showScanner && (
+        <BarcodeScanner 
+          onScan={(text) => {
+            setSearchTerm(text);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)} 
+        />
+      )}
 
       {/* Busca e Filtros */}
       <div className="flex flex-col lg:flex-row gap-4">
@@ -158,15 +167,26 @@ export default function Inventory() {
                          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center font-black group-hover:bg-primary-600 group-hover:text-white transition-all">
                             {asset.nome_item.charAt(0).toUpperCase()}
                          </div>
-                         <span className="font-black text-slate-900 dark:text-white text-base font-mono">
-                            {asset.numero_patrimonio}
-                         </span>
+                         <div className="flex flex-col">
+                            <span className="font-black text-slate-900 dark:text-white text-base font-mono leading-none">
+                               {asset.numero_patrimonio || asset.codigo_gps || 'S/N'}
+                            </span>
+                            {asset.codigo_gps && <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1">Código GPS</span>}
+                            {!asset.numero_patrimonio && !asset.codigo_gps && <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-1">Pendente</span>}
+                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                       <div className="flex items-center gap-2 text-slate-400 font-bold text-xs">
-                          <Barcode size={14} className="opacity-50" />
-                          {asset.codigo_barras || 'N/A'}
+                       <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 text-slate-400 font-bold text-xs">
+                             <Barcode size={14} className="opacity-50" />
+                             {asset.codigo_barras || 'N/A'}
+                          </div>
+                          {asset.tipo_ativo && (
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                               TIPO: {asset.tipo_ativo}
+                            </span>
+                          )}
                        </div>
                     </td>
                     <td className="px-8 py-6">

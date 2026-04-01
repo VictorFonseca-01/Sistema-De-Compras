@@ -14,6 +14,8 @@ import {
   Plus
 } from 'lucide-react';
 
+import { clsx } from 'clsx';
+import { useProfile } from '../hooks/useProfile';
 import { SearchableSelect } from '../components/SearchableSelect';
 
 type Priority = 'baixa' | 'media' | 'alta' | 'critica';
@@ -47,6 +49,7 @@ export default function NewRequest() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { profile } = useProfile();
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -82,6 +85,20 @@ export default function NewRequest() {
       return;
     }
 
+    // Validação específica para TI
+    if (profile?.role === 'ti') {
+      if (!form.estimated_cost) {
+        setError('Como analista de TI, você deve informar o valor estimado do item.');
+        setLoading(false);
+        return;
+      }
+      if (links.length === 0) {
+        setError('Como analista de TI, você deve anexar pelo menos um Link de Referência/Compra.');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const { data: request, error: requestError } = await supabase
         .from('requests')
@@ -90,7 +107,7 @@ export default function NewRequest() {
           title: form.title,
           description: form.description,
           category: form.category,
-          estimated_cost: parseFloat(form.estimated_cost),
+          estimated_cost: form.estimated_cost ? parseFloat(form.estimated_cost) : null,
           priority: form.priority,
           status: 'pending_gestor',
           current_step: 'gestor'
@@ -226,14 +243,20 @@ export default function NewRequest() {
                 <div className="relative">
                   <div className="absolute left-6 top-4 font-black text-slate-400">R$</div>
                   <input
-                    required
+                    required={profile?.role === 'ti'}
                     type="number"
                     step="0.01"
                     placeholder="0,00"
-                    className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-black text-primary-600"
+                    className={clsx(
+                      "w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-black text-primary-600",
+                      profile?.role !== 'ti' && "opacity-80"
+                    )}
                     value={form.estimated_cost}
                     onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
                   />
+                  {profile?.role !== 'ti' && (
+                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
+                  )}
                 </div>
               </div>
             </div>

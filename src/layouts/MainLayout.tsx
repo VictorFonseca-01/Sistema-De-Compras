@@ -26,7 +26,7 @@ export function MainLayout() {
   }
 
   if (!session) {
-    return <Navigate to="/cadastro" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (

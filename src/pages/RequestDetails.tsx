@@ -16,7 +16,12 @@ import {
   Hash,
   ChevronRight,
   Activity,
-  Plus
+  Plus,
+  Paperclip,
+  Trash2,
+  Download,
+  Image as ImageIcon,
+  File as FileIcon
 } from 'lucide-react';
 import { assetService } from '../services/assetService';
 import { clsx } from 'clsx';
@@ -39,6 +44,14 @@ interface Request {
   };
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  created_at: string;
+}
+
 const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-700', bg: 'bg-amber-100', icon: Clock },
   pending_ti: { label: 'Em Análise TI', color: 'text-blue-700', bg: 'bg-blue-100', icon: FileText },
@@ -55,9 +68,15 @@ export default function RequestDetails() {
   const { profile } = useProfile();
   const [request, setRequest] = useState<Request | null>(null);
   const [links, setLinks] = useState<any[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLinked, setIsLinked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  
+  // States para edição técnica (TI/Compras)
+  const [editValue, setEditValue] = useState('');
+  const [newLink, setNewLink] = useState({ label: '', url: '' });
 
   useEffect(() => {
     fetchRequest();
@@ -73,6 +92,7 @@ export default function RequestDetails() {
 
     if (!error && data) {
       setRequest(data);
+      setEditValue(data.estimated_cost?.toString() || '');
       
       // Buscar links
       const { data: linksData } = await supabase
@@ -80,6 +100,13 @@ export default function RequestDetails() {
         .select('*')
         .eq('request_id', id);
       setLinks(linksData || []);
+
+      // Buscar anexos
+      const { data: attachmentsData } = await supabase
+        .from('request_attachments')
+        .select('*')
+        .eq('request_id', id);
+      setAttachments(attachmentsData || []);
 
       // Verificar se já está no estoque
       const { data: assetData } = await supabase
@@ -91,6 +118,83 @@ export default function RequestDetails() {
       setIsLinked(!!assetData);
     }
     setLoading(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id || !profile) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('request-attachments')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase
+        .from('request_attachments')
+        .insert([{
+          request_id: id,
+          file_name: file.name,
+          file_path: filePath,
+          file_type: file.type
+        }]);
+
+      if (dbError) throw dbError;
+
+      fetchRequest();
+    } catch (err: any) {
+      alert('Erro no upload: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachment: Attachment) => {
+    if (!confirm('Deseja excluir este anexo?')) return;
+
+    try {
+      await supabase.storage.from('request-attachments').remove([attachment.file_path]);
+      await supabase.from('request_attachments').delete().eq('id', attachment.id);
+      fetchRequest();
+    } catch (err: any) {
+      alert('Erro ao excluir: ' + err.message);
+    }
+  };
+
+  const handleAddLink = async () => {
+    if (!newLink.label || !newLink.url || !id) return;
+    
+    const { error } = await supabase
+      .from('request_links')
+      .insert([{
+        request_id: id,
+        label: newLink.label,
+        url: newLink.url
+      }]);
+
+    if (!error) {
+      setNewLink({ label: '', url: '' });
+      fetchRequest();
+    }
+  };
+
+  const handleUpdateValue = async () => {
+    if (!id) return;
+    const { error } = await supabase
+      .from('requests')
+      .update({ estimated_cost: parseFloat(editValue) })
+      .eq('id', id);
+
+    if (!error) {
+      alert('Valor atualizado com sucesso!');
+      fetchRequest();
+    }
   };
 
   const handleAddToStock = async () => {
@@ -172,7 +276,7 @@ export default function RequestDetails() {
                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 flex flex-col items-end shrink-0">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Custo Estimado</p>
                   <p className="text-2xl font-black text-primary-600">
-                    R$ {Number(request.estimated_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                </div>
              </div>
@@ -231,11 +335,146 @@ export default function RequestDetails() {
                  </div>
                </div>
              )}
+
+             {/* MÓDULO DE ANEXOS */}
+             <div className="pt-10 border-t border-slate-50 dark:border-slate-800 space-y-6">
+               <div className="flex items-center justify-between">
+                 <h3 className="text-xl font-black flex items-center gap-2 tracking-tight">
+                   <Paperclip size={22} className="text-primary-500" />
+                   Documentos e Evidências
+                 </h3>
+                 {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
+                   <label className={clsx(
+                     "flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-xs font-black cursor-pointer transition-all active:scale-95",
+                     uploading && "opacity-50 cursor-not-allowed"
+                   )}>
+                     {uploading ? (
+                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                     ) : (
+                       <Plus size={14} strokeWidth={3} />
+                     )}
+                     ANEXAR ARQUIVO
+                     <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                   </label>
+                 )}
+               </div>
+
+               {attachments.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {attachments.map((file) => {
+                     const isImage = file.file_type?.startsWith('image/');
+                     return (
+                       <div key={file.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl group hover:border-primary-500 transition-all">
+                         <div className="flex items-center gap-3 overflow-hidden">
+                           <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-700 text-slate-400">
+                             {isImage ? <ImageIcon size={20} /> : <FileIcon size={20} />}
+                           </div>
+                           <div className="truncate">
+                             <p className="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">{file.file_name}</p>
+                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                               {new Date(file.created_at).toLocaleDateString('pt-BR')}
+                             </p>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <a 
+                             href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl}
+                             target="_blank"
+                             download={file.file_name}
+                             className="p-2 text-slate-400 hover:text-primary-600 transition-colors"
+                           >
+                             <Download size={18} />
+                           </a>
+                           {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
+                             <button 
+                               onClick={() => handleDeleteAttachment(file)}
+                               className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                             >
+                               <Trash2 size={18} />
+                             </button>
+                           )}
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+               ) : (
+                 <div className="p-10 text-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
+                   <Paperclip size={40} className="mx-auto text-slate-200 mb-4" />
+                   <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Nenhum anexo enviado</p>
+                 </div>
+               )}
+             </div>
           </div>
         </div>
 
         {/* LADO DIREITO: Timeline e Ações */}
         <div className="w-full lg:w-96 space-y-8 sticky top-24">
+          
+          {/* Central de Enriquecimento (TI e Compras) */}
+          {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
+                  <Activity size={20} />
+                </div>
+                <div>
+                  <h4 className="font-black text-lg">Edição Técnica</h4>
+                  <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Ajuste de Valor e Links</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Atualizar Valor (R$)</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <div className="absolute left-4 top-3 font-black text-slate-400 text-sm">R$</div>
+                      <input 
+                        type="number" 
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold transition-all"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                      />
+                    </div>
+                    <button 
+                      onClick={handleUpdateValue}
+                      className="px-4 bg-primary-600 text-white rounded-xl font-black text-xs hover:bg-primary-500 transition-all"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-50 dark:border-slate-800 space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Novo Link de Referência</label>
+                  <input 
+                    type="text" 
+                    placeholder="Título (ex: Amazon)"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold text-sm transition-all"
+                    value={newLink.label}
+                    onChange={e => setNewLink({ ...newLink, label: e.target.value })}
+                  />
+                  <div className="flex gap-2">
+                    <input 
+                      type="url" 
+                      placeholder="URL do Produto"
+                      className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold text-sm transition-all"
+                      value={newLink.url}
+                      onChange={e => setNewLink({ ...newLink, url: e.target.value })}
+                    />
+                    <button 
+                      onClick={handleAddLink}
+                      className="px-4 bg-slate-900 text-white rounded-xl font-black transition-all active:scale-95"
+                    >
+                      <Plus size={18} strokeWidth={3} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Caixa de Decisão (Apenas p/ Aprovador) */}
           {isApprover && !isFinalized && (
             <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary-500/10 border border-primary-500/20 space-y-6">
