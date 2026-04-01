@@ -108,7 +108,7 @@ export default function MyRequests() {
                   return (
                     <tr key={req.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4 text-sm text-slate-500">
-                        {new Date(req.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(req.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-semibold text-slate-900 dark:text-slate-100 block truncate max-w-xs">

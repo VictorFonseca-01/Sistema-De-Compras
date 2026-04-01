@@ -138,7 +138,7 @@ export default function RequestDetails() {
                 <p className="text-xs text-slate-500 uppercase font-bold">Data</p>
                 <p className="font-medium text-sm flex items-center gap-1">
                   <Calendar size={14} />
-                  {new Date(request.created_at).toLocaleDateString('pt-BR')}
+                  {new Date(request.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
                 </p>
               </div>
               <div className="space-y-1">

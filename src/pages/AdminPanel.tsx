@@ -209,7 +209,7 @@ export default function AdminPanel() {
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                         <Clock size={12} />
-                        {(u as any).created_at ? new Date((u as any).created_at).toLocaleDateString('pt-BR') : '-'}
+                        {(u as any).created_at ? new Date((u as any).created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '') : '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
