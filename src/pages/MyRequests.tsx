@@ -20,6 +20,10 @@ interface Request {
   status: string;
   current_step: string;
   created_at: string;
+  profiles: {
+    full_name: string;
+    department: string;
+  };
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: any }> = {
@@ -52,7 +56,7 @@ export default function MyRequests() {
 
     const { data, error } = await supabase
       .from('requests')
-      .select('*')
+      .select('*, profiles(full_name, department)')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -82,7 +86,8 @@ export default function MyRequests() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-widest font-bold">
-                <th className="px-6 py-4">Data</th>
+                 <th className="px-6 py-4">Data</th>
+                <th className="px-6 py-4">Solicitante</th>
                 <th className="px-6 py-4">Título</th>
                 <th className="px-6 py-4">Categoria / Prioridade</th>
                 <th className="px-6 py-4">Status Atual</th>
@@ -109,6 +114,16 @@ export default function MyRequests() {
                     <tr key={req.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4 text-sm text-slate-500">
                         {new Date(req.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                            {req.profiles?.full_name || 'Usuário'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 uppercase font-semibold">
+                            {req.profiles?.department || 'Setor'}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-semibold text-slate-900 dark:text-slate-100 block truncate max-w-xs">
