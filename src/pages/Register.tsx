@@ -6,6 +6,7 @@ import { Mail, Lock, AlertCircle, User, ArrowRight } from 'lucide-react';
 export default function Register() {
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('');
+  const [role, setRole] = useState('usuario');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,13 +25,14 @@ export default function Register() {
 
     setLoading(true);
 
-    const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: name,
-          department: department
+          department: department,
+          role: role
         }
       }
     });
@@ -85,7 +87,12 @@ export default function Register() {
               <div className="relative">
                 <select
                   value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
+                  onChange={(e) => {
+                    const dept = e.target.value;
+                    setDepartment(dept);
+                    if (dept === 'TI') setRole('ti');
+                    else if (role === 'ti') setRole('usuario');
+                  }}
                   className="w-full px-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                   required
                 >
@@ -102,6 +109,29 @@ export default function Register() {
                   <option value="Recursos Humanos">Recursos Humanos (RH)</option>
                   <option value="TI">Tecnologia (TI)</option>
                   <option value="Outro">Outro</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">O que você é? (Cargo)</label>
+              <div className="relative">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  disabled={department === 'TI'}
+                  className="w-full px-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none disabled:opacity-60 disabled:cursor-not-allowed"
+                  required
+                >
+                  {department === 'TI' ? (
+                    <option value="ti">Equipe de TI</option>
+                  ) : (
+                    <>
+                      <option value="usuario">Funcionário</option>
+                      <option value="gestor">Gestor</option>
+                      <option value="diretoria">Diretoria</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>

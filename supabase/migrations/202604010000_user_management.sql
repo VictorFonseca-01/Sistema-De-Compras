@@ -24,7 +24,7 @@ BEGIN
     new.id, 
     new.email, 
     new.raw_user_meta_data->>'full_name', 
-    'usuario',
+    COALESCE((new.raw_user_meta_data->>'role')::user_role, 'usuario'),
     new.raw_user_meta_data->>'department'
   );
   
