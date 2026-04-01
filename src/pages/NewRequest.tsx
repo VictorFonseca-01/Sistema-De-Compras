@@ -10,7 +10,32 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+import { SearchableSelect } from '../components/SearchableSelect';
+
 type Priority = 'baixa' | 'media' | 'alta' | 'critica';
+
+const categoriaOptions = [
+  { value: "Mouse", label: "Mouse" },
+  { value: "Teclado", label: "Teclado" },
+  { value: "Fone de Ouvido", label: "Fone de Ouvido" },
+  { value: "Câmera", label: "Câmera" },
+  { value: "Computador", label: "Computador" },
+  { value: "Notebook", label: "Notebook" },
+  { value: "Celular", label: "Celular" },
+  { value: "Adaptadores em geral (especifique na descrição)", label: "Adaptadores em geral (especifique na descrição)" },
+  { value: "Hardware", label: "Hardware" },
+  { value: "Software / Licenças", label: "Software / Licenças" },
+  { value: "Acessórios", label: "Acessórios" },
+  { value: "Serviços / Nuvem", label: "Serviços / Nuvem" },
+  { value: "Infraestrutura", label: "Infraestrutura" }
+];
+
+const prioridadeOptions = [
+  { value: 'baixa', label: 'Baixa' },
+  { value: 'media', label: 'Média' },
+  { value: 'alta', label: 'Alta' },
+  { value: 'critica', label: 'Crítica (Interrupção de serviço)' },
+];
 
 export default function NewRequest() {
   const navigate = useNavigate();
@@ -144,31 +169,22 @@ export default function NewRequest() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold">Categoria</label>
-              <select
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
+              <SearchableSelect 
+                options={categoriaOptions}
                 value={form.category}
-                onChange={e => setForm({ ...form, category: e.target.value })}
-              >
-                <option>Hardware</option>
-                <option>Software / Licenças</option>
-                <option>Acessórios</option>
-                <option>Serviços / Nuvem</option>
-                <option>Infraestrutura</option>
-              </select>
+                onChange={(val) => setForm({ ...form, category: val })}
+                placeholder="Selecione ou pesquise a categoria..."
+              />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold">Prioridade</label>
-              <select
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
+              <SearchableSelect 
+                options={prioridadeOptions}
                 value={form.priority}
-                onChange={e => setForm({ ...form, priority: e.target.value as Priority })}
-              >
-                <option value="baixa">Baixa</option>
-                <option value="media">Média</option>
-                <option value="alta">Alta</option>
-                <option value="critica">Crítica (Interrupção de serviço)</option>
-              </select>
+                onChange={(val) => setForm({ ...form, priority: val as Priority })}
+                placeholder="Selecione ou pesquise a prioridade..."
+              />
             </div>
 
             <div className="space-y-2">
