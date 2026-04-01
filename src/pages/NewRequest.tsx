@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import { 
   Send, 
   ArrowLeft, 
-  Upload, 
   Link as LinkIcon, 
   Trash2,
   CheckCircle,
@@ -221,7 +220,7 @@ export default function NewRequest() {
               <button 
                 type="button"
                 onClick={addLink}
-                className="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-xl transition-colors"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl transition-colors font-semibold border border-slate-700"
               >
                 Adicionar
               </button>
