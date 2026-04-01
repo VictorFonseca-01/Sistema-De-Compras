@@ -13,9 +13,10 @@ interface SearchableSelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-export function SearchableSelect({ options, value, onChange, placeholder = "Selecione...", className }: SearchableSelectProps) {
+export function SearchableSelect({ options, value, onChange, placeholder = "Selecione...", className, disabled }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -83,9 +84,13 @@ export function SearchableSelect({ options, value, onChange, placeholder = "Sele
       onKeyDown={handleKeyDown}
     >
       <div 
-        tabIndex={0}
-        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl flex justify-between items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
+        tabIndex={disabled ? -1 : 0}
+        className={clsx(
+          "w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl flex justify-between items-center transition-all focus:outline-none focus:ring-2 focus:ring-primary-500",
+          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        )}
         onClick={() => { 
+          if (disabled) return;
           setIsOpen(!isOpen); 
           if (!isOpen) {
             setSearchTerm('');

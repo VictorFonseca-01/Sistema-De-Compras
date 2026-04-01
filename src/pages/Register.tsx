@@ -2,6 +2,28 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, Lock, AlertCircle, User, ArrowRight } from 'lucide-react';
+import { SearchableSelect } from '../components/SearchableSelect';
+
+const departmentOptions = [
+  { value: "Administrativo", label: "Administrativo" },
+  { value: "Comercial", label: "Comercial" },
+  { value: "Compras", label: "Compras" },
+  { value: "Diretoria", label: "Diretoria" },
+  { value: "Engenharia", label: "Engenharia" },
+  { value: "Estoque", label: "Estoque" },
+  { value: "Financeiro", label: "Financeiro" },
+  { value: "Logística", label: "Logística" },
+  { value: "Operacional", label: "Operacional" },
+  { value: "Recursos Humanos", label: "Recursos Humanos (RH)" },
+  { value: "TI", label: "Tecnologia (TI)" },
+  { value: "Outro", label: "Outro" }
+];
+
+const roleOptions = [
+  { value: "usuario", label: "Funcionário" },
+  { value: "gestor", label: "Gestor" },
+  { value: "diretoria", label: "Diretoria" }
+];
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -84,56 +106,27 @@ export default function Register() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Departamento</label>
-              <div className="relative">
-                <select
-                  value={department}
-                  onChange={(e) => {
-                    const dept = e.target.value;
-                    setDepartment(dept);
-                    if (dept === 'TI') setRole('ti');
-                    else if (role === 'ti') setRole('usuario');
-                  }}
-                  className="w-full px-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
-                  required
-                >
-                  <option value="" disabled>Selecione seu Departamento</option>
-                  <option value="Administrativo">Administrativo</option>
-                  <option value="Comercial">Comercial</option>
-                  <option value="Compras">Compras</option>
-                  <option value="Diretoria">Diretoria</option>
-                  <option value="Engenharia">Engenharia</option>
-                  <option value="Estoque">Estoque</option>
-                  <option value="Financeiro">Financeiro</option>
-                  <option value="Logística">Logística</option>
-                  <option value="Operacional">Operacional</option>
-                  <option value="Recursos Humanos">Recursos Humanos (RH)</option>
-                  <option value="TI">Tecnologia (TI)</option>
-                  <option value="Outro">Outro</option>
-                </select>
-              </div>
+              <SearchableSelect
+                options={departmentOptions}
+                value={department}
+                onChange={(dept) => {
+                  setDepartment(dept);
+                  if (dept === 'TI') setRole('ti');
+                  else if (role === 'ti') setRole('usuario');
+                }}
+                placeholder="Selecione seu Departamento"
+              />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">O que você é? (Cargo)</label>
-              <div className="relative">
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={department === 'TI'}
-                  className="w-full px-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none disabled:opacity-60 disabled:cursor-not-allowed"
-                  required
-                >
-                  {department === 'TI' ? (
-                    <option value="ti">Equipe de TI</option>
-                  ) : (
-                    <>
-                      <option value="usuario">Funcionário</option>
-                      <option value="gestor">Gestor</option>
-                      <option value="diretoria">Diretoria</option>
-                    </>
-                  )}
-                </select>
-              </div>
+              <SearchableSelect
+                options={department === 'TI' ? [{ value: 'ti', label: 'Equipe de TI' }] : roleOptions}
+                value={role}
+                onChange={(val) => setRole(val)}
+                disabled={department === 'TI'}
+                placeholder="Selecione seu Cargo"
+              />
             </div>
 
             <div className="space-y-2">

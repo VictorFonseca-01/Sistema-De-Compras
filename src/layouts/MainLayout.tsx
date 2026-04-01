@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
+import { Header } from '../components/Header';
 import { supabase } from '../lib/supabase';
 
 export function MainLayout() {
@@ -29,13 +30,16 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100">
       <Sidebar />
-      <main className="flex-1 p-8">
-        <div className="max-w-6xl mx-auto">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto no-scrollbar">
+          <div className="max-w-7xl mx-auto p-8 lg:p-12">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -7,7 +7,11 @@ import {
   Link as LinkIcon, 
   Trash2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  BadgeDollarSign,
+  Zap,
+  Plus
 } from 'lucide-react';
 
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -79,7 +83,6 @@ export default function NewRequest() {
     }
 
     try {
-      // 1. Insert Request
       const { data: request, error: requestError } = await supabase
         .from('requests')
         .insert([{
@@ -97,7 +100,6 @@ export default function NewRequest() {
 
       if (requestError) throw requestError;
 
-      // 2. Insert Links
       if (links.length > 0 && request) {
         const linksToInsert = links.map(l => ({
           request_id: request.id,
@@ -109,7 +111,7 @@ export default function NewRequest() {
       }
 
       setSuccess(true);
-      setTimeout(() => navigate('/'), 2000);
+      setTimeout(() => navigate('/solicitacoes'), 2500);
     } catch (err: any) {
       setError('Erro ao salvar solicitação: ' + err.message);
     } finally {
@@ -119,164 +121,223 @@ export default function NewRequest() {
 
   if (success) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="bg-emerald-100 text-emerald-600 p-6 rounded-full mb-4">
-          <CheckCircle size={64} />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-in zoom-in duration-500">
+        <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-emerald-500/20">
+          <CheckCircle size={48} strokeWidth={3} />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900">Solicitação Enviada!</h2>
-        <p className="text-slate-500 mt-2">Sua solicitação foi enviada para aprovação do gestor.</p>
-        <p className="text-sm text-slate-400 mt-4 italic text-xs">Redirecionando em instantes...</p>
+        <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-2">Solicitação Enviada!</h2>
+        <p className="text-slate-500 text-lg max-w-sm">
+          Sua requisição foi protocolada com sucesso e já está na fila de aprovação do seu gestor.
+        </p>
+        <div className="mt-8 flex items-center gap-2 text-slate-400 font-bold text-sm uppercase tracking-widest">
+           <div className="w-4 h-4 border-2 border-slate-300 border-t-primary-600 rounded-full animate-spin"></div>
+           Redirecionando...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <button 
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 mb-6 transition-colors"
-      >
-        <ArrowLeft size={20} />
-        Voltar
-      </button>
+    <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+           <button 
+             onClick={() => navigate(-1)}
+             className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 mb-2 transition-colors"
+           >
+             <ArrowLeft size={14} /> Voltar
+           </button>
+           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Nova Solicitação</h1>
+           <p className="text-slate-500 text-lg">Inicie um novo processo de aquisição de infraestrutura.</p>
+        </div>
+      </header>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold">Nova Solicitação de Compra</h1>
-          <p className="text-slate-500">Descreva detalhadamente o item ou equipamento necessário.</p>
-        </header>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex gap-3 text-sm">
-              <AlertCircle size={20} />
-              {error}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {error && (
+          <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-6 rounded-[2rem] border border-rose-100 dark:border-rose-800 flex gap-4 items-center animate-in shake duration-500">
+            <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/50 rounded-xl flex items-center justify-center shrink-0">
+              <AlertCircle size={24} />
             </div>
-          )}
+            <p className="font-bold">{error}</p>
+          </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 col-span-full">
-              <label className="text-sm font-semibold">Título da Solicitação</label>
-              <input
+        <div className="grid grid-cols-1 gap-8">
+          {/* Seção 1: Identificação */}
+          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
+            <h3 className="text-xl font-black flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
+                <Zap size={20} />
+              </div>
+              Identificação do Item
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3 col-span-full">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Título do Pedido</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Ex: Novo Notebook para Desenvolvedor Backend"
+                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold text-slate-900 dark:text-white"
+                  value={form.title}
+                  onChange={e => setForm({ ...form, title: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria de Ativo</label>
+                <SearchableSelect 
+                  options={categoriaOptions}
+                  value={form.category}
+                  onChange={(val) => setForm({ ...form, category: val })}
+                  placeholder="Selecione..."
+                />
+              </div>
+
+              <div className="space-y-3 font-bold text-slate-400 text-sm flex items-end pb-4">
+                 <p className="leading-tight opacity-70 italic">Certifique-se que a categoria condiz com o item para agilizar a triagem técnica pela equipe de TI.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Seção 2: Prioridade e Custo */}
+          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
+             <h3 className="text-xl font-black flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center">
+                <BadgeDollarSign size={20} />
+              </div>
+              Prioridade e Investimento
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Urguência do Pedido</label>
+                <SearchableSelect 
+                  options={prioridadeOptions}
+                  value={form.priority}
+                  onChange={(val) => setForm({ ...form, priority: val as Priority })}
+                  placeholder="Prioridade..."
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Custo Estimado (R$)</label>
+                <div className="relative">
+                  <div className="absolute left-6 top-4 font-black text-slate-400">R$</div>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-black text-primary-600"
+                    value={form.estimated_cost}
+                    onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Seção 3: Justificativa */}
+          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
+            <h3 className="text-xl font-black flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
+                <FileText size={20} />
+              </div>
+              Justificativa Técnica
+            </h3>
+            <div className="space-y-3">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivação da Compra</label>
+               <textarea
                 required
-                type="text"
-                placeholder="Ex: Novo Notebook para Desenvolvedor"
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
-                value={form.title}
-                onChange={e => setForm({ ...form, title: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Categoria</label>
-              <SearchableSelect 
-                options={categoriaOptions}
-                value={form.category}
-                onChange={(val) => setForm({ ...form, category: val })}
-                placeholder="Selecione ou pesquise a categoria..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Prioridade</label>
-              <SearchableSelect 
-                options={prioridadeOptions}
-                value={form.priority}
-                onChange={(val) => setForm({ ...form, priority: val as Priority })}
-                placeholder="Selecione ou pesquise a prioridade..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Custo Estimado (R$)</label>
-              <input
-                required
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
-                value={form.estimated_cost}
-                onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2 col-span-full">
-              <label className="text-sm font-semibold">Justificativa / Descrição</label>
-              <textarea
-                required
-                rows={4}
-                placeholder="Explique por que este item é necessário e qual o impacto no seu trabalho."
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary-500 outline-none resize-none"
+                rows={5}
+                placeholder="Explique detalhadamente por que este item é necessário. Use dados técnicos se possível para facilitar a aprovação."
+                className="w-full px-8 py-6 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[2rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-medium text-slate-600 dark:text-slate-300 resize-none leading-relaxed"
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
               />
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <LinkIcon size={16} />
-              Links de Referência (Opcional)
+          {/* Seção 4: Links */}
+          <section className="bg-slate-950 rounded-[2.5rem] p-10 space-y-8 text-white relative overflow-hidden">
+            <LinkIcon size={200} className="absolute -right-20 -bottom-20 text-white/5 -rotate-12" />
+            <h3 className="text-xl font-black flex items-center gap-3 relative z-10">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
+                <LinkIcon size={20} />
+              </div>
+              Referências e Orçamentos
             </h3>
-            <div className="flex gap-2">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
               <input
                 type="text"
-                placeholder="Nome da Loja/Site"
-                className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl outline-none"
+                placeholder="Título (Ex: Kabum)"
+                className="px-6 py-4 bg-white/10 border border-white/5 rounded-[1.2rem] outline-none placeholder:text-slate-500 font-bold focus:bg-white/20 transition-all"
                 value={newLink.label}
                 onChange={e => setNewLink({ ...newLink, label: e.target.value })}
               />
-              <input
-                type="url"
-                placeholder="https://..."
-                className="flex-[2] px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl outline-none"
-                value={newLink.url}
-                onChange={e => setNewLink({ ...newLink, url: e.target.value })}
-              />
-              <button 
-                type="button"
-                onClick={addLink}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl transition-colors font-semibold border border-slate-700"
-              >
-                Adicionar
-              </button>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="URL Completa (https://...)"
+                  className="flex-1 px-6 py-4 bg-white/10 border border-white/5 rounded-[1.2rem] outline-none placeholder:text-slate-500 font-bold focus:bg-white/20 transition-all"
+                  value={newLink.url}
+                  onChange={e => setNewLink({ ...newLink, url: e.target.value })}
+                />
+                <button 
+                  type="button"
+                  onClick={addLink}
+                  className="bg-primary-600 hover:bg-primary-500 text-white px-8 rounded-2xl font-black transition-all active:scale-95"
+                >
+                  <Plus size={24} strokeWidth={3} />
+                </button>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              {links.map((link, i) => (
-                <div key={i} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-xl">
-                  <span className="text-sm"><span className="font-bold">{link.label}:</span> {link.url}</span>
-                  <button onClick={() => removeLink(i)} className="text-red-400 hover:text-red-600">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+            {links.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
+                {links.map((link, i) => (
+                  <div key={i} className="flex items-center justify-between bg-white/5 border border-white/5 px-6 py-4 rounded-[1.2rem] group hover:bg-white/10 transition-all">
+                    <div className="flex flex-col">
+                       <span className="font-black text-sm">{link.label}</span>
+                       <span className="text-[10px] text-slate-500 truncate max-w-[200px]">{link.url}</span>
+                    </div>
+                    <button onClick={() => removeLink(i)} className="text-slate-500 hover:text-rose-500 p-2 transition-colors">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
 
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-6 py-2 rounded-xl font-semibold border border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all disabled:opacity-50"
-            >
-              {loading ? 'Enviando...' : (
-                <>
-                  <Send size={18} />
-                  Enviar Solicitação
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-10">
+           <button
+             type="button"
+             onClick={() => navigate(-1)}
+             className="w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all order-2 sm:order-1"
+           >
+             DESCARTAR
+           </button>
+           <button
+             type="submit"
+             disabled={loading}
+             className="w-full sm:w-auto bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-2xl shadow-primary-500/30 active:scale-95 disabled:opacity-50 order-1 sm:order-2"
+           >
+             {loading ? (
+               <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+             ) : (
+               <>
+                 <Send size={22} strokeWidth={3} />
+                 PROTOCOLOAR SOLICITAÇÃO
+               </>
+             )}
+           </button>
+        </div>
+      </form>
     </div>
   );
 }
