@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
@@ -8,6 +8,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +29,10 @@ export default function Login() {
 
     if (error) {
       setError('Credenciais inválidas ou erro ao conectar.');
+      setLoading(false);
+    } else {
+      navigate('/');
     }
-    setLoading(false);
   };
 
   return (
