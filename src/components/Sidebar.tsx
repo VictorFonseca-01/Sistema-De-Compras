@@ -2,12 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  PlusSquare, 
-  ListTodo, 
-  Users, 
-  Settings, 
-  LogOut 
+  PlusCircle, 
+  ListOrdered, 
+  Settings,
+  LogOut
 } from 'lucide-react';
+import { useProfile } from '../hooks/useProfile';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,14 +15,23 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: PlusSquare, label: 'Nova Solicitação', path: '/nova-solicitacao' },
-  { icon: ListTodo, label: 'Minhas Solicitações', path: '/solicitacoes' },
-  { icon: Users, label: 'Administração', path: '/admin', roles: ['master_admin'] },
-];
-
 export function Sidebar() {
+  const { profile } = useProfile();
+  
+  const navItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: PlusCircle, label: 'Nova Solicitação', path: '/nova-solicitacao' },
+    { icon: ListOrdered, label: 'Minhas Solicitações', path: '/solicitacoes' },
+  ];
+
+  if (profile?.role === 'master_admin' || profile?.role === 'ti' || profile?.role === 'diretoria') {
+    navItems.push({
+      icon: Settings,
+      label: 'Painel Admin',
+      path: '/admin'
+    });
+  }
+
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen sticky top-0">
       <div className="p-6">

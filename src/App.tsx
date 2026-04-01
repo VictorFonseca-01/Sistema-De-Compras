@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import NewRequest from './pages/NewRequest';
 import MyRequests from './pages/MyRequests';
 import RequestDetails from './pages/RequestDetails';
+import Register from './pages/Register';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   return (
@@ -14,9 +16,10 @@ function App() {
         <Route path="nova-solicitacao" element={<NewRequest />} />
         <Route path="solicitacoes" element={<MyRequests />} />
         <Route path="solicitacao/:id" element={<RequestDetails />} />
-        <Route path="admin" element={<div className="p-8">Painel Admin (Em breve)</div>} />
+        <Route path="admin" element={<AdminPanel />} />
       </Route>
       <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Register />} />
     </Routes>
   );
 }

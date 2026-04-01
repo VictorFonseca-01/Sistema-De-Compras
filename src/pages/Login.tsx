@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -81,19 +82,23 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-primary-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {loading ? 'Entrando...' : (
-              <>
-                <LogIn size={20} />
-                Entrar
-              </>
-            )}
+            {loading ? 'Entrando...' : 'Entrar'}
+            {!loading && <ArrowRight size={20} />}
           </button>
 
-          <p className="text-center text-sm text-slate-500">
-            Esqueceu a senha? Entre em contato com a TI.
-          </p>
+          <div className="pt-6 border-t border-slate-800 space-y-4">
+            <p className="text-center text-sm text-slate-400">
+              Esqueceu a senha? Entre em contato com a TI.
+            </p>
+            <p className="text-center text-sm text-slate-400">
+              Ainda não possui acesso? {' '}
+              <Link to="/cadastro" className="text-primary-400 hover:text-primary-300 font-medium">
+                Cadastre-se aqui
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
