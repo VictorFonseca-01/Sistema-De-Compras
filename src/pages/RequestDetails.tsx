@@ -15,8 +15,10 @@ import {
   User,
   Hash,
   ChevronRight,
-  Activity
+  Activity,
+  Plus
 } from 'lucide-react';
+import { assetService } from '../services/assetService';
 import { clsx } from 'clsx';
 
 interface Request {
@@ -53,6 +55,7 @@ export default function RequestDetails() {
   const { profile } = useProfile();
   const [request, setRequest] = useState<Request | null>(null);
   const [links, setLinks] = useState<any[]>([]);
+  const [isLinked, setIsLinked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -70,13 +73,53 @@ export default function RequestDetails() {
 
     if (!error && data) {
       setRequest(data);
+      
+      // Buscar links
       const { data: linksData } = await supabase
         .from('request_links')
         .select('*')
         .eq('request_id', id);
       setLinks(linksData || []);
+
+      // Verificar se já está no estoque
+      const { data: assetData } = await supabase
+        .from('assets')
+        .select('id')
+        .eq('request_id', id)
+        .maybeSingle();
+      
+      setIsLinked(!!assetData);
     }
     setLoading(false);
+  };
+
+  const handleAddToStock = async () => {
+    if (!request || !profile) return;
+    setActionLoading(true);
+    try {
+      const nextPatrimony = await assetService.getNextPatrimonyNumber();
+      const { error } = await assetService.createAsset({
+        nome_item: request.title,
+        descricao: request.description,
+        numero_patrimonio: nextPatrimony,
+        codigo_barras: nextPatrimony,
+        categoria: request.category,
+        valor: request.estimated_cost,
+        status: 'em_estoque',
+        request_id: request.id
+      }, profile.id);
+
+      if (!error) {
+        setIsLinked(true);
+        alert(`Ativo criado com sucesso! Patrimônio: ${nextPatrimony}`);
+      } else {
+        alert('Erro ao criar ativo: ' + error.message);
+      }
+    } catch (err: any) {
+      alert('Erro: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleAction = async (nextStatus: string, nextStep: string) => {
@@ -229,6 +272,40 @@ export default function RequestDetails() {
                     <XCircle size={20} /> REPROVAR TOTAL
                   </button>
                </div>
+            </div>
+          )}
+
+          {/* Caixa de Estoque (Apenas p/ TI/Admin em solicitações aprovadas) */}
+          {(profile?.role === 'ti' || profile?.role === 'master_admin') && request.status === 'approved' && (
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
+                    <Plus size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-lg">Vínculo de Estoque</h4>
+                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Integração Patrimonial</p>
+                  </div>
+               </div>
+
+               {isLinked ? (
+                 <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 p-4 rounded-2xl flex items-center gap-2">
+                    <CheckCircle2 size={18} />
+                    <span className="font-bold text-sm">Item já integrado ao inventário.</span>
+                 </div>
+               ) : (
+                 <button 
+                   disabled={actionLoading}
+                   onClick={handleAddToStock}
+                   className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                 >
+                   {actionLoading ? 'PROCESSANDO...' : (
+                     <>
+                       <Plus size={20} strokeWidth={3} /> ADICIONAR AO ESTOQUE
+                     </>
+                   )}
+                 </button>
+               )}
             </div>
           )}
 

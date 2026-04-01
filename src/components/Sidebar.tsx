@@ -37,7 +37,8 @@ export function Sidebar() {
   // Seções específicas por área (Conforme solicitado SaaS Admin)
   const adminItems = [];
   if (profile?.role === 'master_admin' || profile?.role === 'ti') {
-    adminItems.push({ icon: HardDrive, label: 'Central TI', path: '/admin' });
+    adminItems.push({ icon: HardDrive, label: 'Estoque / TI', path: '/estoque' });
+    adminItems.push({ icon: Truck, label: 'Entregar Ativo', path: '/entregar' });
     adminItems.push({ icon: Users, label: 'Usuários', path: '/admin' });
   }
 
