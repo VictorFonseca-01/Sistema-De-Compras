@@ -5,6 +5,7 @@ import { Mail, Lock, AlertCircle, User, ArrowRight } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
+  const [department, setDepartment] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +29,8 @@ export default function Register() {
       password,
       options: {
         data: {
-          full_name: name
+          full_name: name,
+          department: department
         }
       }
     });
@@ -40,7 +42,6 @@ export default function Register() {
         setError(signUpError.message);
       }
     } else {
-      // Automatic login after sign up if email confirmation is off (assuming it is off)
       navigate('/');
     }
     
@@ -76,6 +77,32 @@ export default function Register() {
                   className="w-full pl-10 pr-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder-slate-500"
                   required
                 />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Departamento</label>
+              <div className="relative">
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="w-full px-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
+                  required
+                >
+                  <option value="" disabled>Selecione seu Departamento</option>
+                  <option value="Administrativo">Administrativo</option>
+                  <option value="Comercial">Comercial</option>
+                  <option value="Compras">Compras</option>
+                  <option value="Diretoria">Diretoria</option>
+                  <option value="Engenharia">Engenharia</option>
+                  <option value="Estoque">Estoque</option>
+                  <option value="Financeiro">Financeiro</option>
+                  <option value="Logística">Logística</option>
+                  <option value="Operacional">Operacional</option>
+                  <option value="Recursos Humanos">Recursos Humanos (RH)</option>
+                  <option value="TI">Tecnologia (TI)</option>
+                  <option value="Outro">Outro</option>
+                </select>
               </div>
             </div>
 
