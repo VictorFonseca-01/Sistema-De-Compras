@@ -21,24 +21,24 @@
   --color-primary-900: #1e3a8a;
   --color-primary-950: #172554;
 
-  /* GP Static Dark Tokens (for Tailwind utility generation) */
-  --color-gp-blue:        #2563eb;
-  --color-gp-blue-light:  #3b82f6;
-  --color-gp-blue-dim:    #1d4ed8;
-  --color-gp-navy:        #07111d;
-  --color-gp-navy2:       #0c1828;
-  --color-gp-surface:     #101f33;
-  --color-gp-surface2:    #162540;
-  --color-gp-surface3:    #1e2f4a;
-  --color-gp-border:      #1d2f48;
-  --color-gp-border2:     #253a58;
-  --color-gp-slate:       #8fa5c0;
-  --color-gp-muted:       #536a84;
-  --color-gp-text:        #dde6f0;
-  --color-gp-success:     #10b981;
-  --color-gp-warning:     #f59e0b;
-  --color-gp-error:       #ef4444;
-  --color-gp-info:        #3b82f6;
+  /* GP Dynamic Tokens (Linked to CSS Variables for Dual Theme) */
+  --color-gp-blue:        var(--gp-blue);
+  --color-gp-blue-light:  var(--gp-blue-light);
+  --color-gp-blue-dim:    var(--gp-blue-hover);
+  --color-gp-navy:        var(--gp-bg);
+  --color-gp-navy2:       var(--gp-bg2);
+  --color-gp-surface:     var(--gp-surface);
+  --color-gp-surface2:    var(--gp-surface2);
+  --color-gp-surface3:    var(--gp-surface3);
+  --color-gp-border:      var(--gp-border);
+  --color-gp-border2:     var(--gp-border2);
+  --color-gp-slate:       var(--gp-text2);
+  --color-gp-muted:       var(--gp-text3);
+  --color-gp-text:        var(--gp-text);
+  --color-gp-success:     var(--gp-success);
+  --color-gp-warning:     var(--gp-warning);
+  --color-gp-error:       var(--gp-error);
+  --color-gp-info:        var(--gp-info);
 }
 
 /* ================================================================

@@ -10,7 +10,7 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex justify-center items-center text-slate-400">
+      <div className="min-h-screen bg-gp-bg flex justify-center items-center text-gp-text3 font-medium">
         Verificando permissões...
       </div>
     );

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Mail, Lock, AlertCircle, User, ArrowRight } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
+import { useTheme } from '../context/ThemeContext';
 
 const departmentOptions = [
   { value: 'Administrativo', label: 'Administrativo' },
@@ -37,6 +38,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,9 +67,16 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center p-4 py-10 bg-gp-bg">
       <div className="w-full max-w-2xl rounded-2xl overflow-hidden bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
         {/* Header */}
-        <div className="px-8 pt-10 pb-8 text-center bg-gp-sidebar border-b border-gp-border">
+        <div className="px-8 pt-10 pb-8 text-center bg-gp-surface2 border-b border-gp-border">
           <div className="w-14 h-14 mx-auto mb-5 rounded-xl flex items-center justify-center p-3 bg-gp-blue/10 border border-gp-blue/20">
-            <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain" />
+            <img 
+              src="/logo-branca.png" 
+              alt="Global Parts" 
+              className={clsx(
+                "w-full h-full object-contain transition-all",
+                theme === 'light' && "invert brightness-0"
+              )} 
+            />
           </div>
           <h1 className="text-xl font-bold text-gp-text tracking-tight">Criar Nova Conta</h1>
           <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
