@@ -74,27 +74,50 @@ export default function AssetImport() {
       const wb = XLSX.read(bstr, { type: 'binary' });
       const wsname = wb.SheetNames[0];
       const ws = wb.Sheets[wsname];
-      const data = XLSX.utils.sheet_to_json(ws) as ImportRow[];
       
-      if (data.length > 0) {
+      // Pegar todas as linhas brutas como arrays para identificar o cabeçalho
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+      
+      if (rows.length > 0) {
+        // 1. Encontrar a linha de cabeçalho (a primeira que tem mais de 2 células preenchidas com texto)
+        let headerRowIndex = 0;
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+          const row = rows[i];
+          const textCells = row.filter(c => typeof c === 'string' && c.length > 2);
+          if (textCells.length >= 3) { // Se tem pelo menos 3 colunas de texto, provável cabeçalho
+            headerRowIndex = i;
+            break;
+          }
+        }
+
+        const headers = rows[headerRowIndex].map(h => String(h || '').trim()).filter(h => h !== '');
+        setColumns(headers);
+
+        // 2. Extrair os dados a partir da linha após o cabeçalho
+        const data = XLSX.utils.sheet_to_json(ws, { 
+          range: headerRowIndex,
+          defval: null
+        }) as ImportRow[];
+        
         setRawData(data);
-        setColumns(Object.keys(data[0]));
         
         // Tenta auto-mapear colunas óbvias
         const newMap = { ...DEFAULT_MAP };
-        Object.keys(data[0]).forEach(col => {
+        headers.forEach(col => {
           const c = col.toLowerCase();
-          if (c.includes('item') || c.includes('nome')) newMap.nome_item = col;
+          if (c.includes('item') || c.includes('nome') || c === 'ativo') newMap.nome_item = col;
           if (c.includes('patrimonio') || c.includes('patrimônio') || c.includes('plaqueta')) newMap.numero_patrimonio = col;
           if (c.includes('marca')) newMap.marca = col;
-          if (c.includes('modelo')) newMap.modelo = col;
-          if (c.includes('serie') || c.includes('série') || c === 'sn') newMap.numero_serie = col;
+          if (c.includes('modelo') || c === 'model') newMap.modelo = col;
+          if (c.includes('serie') || c.includes('série') || c === 'sn' || c === 's/n') newMap.numero_serie = col;
           if (c.includes('categoria')) newMap.categoria = col;
           if (c.includes('empresa')) newMap.empresa = col;
           if (c.includes('departamento') || c.includes('depto')) newMap.departamento = col;
           if (c.includes('valor') || c.includes('preço')) newMap.valor = col;
           if (c.includes('local') || c.includes('unidade')) newMap.local = col;
           if (c.includes('usuario') || c.includes('usuário') || c.includes('dono')) newMap.usuario_nome = col;
+          if (c.includes('obs') || c.includes('comentário')) newMap.observacoes = col;
+          if (c.includes('fornecedor')) newMap.fornecedor = col;
         });
         setMapping(newMap);
         setStep(2);
