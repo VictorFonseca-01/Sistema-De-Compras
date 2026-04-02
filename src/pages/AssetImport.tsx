@@ -55,7 +55,7 @@ export default function AssetImport() {
   
   const [processedData, setProcessedData] = useState<any[]>([]);
   const [importMode, setImportMode] = useState<'inserir' | 'atualizar' | 'ignorar_duplicados'>('inserir');
-  const [results, setResults] = useState<{ success: number; errors: any[] } | null>(null);
+  const [results, setResults] = useState<{ success: number; updated: number; skipped: number; errors: any[] } | null>(null);
 
   // --- STEP 1: UPLOAD & READ ---
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,65 +151,99 @@ export default function AssetImport() {
     }
 
     let successCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
     const errors: any[] = [];
 
     // 2. Importar um por um (para tratamento de erro individual)
     for (const item of processedData) {
       try {
-        const { error } = await supabase
-          .from('assets')
-          .insert([{
-             nome_item: item.nome_item,
-             descricao: item.observacoes,
-             numero_patrimonio: item.numero_patrimonio,
-             codigo_gps: item.codigo_gps,
-             tipo_ativo: item.tipo_ativo,
-             categoria: item.categoria,
-             marca: item.marca,
-             modelo: item.modelo,
-             numero_serie: item.numero_serie,
-             local: item.local,
-             usuario_nome_importado: item.usuario_nome,
-             valor: item.valor,
-             fornecedor: item.fornecedor,
-             status: 'em_estoque'
-          }]);
+        const assetData = {
+          nome_item: item.nome_item,
+          descricao: item.observacoes,
+          numero_patrimonio: item.numero_patrimonio,
+          codigo_gps: item.codigo_gps,
+          tipo_ativo: item.tipo_ativo,
+          categoria: item.categoria,
+          marca: item.marca,
+          modelo: item.modelo,
+          numero_serie: item.numero_serie,
+          local: item.local,
+          usuario_nome_importado: item.usuario_nome,
+          valor: item.valor,
+          fornecedor: item.fornecedor,
+          status: 'em_estoque'
+        };
 
-        if (error) {
-           errors.push({ row: item.row_idx, patrimonio: item.valor_original, message: error.message });
-           // Registrar erro no banco
-           await supabase.from('asset_import_errors').insert([{
-             batch_id: batch.id,
-             row_number: item.row_idx,
-             numero_patrimonio: item.numero_patrimonio,
-             error_message: error.message,
-             raw_data: item
-           }]);
+        if (importMode === 'atualizar') {
+          // UPSERT: Tenta atualizar pelo número de patrimônio ou código GPS
+          const { error } = await supabase
+            .from('assets')
+            .upsert([assetData], { 
+              onConflict: item.numero_patrimonio ? 'numero_patrimonio' : (item.codigo_gps ? 'codigo_gps' : 'id') 
+            });
+
+          if (error) throw error;
+          updatedCount++;
+        } else if (importMode === 'ignorar_duplicados') {
+          // VERIFICA SE JÁ EXISTE
+          const { data: existing } = await supabase
+            .from('assets')
+            .select('id')
+            .or(`numero_patrimonio.eq.${item.numero_patrimonio},codigo_gps.eq.${item.codigo_gps}`)
+            .maybeSingle();
+
+          if (existing) {
+            skippedCount++;
+            continue; 
+          }
+
+          const { error } = await supabase.from('assets').insert([assetData]);
+          if (error) throw error;
+          successCount++;
         } else {
-           successCount++;
-           // Registrar movimentação
-           const { data: newAsset } = await supabase.from('assets').select('id').eq('numero_patrimonio', item.numero_patrimonio).maybeSingle();
-           if (newAsset) {
-              await supabase.from('asset_movements').insert([{
-                asset_id: newAsset.id,
-                tipo: 'importacao',
-                user_id: profile.id,
-                observacao: `Importado via arquivo: ${fileName}`
-              }]);
-           }
+          // PADRÃO: INSERIR (pode falhar se houver duplicado no banco)
+          const { error } = await supabase.from('assets').insert([assetData]);
+          if (error) throw error;
+          successCount++;
         }
-      } catch (err: any) {
-        errors.push({ row: item.row_idx, message: err.message });
+
+        // Registrar movimentação apenas para novos ou atualizados com sucesso
+        const { data: newAsset } = await supabase
+          .from('assets')
+          .select('id')
+          .or(`numero_patrimonio.eq.${item.numero_patrimonio},codigo_gps.eq.${item.codigo_gps}`)
+          .maybeSingle();
+
+        if (newAsset) {
+          await supabase.from('asset_movements').insert([{
+            asset_id: newAsset.id,
+            tipo: 'importacao',
+            user_id: profile.id,
+            observacao: `Processado via arquivo (${importMode}): ${fileName}`
+          }]);
+        }
+
+      } catch (error: any) {
+        errors.push({ row: item.row_idx, patrimonio: item.numero_patrimonio || item.codigo_gps || 'N/A', message: error.message });
+        // Registrar erro no banco
+        await supabase.from('asset_import_errors').insert([{
+          batch_id: batch.id,
+          row_number: item.row_idx,
+          numero_patrimonio: item.numero_patrimonio || item.codigo_gps,
+          error_message: error.message,
+          raw_data: item
+        }]);
       }
     }
 
     // 3. Atualizar lote com resumo
     await supabase.from('asset_import_batches').update({
-       success_rows: successCount,
+       success_rows: successCount + updatedCount,
        error_rows: errors.length
     }).eq('id', batch.id);
 
-    setResults({ success: successCount, errors });
+    setResults({ success: successCount, updated: updatedCount, skipped: skippedCount, errors });
     setStep(4);
     setLoading(false);
   };
@@ -422,14 +456,24 @@ export default function AssetImport() {
                  <p className="text-slate-500 text-lg font-medium">Relatório completo do lote processado.</p>
               </div>
 
-              <div className="flex justify-center gap-12 pt-8">
-                 <div className="text-center">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sucesso</p>
-                    <p className="text-4xl font-black text-emerald-600">{results.success}</p>
+              <div className="flex justify-center gap-10 pt-8">
+                 <div className="text-center group">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Inseridos</p>
+                    <p className="text-4xl font-black text-emerald-600 transition-transform group-hover:scale-110">{results.success}</p>
                  </div>
-                 <div className="text-center">
+                 <div className="text-center group">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Atualizados</p>
+                    <p className="text-4xl font-black text-blue-600 transition-transform group-hover:scale-110">{results.updated}</p>
+                 </div>
+                 {results.skipped > 0 && (
+                   <div className="text-center group">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pulados</p>
+                      <p className="text-4xl font-black text-slate-400 transition-transform group-hover:scale-110">{results.skipped}</p>
+                   </div>
+                 )}
+                 <div className="text-center group">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Erros</p>
-                    <p className={clsx("text-4xl font-black", results.errors.length > 0 ? "text-rose-600" : "text-slate-200")}>{results.errors.length}</p>
+                    <p className={clsx("text-4xl font-black transition-transform group-hover:scale-110", results.errors.length > 0 ? "text-rose-600" : "text-slate-200")}>{results.errors.length}</p>
                  </div>
               </div>
 

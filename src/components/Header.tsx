@@ -4,14 +4,18 @@ import {
   Search, 
   LogOut, 
   User as UserIcon,
-  ChevronDown
+  ChevronDown,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
+import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { clsx } from 'clsx';
 
 export function Header() {
   const { profile } = useProfile();
+  const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -80,28 +84,36 @@ export function Header() {
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 px-8 flex items-center justify-between">
       <div className="flex items-center gap-4 flex-1">
-        <div className="relative max-w-md w-full hidden md:block">
-          <Search size={18} className="absolute left-3 top-2.5 text-slate-400" />
+        <div className="relative max-w-md w-full hidden md:block group">
+          <Search size={18} className="absolute left-3 top-2.5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
           <input 
             type="text" 
             placeholder="Buscar solicitações..." 
-            className="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-500 transition-all outline-none"
+            className="w-full bg-slate-100 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500/20 focus:bg-white dark:focus:bg-slate-800 rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={toggleTheme}
+          className="p-2.5 text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-95"
+          title={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         <div className="relative">
           <button 
             onClick={() => {
               if (!showNotifications) fetchNotifications();
               setShowNotifications(!showNotifications);
             }}
-            className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors"
+            className="p-2.5 text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl relative transition-all active:scale-95"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"></span>
             )}
           </button>
 

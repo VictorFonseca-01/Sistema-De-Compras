@@ -9,6 +9,9 @@ import RequestDetails from './pages/RequestDetails';
 import Register from './pages/Register';
 import AdminPanel from './pages/AdminPanel';
 import Settings from './pages/Settings';
+import Inventory from './pages/Inventory';
+import AssetImport from './pages/AssetImport';
+import AssetDetails from './pages/AssetDetails';
 
 function App() {
   return (
@@ -20,9 +23,11 @@ function App() {
         <Route path="solicitacao/:id" element={<RequestDetails />} />
         <Route path="configuracoes" element={<Settings />} />
         
-        {/* Rotas Restritas: Admin e TI */}
-        <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
-          <Route path="admin" element={<AdminPanel />} />
+        {/* Rotas de Inventário e Gestão */}
+        <Route element={<ProtectedRoute allowedRoles={['master_admin', 'ti', 'compras', 'gestor', 'diretoria']} />}>
+          <Route path="estoque" element={<Inventory />} />
+          <Route path="estoque/:id" element={<AssetDetails />} />
+          <Route path="importar-estoque" element={<AssetImport />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
