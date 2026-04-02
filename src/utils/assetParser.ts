@@ -19,14 +19,14 @@ export function parsePatrimonyValue(rawVal: any): ParsedAsset {
   const strVal = String(rawVal || '').trim();
   const lowerVal = strVal.toLowerCase();
 
-  // 1. Valores Vazios ou "NOVO"
+  // 1. Valores Vazios, "NOVO" ou "N/A"
   if (!strVal || lowerVal === 'novo' || lowerVal === 'null' || lowerVal === 'n/a') {
     return {
       numero_patrimonio: null,
       codigo_gps: null,
       identificacao_tipo: 'novo',
       valor_original: strVal || '(vazio)',
-      observacoes: 'Ativo novo sem patrimônio atribuído'
+      observacoes: 'Registro sem patrimônio definido (N/A)'
     };
   }
 
@@ -65,12 +65,23 @@ export function parsePatrimonyValue(rawVal: any): ParsedAsset {
     };
   }
 
-  // 5. Fallback para outros textos (Tratar como patrimônio se não for GPS)
+  // 5. Fallback para outros textos (Tratar como patrimônio alfanumérico ou texto livre)
+  // Se for um texto longo, provavelmente é uma descrição que caiu no campo de patrimônio
+  if (strVal.length > 20) {
+    return {
+      numero_patrimonio: null,
+      codigo_gps: null,
+      identificacao_tipo: 'classificacao',
+      valor_original: strVal,
+      observacoes: `Informação digitada detectada: ${strVal}`
+    };
+  }
+
   return {
-    numero_patrimonio: strVal,
+    numero_patrimonio: strVal.toUpperCase(),
     codigo_gps: null,
     identificacao_tipo: 'patrimonio',
     valor_original: strVal,
-    observacoes: `Patrimônio alfanumérico detectado: ${strVal}`
+    observacoes: `Patrimônio alfanumérico: ${strVal}`
   };
 }

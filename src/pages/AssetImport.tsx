@@ -194,9 +194,9 @@ export default function AssetImport() {
       const assetsToUpsert = chunk.map(item => ({
         nome_item: item.nome_item,
         descricao: item.observacoes,
-        numero_patrimonio: item.numero_patrimonio,
-        codigo_gps: item.codigo_gps,
-        tipo_ativo: item.tipo_ativo,
+        numero_patrimonio: (item.numero_patrimonio === 'N/A' || !item.numero_patrimonio) ? null : item.numero_patrimonio,
+        codigo_gps: (item.codigo_gps === 'N/A' || !item.codigo_gps) ? null : item.codigo_gps,
+        tipo_ativo: item.tipo_ativo || 'Proprio',
         categoria: item.categoria,
         marca: item.marca,
         modelo: item.modelo,
