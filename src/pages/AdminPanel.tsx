@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Shield, Building2, Clock, Edit2, Trash2, X, UserPlus, Search, Mail, ShieldAlert } from 'lucide-react';
+import { Shield, Building2, Clock, Edit2, Trash2, X, UserPlus, Search, Mail, ShieldAlert, Users } from 'lucide-react';
 import { useProfile, type Profile } from '../hooks/useProfile';
 import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -52,7 +52,6 @@ export default function AdminPanel() {
   const [addError, setAddError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   
-  // Estado para Modal de Exclusão
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -108,15 +107,10 @@ export default function AdminPanel() {
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-    
     setActionLoading(true);
-    // Chamada via RPC V2 para forçar o reconhecimento do banco e garantir a limpeza total
     const { error } = await supabase.rpc('execute_profile_deletion', { 
       profile_uuid: userToDelete.id 
     });
-    
-    console.log('Diagnosis RPC V2 Delete:', { error, userId: userToDelete.id });
-
     if (error) {
       alert('A exclusão falhou no banco: ' + error.message);
     } else {
@@ -163,147 +157,126 @@ export default function AdminPanel() {
   };
 
   const roleColors: Record<string, string> = {
-    master_admin: 'text-white bg-rose-600 border-rose-500 shadow-rose-200/50',
-    diretoria: 'text-white bg-purple-600 border-purple-500 shadow-purple-200/50',
-    gestor: 'text-amber-900 bg-amber-100 border-amber-200 shadow-amber-200/50',
-    ti: 'text-blue-900 bg-blue-100 border-blue-200 shadow-blue-200/50',
-    compras: 'text-emerald-900 bg-emerald-100 border-emerald-200 shadow-emerald-200/50',
-    usuario: 'text-slate-600 bg-slate-100 border-slate-200 shadow-slate-200/50',
+    master_admin: 'text-white bg-slate-900 border-slate-900 shadow-slate-200/50 dark:bg-white dark:text-slate-900',
+    diretoria: 'text-fuchsia-600 bg-fuchsia-500/10 border-fuchsia-500/20 shadow-fuchsia-100',
+    gestor: 'text-amber-600 bg-amber-500/10 border-amber-500/20 shadow-amber-100',
+    ti: 'text-blue-600 bg-blue-500/10 border-blue-500/20 shadow-blue-100',
+    compras: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-100',
+    usuario: 'text-slate-500 bg-slate-500/10 border-slate-500/20 shadow-slate-100',
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 pb-20">
+    <div className="space-y-10 animate-in fade-in duration-700 pb-20 font-sans">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-             <Shield className="text-primary-600" size={32} />
-             Administração de Usuários
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-3 leading-none">
+             <Shield className="text-primary-600" size={40} />
+             Governança <span className="text-primary-600">e Acessos</span>
           </h1>
-          <p className="text-slate-500 text-lg">Gerenciamento centralizado de identidades corporativas.</p>
+          <p className="text-slate-500 text-lg font-medium">Administração centralizada de usuários e permissões corporativas.</p>
         </div>
         <button 
           onClick={() => setIsAddingUser(true)}
-          className="btn-premium-primary px-6 py-3 rounded-2xl"
+          className="btn-premium-primary px-8 py-4 rounded-2xl shadow-xl shadow-primary-600/20"
         >
-          <UserPlus size={20} strokeWidth={3} />
-          Novo Usuário
+          <UserPlus size={22} strokeWidth={3} />
+          NOVO USUÁRIO
         </button>
       </header>
 
-      {/* Busca e Dashboard Rápido */}
+      {/* Advanced Filter & Dashboard Hub 💎 */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center">
-            <Search className="ml-4 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Buscar por nome ou e-mail corporativo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2.5 bg-transparent border-none outline-none font-bold text-slate-900 dark:text-white" 
-            />
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center animate-in slide-in-from-top-4 duration-700">
+           <div className="relative group">
+              <Search className="absolute left-6 top-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={24} />
+              <input 
+                type="text" 
+                placeholder="Pesquisar por nome, cargo ou e-mail corporativo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent rounded-[1.5rem] outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400" 
+              />
+           </div>
         </div>
-        <div className="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 flex flex-col justify-center relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
-           <Shield className="absolute -right-6 -bottom-6 text-white/10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" size={120} />
-           <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1 relative z-10">Total de Contas</p>
-           <p className="text-4xl font-black relative z-10">{users.length}</p>
+
+        <div className="bg-slate-950 dark:bg-white p-8 rounded-[3rem] shadow-2xl flex flex-col justify-center relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
+           <Users className="absolute -right-6 -bottom-6 text-white/10 dark:text-slate-900/10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" size={140} />
+           <div className="relative z-10">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Total de Contas</p>
+              <p className="text-5xl font-black text-white dark:text-slate-950 tracking-tighter">{users.length}</p>
+           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-xs uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
-                <th className="px-8 py-5">Perfil</th>
-                <th className="px-8 py-5">Identidade Corporativa</th>
-                <th className="px-8 py-5">Atribuição (Role)</th>
-                <th className="px-8 py-5">Departamento</th>
-                <th className="px-8 py-5 text-right">Auditoria</th>
-                <th className="px-8 py-5 text-center">Gestão</th>
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
+                <th className="px-8 py-6">Perfil do Usuário</th>
+                <th className="px-8 py-6">Rede Corporativa</th>
+                <th className="px-8 py-6">Atribuição / Nível</th>
+                <th className="px-8 py-6">Departamento</th>
+                <th className="px-8 py-6 text-right">Auditoria</th>
+                <th className="px-8 py-6 text-center">Gestão</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-              {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i}>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
-                        <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="h-6 w-24 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="h-4 w-28 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex justify-center gap-1">
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic font-medium">Nenhum usuário correspondente à busca.</td>
-                </tr>
-              ) : (
+              {loading ? Array.from({ length: 6 }).map((_, i) => (<tr key={i} className="animate-pulse"><td colSpan={6} className="px-8 py-10 bg-slate-50/10"></td></tr>)) : filteredUsers.length === 0 ? (<tr><td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic font-medium">Nenhum perfil correspondente na base de dados.</td></tr>) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all group hover:-translate-y-0.5 duration-300">
+                  <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all group border-b border-slate-50 dark:border-slate-800">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 border border-slate-200 dark:border-slate-700 group-hover:bg-primary-600 group-hover:text-white group-hover:border-primary-600 transition-all">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 border border-slate-200 dark:border-slate-700 group-hover:bg-slate-950 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 group-hover:scale-105 transition-all shadow-sm">
                           {u.full_name ? u.full_name.charAt(0).toUpperCase() : '?'}
                         </div>
-                        <span className="font-black text-slate-900 dark:text-white text-sm">
-                          {u.full_name || 'Anônimo'}
-                        </span>
+                        <div className="flex flex-col">
+                           <span className="font-black text-slate-900 dark:text-white text-base tracking-tight leading-none">
+                             {u.full_name || 'Anônimo'}
+                           </span>
+                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {u.id.slice(0, 8)}...</span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                        <Mail size={14} className="text-slate-300" />
-                        {u.email}
+                      <div className="flex items-center gap-2 text-slate-500 font-bold text-sm bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-xl w-fit border border-slate-100 dark:border-slate-800">
+                        <Mail size={14} className="text-slate-400" />
+                        <span className="truncate max-w-[220px]">{u.email}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-xl text-[11px] font-black border uppercase tracking-wider shadow-sm", roleColors[u.role] || roleColors.usuario, "border-current/10")}>
+                      <span className={clsx(
+                        "inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black border uppercase tracking-widest shadow-sm",
+                        roleColors[u.role] || roleColors.usuario,
+                        "border-current/10"
+                      )}>
                         {u.role.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-2 text-sm font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
-                        <Building2 size={14} />
+                      <div className="flex items-center gap-2 text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">
+                        <Building2 size={16} />
                         {u.department || 'GLOBAL'}
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <div className="inline-flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase">
-                        <Clock size={12} />
-                        {(u as any).created_at ? new Date((u as any).created_at).toLocaleDateString() : '-'}
+                      <div className="inline-flex flex-col text-[10px] text-slate-400 font-black uppercase tracking-tighter">
+                        <span className="flex items-center justify-end gap-1"><Clock size={12} /> CRIADO EM</span>
+                        <span className="text-slate-600 dark:text-slate-200">{(u as any).created_at ? new Date((u as any).created_at).toLocaleDateString() : '-'}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-2">
                         <button 
                           onClick={() => handleEditClick(u)}
-                          className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 rounded-xl transition-all"
+                          className="btn-premium-ghost w-10 h-10 rounded-xl transition-all"
                         >
                           <Edit2 size={18} />
                         </button>
                         {u.id !== currentUser?.id && (
                           <button 
                             onClick={() => setUserToDelete(u)}
-                            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 rounded-xl transition-all"
+                            className="btn-premium-ghost text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 w-10 h-10 rounded-xl"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -318,78 +291,78 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* Modais Modernizados */}
+      {/* Modern UI Modals 💎 */}
       {(editingUser || isAddingUser) && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-           <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 w-full max-w-xl shadow-2xl border border-slate-100 dark:border-slate-800 scale-in-center animate-in zoom-in duration-300">
-              <div className="flex justify-between items-center mb-10">
-                <div className="flex items-center gap-4">
-                   <div className="w-14 h-14 rounded-3xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
-                      {isAddingUser ? <UserPlus size={28} /> : <Edit2 size={28} />}
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+           <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-12 w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-500">
+              <div className="flex justify-between items-start mb-12">
+                <div className="flex items-center gap-6">
+                   <div className="w-20 h-20 rounded-[2rem] bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center shadow-inner">
+                      {isAddingUser ? <UserPlus size={36} /> : <Edit2 size={36} />}
                    </div>
-                   <div>
-                     <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                        {isAddingUser ? 'Novo Usuário' : 'Editar Identidade'}
+                   <div className="space-y-1">
+                     <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                        {isAddingUser ? 'CRIAR ACESSO' : 'ATUALIZAR PERFIL'}
                      </h3>
-                     <p className="text-slate-500 font-medium">Configurações de acesso e departamento.</p>
+                     <p className="text-slate-500 text-lg font-medium">Gestão de credenciais e níveis de auditoria.</p>
                    </div>
                 </div>
-                <button onClick={() => { setEditingUser(null); setIsAddingUser(false); }} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <X size={32} />
+                <button onClick={() => { setEditingUser(null); setIsAddingUser(false); }} className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <X size={36} />
                 </button>
               </div>
 
               {isAddingUser ? (
-                 <form onSubmit={handleAddUser} className="space-y-6">
-                    {addError && <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl border border-rose-100 flex items-center gap-2 font-bold text-sm"><ShieldAlert size={18} /> {addError}</div>}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2 col-span-full">
-                          <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nome Completo</label>
-                          <input required type="text" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl font-bold" />
+                 <form onSubmit={handleAddUser} className="space-y-8">
+                    {addError && <div className="p-5 bg-rose-50 text-rose-600 rounded-[1.5rem] border border-rose-100 flex items-center gap-3 font-black text-sm uppercase tracking-wide"><ShieldAlert size={20} /> {addError}</div>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <div className="space-y-3 col-span-full">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">NOME COMPLETO DO COLABORADOR</label>
+                          <input required type="text" placeholder="Ex: Victor Fonseca" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="w-full px-8 py-5 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] font-bold text-lg focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all" />
                        </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-black text-slate-400 uppercase ml-1">E-mail Corporativo</label>
-                          <input required type="email" value={addForm.email} onChange={e => setAddForm({...addForm, email: e.target.value})} className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl font-bold" />
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-MAIL CORPORATIVO</label>
+                          <input required type="email" placeholder="nome@globalp.com.br" value={addForm.email} onChange={e => setAddForm({...addForm, email: e.target.value})} className="w-full px-8 py-5 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] font-bold focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all" />
                        </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Senha Inicial</label>
-                          <input required type="password" value={addForm.password} onChange={e => setAddForm({...addForm, password: e.target.value})} className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl font-bold" />
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SENHA PROVISÓRIA</label>
+                          <input required type="password" value={addForm.password} onChange={e => setAddForm({...addForm, password: e.target.value})} className="w-full px-8 py-5 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] font-bold focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all" />
                        </div>
-                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Cargo / Nível</label>
-                         <SearchableSelect options={roleOptions} value={addForm.role} onChange={val => setAddForm({...addForm, role: val})} placeholder="Cargo" />
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">NÍVEL DE ACESSO</label>
+                          <SearchableSelect options={roleOptions} value={addForm.role} onChange={val => setAddForm({...addForm, role: val})} placeholder="Selecione Role" />
                        </div>
-                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Setor</label>
-                         <SearchableSelect options={departmentOptions} value={addForm.department} onChange={val => setAddForm({...addForm, department: val})} placeholder="Setor" />
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DEPARTAMENTO</label>
+                          <SearchableSelect options={departmentOptions} value={addForm.department} onChange={val => setAddForm({...addForm, department: val})} placeholder="Selecione Setor" />
                        </div>
                     </div>
-                    <div className="pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end gap-3">
-                       <button type="submit" disabled={actionLoading} className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl">
-                         {actionLoading ? 'Processando...' : 'CRIAR CONTA'}
+                    <div className="pt-10 border-t border-slate-50 dark:border-slate-800 flex justify-end">
+                       <button type="submit" disabled={actionLoading} className="w-full md:w-auto btn-premium-primary px-12 py-5 rounded-[1.5rem] shadow-2xl shadow-primary-600/30">
+                         {actionLoading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> : 'FINALIZAR E CRIAR CONTA'}
                        </button>
                     </div>
                  </form>
               ) : editingUser && (
-                <div className="space-y-8">
-                   <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
-                      <p className="text-xs font-black text-slate-400 uppercase mb-1">Identificação</p>
-                      <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{editingUser.full_name}</p>
-                      <p className="text-sm font-bold text-primary-600">{editingUser.email}</p>
+                <div className="space-y-10">
+                   <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col gap-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">IDENTIDADE VERIFICADA</p>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{editingUser.full_name}</h4>
+                      <p className="text-base font-bold text-primary-600 dark:text-primary-400 tracking-tight">{editingUser.email}</p>
                    </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Alterar Nível</label>
-                         <SearchableSelect options={roleOptions} value={editForm.role} onChange={val => setEditForm({...editForm, role: val})} placeholder="Cargo" />
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">REDEFINIR NÍVEL</label>
+                         <SearchableSelect options={roleOptions} value={editForm.role} onChange={val => setEditForm({...editForm, role: val})} placeholder="Role" />
                       </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Remanejar Setor</label>
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">REMANEJAR SETOR</label>
                          <SearchableSelect options={departmentOptions} value={editForm.department} onChange={val => setEditForm({...editForm, department: val})} placeholder="Setor" />
                       </div>
                    </div>
-                   <div className="pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end gap-3">
-                       <button onClick={handeSaveUser} disabled={actionLoading} className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl">
-                         {actionLoading ? 'Salvando...' : 'SALVAR ALTERAÇÕES'}
+                   <div className="pt-10 border-t border-slate-50 dark:border-slate-800 flex justify-end">
+                       <button onClick={handeSaveUser} disabled={actionLoading} className="w-full md:w-auto btn-premium-primary px-12 py-5 rounded-[1.5rem] shadow-2xl shadow-primary-600/30">
+                         {actionLoading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> : 'CONFIRMAR ALTERAÇÕES'}
                        </button>
                     </div>
                 </div>
@@ -397,15 +370,14 @@ export default function AdminPanel() {
            </div>
         </div>
       )}
-      {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal 
         isOpen={!!userToDelete}
         onClose={() => setUserToDelete(null)}
         onConfirm={handleDeleteUser}
-        title="Revogar Acesso?"
-        message={`Você está prestes a excluir definitivamente o perfil de ${userToDelete?.full_name}. Esta ação removerá também todo o histórico e solicitações vinculadas a esta conta.`}
-        confirmText="SIM, EXCLUIR PERFIL"
-        cancelText="MANTER USUÁRIO"
+        title="Revogar Acesso Permanentemente?"
+        message={`Você está removendo ${userToDelete?.full_name} da base corporativa. Esta ação desconectará o usuário imediatamente e limpará seu histórico de atividades.`}
+        confirmText="SIM, REVOGAR ACESSO"
+        cancelText="MANTER CONTA"
         variant="danger"
         loading={actionLoading}
       />

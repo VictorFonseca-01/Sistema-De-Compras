@@ -14,6 +14,7 @@ import AssetImport from './pages/AssetImport';
 import AssetDetails from './pages/AssetDetails';
 import NewAsset from './pages/NewAsset';
 import AssetDelivery from './pages/AssetDelivery';
+import Reports from './pages/Reports';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="novo-ativo" element={<NewAsset />} />
           <Route path="entrega-ativo" element={<AssetDelivery />} />
           <Route path="importar-estoque" element={<AssetImport />} />
+          <Route path="relatorios" element={<Reports />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
