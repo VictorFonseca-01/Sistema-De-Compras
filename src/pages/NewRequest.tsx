@@ -160,7 +160,7 @@ export default function NewRequest() {
         <div>
            <button 
              onClick={() => navigate(-1)}
-             className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 mb-2 transition-colors"
+             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 mb-2 transition-colors"
            >
              <ArrowLeft size={14} /> Voltar
            </button>
@@ -255,7 +255,7 @@ export default function NewRequest() {
                     onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
                   />
                   {profile?.role !== 'ti' && (
-                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
+                    <p className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
                   )}
                 </div>
               </div>

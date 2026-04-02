@@ -47,13 +47,13 @@ export function Sidebar() {
     >
       {/* Logo Area */}
       <div className="p-6 flex items-center justify-between overflow-hidden">
-        <div className={clsx("flex items-center gap-3 min-w-0 transition-opacity", isCollapsed ? "opacity-0 invisible" : "opacity-100 visible")}>
+        <div className={clsx("flex items-center gap-3 transition-opacity", isCollapsed ? "opacity-0 invisible" : "opacity-100 visible")}>
           <div className="flex items-center justify-center shrink-0">
-             <img src="/logo-branca.png" alt="Logo" className="h-8 object-contain" />
+             <img src="/logo-branca.png" alt="Logo" className="h-9 object-contain" />
           </div>
-          <div className="truncate">
-            <h1 className="text-lg font-bold text-white leading-tight">Sistema de Compras</h1>
-            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Global Parts</p>
+          <div className="flex flex-col">
+            <h1 className="text-[17px] font-black text-white leading-none tracking-tight">Sistema de Compras</h1>
+            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mt-0.5">Global Parts</p>
           </div>
         </div>
         <button 
@@ -121,7 +121,12 @@ export function Sidebar() {
       <div className="p-4 border-t border-slate-800 mt-auto">
         <NavLink 
           to="/configuracoes"
-          className="flex items-center gap-3 px-3 py-2.5 w-full text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+          className={({ isActive }) => clsx(
+            "flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all",
+            isActive 
+              ? "bg-primary-600/10 text-primary-400 font-semibold" 
+              : "text-slate-500 hover:text-white hover:bg-slate-800"
+          )}
         >
           <Settings size={20} className={clsx("shrink-0", isCollapsed && "mx-auto")} />
           {!isCollapsed && <span className="font-semibold text-sm">Configurações</span>}

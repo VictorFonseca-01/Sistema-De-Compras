@@ -10,11 +10,11 @@ import {
   AlertCircle,
   Plus,
   Search,
-  Filter,
   ArrowUpDown,
   Tag
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 interface Request {
   id: string;
@@ -104,31 +104,27 @@ export default function MyRequests() {
         </Link>
       </header>
 
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <Search size={18} className="absolute left-4 top-3 text-slate-400" />
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-6 items-center animate-in slide-in-from-top-4 duration-700">
+        <div className="relative flex-1 w-full group">
+          <Search size={20} className="absolute left-6 top-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
           <input 
             type="text" 
-            placeholder="Pesquisar por título ou solicitante..."
+            placeholder="Pesquisar por título, ID ou nome do solicitante..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary-500 transition-all font-medium"
+            className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-2xl outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-900 dark:text-white"
           />
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative w-full md:w-48">
-            <Filter size={16} className="absolute left-3 top-3 text-slate-400" />
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary-500 transition-all appearance-none font-bold text-sm text-slate-600 dark:text-slate-300"
-            >
-              <option value="all">Todos os Status</option>
-              {Object.keys(statusMap).map(key => (
-                <option key={key} value={key}>{statusMap[key].label}</option>
-              ))}
-            </select>
-          </div>
+        <div className="w-full md:w-72">
+          <SearchableSelect 
+            options={[
+              { value: 'all', label: 'Todos os Status' },
+              ...Object.keys(statusMap).map(key => ({ value: key, label: statusMap[key].label }))
+            ]}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val)}
+            placeholder="Filtrar por Status"
+          />
         </div>
       </div>
 

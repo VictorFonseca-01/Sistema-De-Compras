@@ -73,39 +73,47 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden">
-        <div className="bg-primary-900 p-8 text-white text-center border-b border-primary-800">
-          <h2 className="text-3xl font-bold">Criar Conta</h2>
-          <p className="text-primary-200 mt-2">Acesso ao Sistema de Compras</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 font-sans py-10">
+      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-700">
+        <div className="bg-slate-950 p-12 text-white text-center border-b border-white/5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-transparent pointer-events-none opacity-50"></div>
+          <div className="relative z-10 space-y-2">
+             <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary-600/20">
+                <User size={32} className="text-white" />
+             </div>
+             <h2 className="text-4xl font-black tracking-tighter uppercase">Criar Nova Conta</h2>
+             <p className="text-primary-400 font-black text-[10px] uppercase tracking-[0.3em]">Sistema de Compras • Registro Corporativo</p>
+          </div>
         </div>
         
-        <form onSubmit={handleRegister} className="p-8 space-y-6">
+        <form onSubmit={handleRegister} className="p-10 space-y-8">
           {error && (
-            <div className="bg-red-950/50 text-red-500 p-3 rounded-lg border border-red-900 flex gap-2 items-center text-sm">
-              <AlertCircle size={18} className="shrink-0" />
+            <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-4 rounded-2xl border border-rose-100 dark:border-rose-800 flex gap-4 items-center text-sm font-bold animate-in shake duration-500">
+              <div className="w-8 h-8 bg-rose-100 dark:bg-rose-900/50 rounded-xl flex items-center justify-center shrink-0">
+                <AlertCircle size={18} />
+              </div>
               <span>{error}</span>
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Nome Completo</label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 text-slate-500" size={18} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3 col-span-full">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
+              <div className="relative group">
+                <User className="absolute left-6 top-5 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Seu Nome Completo"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder-slate-500"
+                  placeholder="Ex: Victor Fonseca"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white border-2 border-transparent rounded-[1.5rem] focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold placeholder:text-slate-500"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Departamento</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Departamento</label>
               <SearchableSelect
                 options={departmentOptions}
                 value={department}
@@ -114,47 +122,47 @@ export default function Register() {
                   if (dept === 'TI') setRole('ti');
                   else if (role === 'ti') setRole('usuario');
                 }}
-                placeholder="Selecione seu Departamento"
+                placeholder="Selecione..."
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">O que você é? (Cargo)</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Seu Cargo no Setor</label>
               <SearchableSelect
                 options={department === 'TI' ? [{ value: 'ti', label: 'Equipe de TI' }] : roleOptions}
                 value={role}
                 onChange={(val) => setRole(val)}
                 disabled={department === 'TI'}
-                placeholder="Selecione seu Cargo"
+                placeholder="Selecione..."
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">E-mail Corporativo</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 text-slate-500" size={18} />
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Corporativo (@globalp)</label>
+              <div className="relative group">
+                <Mail className="absolute left-6 top-5 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@globalp.com.br"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder-slate-500"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white border-2 border-transparent rounded-[1.5rem] focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold placeholder:text-slate-500"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 text-slate-500" size={18} />
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Senha de Acesso</label>
+              <div className="relative group">
+                <Lock className="absolute left-6 top-5 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo de 6 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-800 text-slate-100 border border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder-slate-500"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white border-2 border-transparent rounded-[1.5rem] focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold placeholder:text-slate-500"
                   required
                 />
               </div>
@@ -164,18 +172,26 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+            className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-primary-600/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 mt-4"
           >
-            {loading ? 'Cadastrando...' : 'Finalizar Cadastro'}
-            {!loading && <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+            {loading ? (
+              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <>
+                FINALIZAR MEU CADASTRO
+                <ArrowRight size={22} strokeWidth={3} />
+              </>
+            )}
           </button>
 
-          <p className="text-center text-sm text-slate-400 mt-6 pt-6 border-t border-slate-800">
-            Já possui uma conta? {' '}
-            <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium">
-              Fazer Login
-            </Link>
-          </p>
+          <div className="pt-10 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center">
+              Já possui conta cadastrada? {' '}
+              <Link to="/login" className="text-primary-600 hover:text-primary-500 transition-colors">
+                FAZER LOGIN AGORA
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

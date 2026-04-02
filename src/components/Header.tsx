@@ -28,22 +28,29 @@ export function Header() {
   const fetchNotifications = async () => {
     if (!profile) return;
     
-    let query = supabase
-      .from('requests')
-      .select('id, title, status, created_at, profiles(full_name)')
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', profile.id)
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(10);
 
-    if (profile.role !== 'master_admin' && profile.role !== 'ti' && profile.role !== 'gestor') {
-      query = query.eq('user_id', profile.id);
-    }
-
-    const { data } = await query;
-    if (data) {
+    if (!error && data) {
       setNotifications(data);
-      const recentThreshold = new Date(Date.now() - 48 * 60 * 60 * 1000);
-      const unread = data.filter(n => new Date(n.created_at) > recentThreshold).length;
+      const unread = data.filter(n => !n.is_read).length;
       setUnreadCount(unread);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id);
+    
+    if (!error) {
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -60,16 +67,6 @@ export function Header() {
     return `HÁ ${diffInDays} DIAS`;
   };
 
-  const statusLabels: Record<string, string> = {
-    pending_gestor: 'Aguardando Gestor',
-    pending_ti: 'Em Análise TI',
-    pending_compras: 'Em Compras',
-    pending_diretoria: 'Aguardando Diretoria',
-    approved: 'Aprovado',
-    rejected: 'Recusado',
-    adjustment_needed: 'Ajuste Necessário',
-  };
-
   const roleLabels: Record<string, string> = {
     master_admin: 'Admin Master',
     diretoria: 'Diretoria',
@@ -78,6 +75,7 @@ export function Header() {
     compras: 'Compras',
     usuario: 'Funcionário'
   };
+
 
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 px-8 flex items-center justify-between">
@@ -121,16 +119,17 @@ export function Header() {
                     <div 
                       key={n.id}
                       onClick={() => {
-                        window.location.href = `/solicitacao/${n.id}`;
+                        markAsRead(n.id);
+                        if (n.link) window.location.href = n.link;
                         setShowNotifications(false);
                       }}
                       className={clsx(
                         "px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-l-4",
-                        new Date(n.created_at) > new Date(Date.now() - 48 * 60 * 60 * 1000) ? "border-primary-600" : "border-transparent opacity-70"
+                        !n.is_read ? "border-primary-600 bg-primary-50/10" : "border-transparent opacity-70"
                       )}
                     >
                       <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{n.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">Status: {statusLabels[n.status] || n.status}</p>
+                      <p className="text-xs text-slate-500 mt-1">{n.message}</p>
                       <p className="text-[10px] font-bold text-primary-500 mt-2 uppercase">{getRelativeTime(n.created_at)}</p>
                     </div>
                   ))
@@ -141,9 +140,10 @@ export function Header() {
                   onClick={() => { window.location.href = '/solicitacoes'; setShowNotifications(false); }}
                   className="text-[10px] font-black text-primary-600 hover:text-primary-500 uppercase tracking-widest"
                 >
-                  Ver todas as solicitações
+                  Ir para minhas solicitações
                 </button>
               </div>
+
             </div>
           )}
         </div>

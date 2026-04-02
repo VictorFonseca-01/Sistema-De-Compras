@@ -4,6 +4,7 @@ import { Shield, Building2, Clock, Edit2, Trash2, X, UserPlus, Search, Mail, Shi
 import type { Profile } from '../hooks/useProfile';
 import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { clsx } from 'clsx';
 
 const departmentOptions = [
@@ -49,6 +50,9 @@ export default function AdminPanel() {
   const [addForm, setAddForm] = useState({ name: '', email: '', password: '', role: 'usuario', department: '' });
   const [addError, setAddError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // Estado para Modal de Exclusão
+  const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -101,13 +105,24 @@ export default function AdminPanel() {
     setActionLoading(false);
   };
 
-  const handleDeleteUser = async (id: string, name: string | null) => {
-    if (!window.confirm(`Tem certeza que deseja DELETAR o perfil de ${name || 'este usuário'}? Ele perderá acesso ao sistema.`)) return;
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
     
-    const { error } = await supabase.from('profiles').delete().eq('id', id);
-    if (!error) {
-      setUsers(users.filter(u => u.id !== id));
+    setActionLoading(true);
+    // Chamada via RPC V2 para forçar o reconhecimento do banco e garantir a limpeza total
+    const { error } = await supabase.rpc('execute_profile_deletion', { 
+      profile_uuid: userToDelete.id 
+    });
+    
+    console.log('Diagnosis RPC V2 Delete:', { error, userId: userToDelete.id });
+
+    if (error) {
+      alert('A exclusão falhou no banco: ' + error.message);
+    } else {
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+      setUserToDelete(null);
     }
+    setActionLoading(false);
   };
 
   const handleAddUser = async (e: React.FormEvent) => {
@@ -147,12 +162,12 @@ export default function AdminPanel() {
   };
 
   const roleColors: Record<string, string> = {
-    master_admin: 'text-rose-700 bg-rose-100 border-rose-200',
-    diretoria: 'text-purple-700 bg-purple-100 border-purple-200',
-    gestor: 'text-amber-700 bg-amber-100 border-amber-200',
-    ti: 'text-blue-700 bg-blue-100 border-blue-200',
-    compras: 'text-emerald-700 bg-emerald-100 border-emerald-200',
-    usuario: 'text-slate-600 bg-slate-100 border-slate-200',
+    master_admin: 'text-white bg-rose-600 border-rose-500 shadow-rose-200/50',
+    diretoria: 'text-white bg-purple-600 border-purple-500 shadow-purple-200/50',
+    gestor: 'text-amber-900 bg-amber-100 border-amber-200 shadow-amber-200/50',
+    ti: 'text-blue-900 bg-blue-100 border-blue-200 shadow-blue-200/50',
+    compras: 'text-emerald-900 bg-emerald-100 border-emerald-200 shadow-emerald-200/50',
+    usuario: 'text-slate-600 bg-slate-100 border-slate-200 shadow-slate-200/50',
   };
 
   return (
@@ -196,7 +211,7 @@ export default function AdminPanel() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-xs uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
                 <th className="px-8 py-5">Perfil</th>
                 <th className="px-8 py-5">Identidade Corporativa</th>
                 <th className="px-8 py-5">Atribuição (Role)</th>
@@ -236,7 +251,7 @@ export default function AdminPanel() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black border uppercase tracking-wider shadow-sm", roleColors[u.role] || roleColors.usuario, "border-current/10")}>
+                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-xl text-[11px] font-black border uppercase tracking-wider shadow-sm", roleColors[u.role] || roleColors.usuario, "border-current/10")}>
                         {u.role.replace('_', ' ')}
                       </span>
                     </td>
@@ -261,7 +276,7 @@ export default function AdminPanel() {
                           <Edit2 size={18} />
                         </button>
                         <button 
-                          onClick={() => handleDeleteUser(u.id, u.full_name)}
+                          onClick={() => setUserToDelete(u)}
                           className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 rounded-xl transition-all"
                         >
                           <Trash2 size={18} />
@@ -355,6 +370,18 @@ export default function AdminPanel() {
            </div>
         </div>
       )}
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal 
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={handleDeleteUser}
+        title="Revogar Acesso?"
+        message={`Você está prestes a excluir definitivamente o perfil de ${userToDelete?.full_name}. Esta ação removerá também todo o histórico e solicitações vinculadas a esta conta.`}
+        confirmText="SIM, EXCLUIR PERFIL"
+        cancelText="MANTER USUÁRIO"
+        variant="danger"
+        loading={actionLoading}
+      />
     </div>
   );
 }
