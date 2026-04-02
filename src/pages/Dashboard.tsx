@@ -71,22 +71,98 @@ export default function Dashboard() {
 
       const { data: requests } = await supabase.from('requests').select('*, profiles(full_name)');
       if (requests) {
-        const counts = {
-          pending: requests.filter(r => r.status.startsWith('pending')).length,
-          approved: requests.filter(r => r.status === 'approved').length,
-          totalCost: requests.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
+        const getStats = (statusList: string[]) => {
+          const filtered = requests.filter(r => statusList.includes(r.status));
+          return {
+            count: filtered.length,
+            sum: filtered.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
+          };
         };
+
+        const formatCurrency = (val: number) => 
+          new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+        const stats_pending_gestor = getStats(['pending_gestor']);
+        const stats_pending_ti = getStats(['pending_ti']);
+        const stats_pending_compras = getStats(['pending_compras']);
+        const stats_pending_diretoria = getStats(['pending_diretoria']);
+        const stats_approved = getStats(['approved']);
+        const stats_pending_total = requests.filter(r => r.status.startsWith('pending')).reduce((acc, r) => {
+          return {
+            count: acc.count + 1,
+            sum: acc.sum + (Number(r.estimated_cost) || 0)
+          };
+        }, { count: 0, sum: 0 });
+
+        const totalInvestment = requests.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0);
+
         setRequestStats([
-          { label: 'Pendentes', value: counts.pending, icon: Clock, colorClass: 'text-gp-warning', bgClass: 'bg-gp-warning/10' },
-          { label: 'Aprovadas', value: counts.approved, icon: CheckCircle, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
+          // Linha 1: Visão Geral Financeira
           { 
+            group: 'financial',
             label: 'Investimento Total', 
-            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(counts.totalCost), 
+            value: formatCurrency(totalInvestment), 
             icon: BarChart3, 
             colorClass: 'text-gp-blue', 
             bgClass: 'bg-gp-blue/10' 
           },
+          { 
+            group: 'financial',
+            label: 'Pendentes (Custo Total)', 
+            value: stats_pending_total.count,
+            secondary: formatCurrency(stats_pending_total.sum),
+            icon: Clock, 
+            colorClass: 'text-gp-warning', 
+            bgClass: 'bg-gp-warning/10' 
+          },
+          { 
+            group: 'financial',
+            label: 'Aprovadas (Custo Total)', 
+            value: stats_approved.count,
+            secondary: formatCurrency(stats_approved.sum),
+            icon: CheckCircle, 
+            colorClass: 'text-gp-success', 
+            bgClass: 'bg-gp-success/10' 
+          },
+          // Linha 2: Fila de Aprovação
+          { 
+            group: 'pipeline',
+            label: 'Fila Gestor', 
+            value: stats_pending_gestor.count,
+            secondary: formatCurrency(stats_pending_gestor.sum),
+            icon: FileText, 
+            colorClass: 'text-gp-text', 
+            bgClass: 'bg-gp-surface2' 
+          },
+          { 
+            group: 'pipeline',
+            label: 'Fila TI', 
+            value: stats_pending_ti.count,
+            secondary: formatCurrency(stats_pending_ti.sum),
+            icon: Activity, 
+            colorClass: 'text-gp-blue', 
+            bgClass: 'bg-gp-blue/10' 
+          },
+          { 
+            group: 'pipeline',
+            label: 'Fila Compras', 
+            value: stats_pending_compras.count,
+            secondary: formatCurrency(stats_pending_compras.sum),
+            icon: TrendingUp, 
+            colorClass: 'text-gp-purple', 
+            bgClass: 'bg-gp-purple/10' 
+          },
+          { 
+            group: 'pipeline',
+            label: 'Fila Diretoria', 
+            value: stats_pending_diretoria.count,
+            secondary: formatCurrency(stats_pending_diretoria.sum),
+            icon: Clock, 
+            colorClass: 'text-gp-warning', 
+            bgClass: 'bg-gp-warning/10' 
+          },
         ]);
+
         setRecentRequests(
           [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
         );
@@ -152,22 +228,74 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {loading
-          ? Array.from({ length: 5 }).map((_, i) => <KpiSkeleton key={i} />)
-          : [...requestStats, ...inventoryStats].map((stat, i) => (
-              <div key={i} className="gp-metric group">
-                <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
-                  <stat.icon size={20} strokeWidth={2.5} />
-                </div>
-                <div className="mt-4">
-                  <p className="gp-metric-value">{stat.value}</p>
-                  <p className="gp-metric-label">{stat.label}</p>
-                </div>
-              </div>
-            ))
-        }
+      {/* Summary KPI Sections */}
+      <div className="space-y-6">
+        {/* Financial Summary */}
+        <div className="space-y-3">
+          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Resumo Financeiro</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {loading
+              ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
+              : requestStats.filter(s => s.group === 'financial').map((stat, i) => (
+                  <div key={i} className="gp-metric group">
+                    <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
+                      <stat.icon size={20} strokeWidth={2.5} />
+                    </div>
+                    <div className="mt-4">
+                      <p className="gp-metric-value">{stat.value}</p>
+                      <p className={clsx("gp-metric-label", stat.secondary ? "mb-1" : "")}>{stat.label}</p>
+                      {stat.secondary && (
+                        <p className="text-[13px] font-bold text-gp-text truncate">{stat.secondary}</p>
+                      )}
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
+
+        {/* Approval Pipeline */}
+        <div className="space-y-3">
+          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Fila de Aprovação (Em Aberto)</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
+              : requestStats.filter(s => s.group === 'pipeline').map((stat, i) => (
+                  <div key={i} className="gp-metric group !bg-gp-surface2/40">
+                    <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
+                      <stat.icon size={18} strokeWidth={2} />
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-[20px] font-black text-gp-text leading-tight">{stat.value}</p>
+                      <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-wider mb-1">{stat.label}</p>
+                      <p className="text-[12px] font-bold text-gp-blue truncate">{stat.secondary}</p>
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
+
+        {/* Inventory Brief */}
+        <div className="space-y-3">
+          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Estado do Inventário</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {loading
+              ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
+              : inventoryStats.map((stat, i) => (
+                  <div key={i} className="gp-metric group flex items-center gap-4 py-4">
+                    <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0", stat.bgClass, stat.colorClass)}>
+                      <stat.icon size={22} strokeWidth={2} />
+                    </div>
+                    <div>
+                      <p className="text-[18px] font-black text-gp-text">{stat.value}</p>
+                      <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-wider">{stat.label}</p>
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
       </div>
 
       {/* Main content grid */}
