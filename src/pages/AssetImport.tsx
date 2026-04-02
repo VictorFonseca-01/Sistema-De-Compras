@@ -205,7 +205,7 @@ export default function AssetImport() {
     for (let i = 0; i < processedData.length; i += chunkSize) {
       const chunk = processedData.slice(i, i + chunkSize);
       
-      const assetsToUpsert = chunk.map(item => ({
+      const assetsToUpsertRaw = chunk.map(item => ({
         nome_item: item.nome_item,
         descricao: item.observacoes,
         numero_patrimonio: normalizeNull(item.numero_patrimonio),
@@ -227,10 +227,59 @@ export default function AssetImport() {
       try {
         let resultData: any[] = [];
         
-        if (importMode === 'atualizar') {
+        if (importMode === 'ignorar_duplicados') {
+          // 1. Extrair patrimonios e gps não nulos para checagem rápida
+          const pats = assetsToUpsertRaw.map(a => a.numero_patrimonio).filter(Boolean) as string[];
+          const gpss = assetsToUpsertRaw.map(a => a.codigo_gps).filter(Boolean) as string[];
+          
+          let existingPats: string[] = [];
+          
+          if (pats.length > 0 || gpss.length > 0) {
+            let query = supabase.from('assets').select('numero_patrimonio, codigo_gps');
+            
+            const conditions: string[] = [];
+            if (pats.length > 0) conditions.push(`numero_patrimonio.in.(${pats.join(',')})`);
+            if (gpss.length > 0) conditions.push(`codigo_gps.in.(${gpss.join(',')})`);
+            
+            const { data: matched } = await query.or(conditions.join(','));
+            existingPats = (matched || []).map(m => m.numero_patrimonio).filter(Boolean) as string[];
+            const existingGps = (matched || []).map(m => m.codigo_gps).filter(Boolean) as string[];
+            
+            // Unir para facilitar o filtro
+            const allExistingKeys = [...existingPats, ...existingGps];
+            
+            // 2. Filtrar o lote para manter APENAS o que não existe no banco
+            const filteredAssets = assetsToUpsertRaw.filter(a => {
+              const isDupe = (a.numero_patrimonio && allExistingKeys.includes(a.numero_patrimonio)) || 
+                             (a.codigo_gps && allExistingKeys.includes(a.codigo_gps));
+              if (isDupe) skippedCount++;
+              return !isDupe;
+            });
+
+            if (filteredAssets.length > 0) {
+              const { data: inserted, error } = await supabase
+                .from('assets')
+                .insert(filteredAssets)
+                .select('id');
+              if (error) throw error;
+              resultData = inserted || [];
+              successCount += resultData.length;
+            }
+          } else {
+             // Se tudo for N/A, insere tudo (pois null != null no unique)
+             const { data: inserted, error } = await supabase
+                .from('assets')
+                .insert(assetsToUpsertRaw)
+                .select('id');
+              if (error) throw error;
+              resultData = inserted || [];
+              successCount += resultData.length;
+          }
+
+        } else if (importMode === 'atualizar') {
           const { data: upserted, error } = await supabase
             .from('assets')
-            .upsert(assetsToUpsert, { 
+            .upsert(assetsToUpsertRaw, { 
               onConflict: 'numero_patrimonio',
               ignoreDuplicates: false
             })
@@ -238,22 +287,11 @@ export default function AssetImport() {
           if (error) throw error;
           resultData = upserted || [];
           updatedCount += resultData.length;
-        } else if (importMode === 'ignorar_duplicados') {
-          const { data: inserted, error } = await supabase
-            .from('assets')
-            .upsert(assetsToUpsert, { 
-              onConflict: 'numero_patrimonio',
-              ignoreDuplicates: true
-            })
-            .select('id');
-          if (error) throw error;
-          resultData = inserted || [];
-          successCount += resultData.length;
-          skippedCount += (chunk.length - resultData.length);
         } else {
+          // Modo INSERIR (Padrao)
           const { data: inserted, error } = await supabase
             .from('assets')
-            .insert(assetsToUpsert)
+            .insert(assetsToUpsertRaw)
             .select('id');
           if (error) throw error;
           resultData = inserted || [];
