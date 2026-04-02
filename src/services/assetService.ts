@@ -6,10 +6,13 @@ export interface Asset {
   descricao?: string;
   numero_patrimonio: string;
   codigo_barras?: string;
+  codigo_gps?: string;
   categoria?: string;
   marca?: string;
   modelo?: string;
   numero_serie?: string;
+  local?: string;
+  usuario_nome_importado?: string;
   status: 'em_estoque' | 'em_uso' | 'manutencao' | 'baixado';
   valor?: number;
   fornecedor?: string;

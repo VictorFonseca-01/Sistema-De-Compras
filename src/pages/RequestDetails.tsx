@@ -23,7 +23,6 @@ import {
   Image as ImageIcon,
   File as FileIcon
 } from 'lucide-react';
-import { assetService } from '../services/assetService';
 import { clsx } from 'clsx';
 
 interface Request {
@@ -66,10 +65,19 @@ export default function RequestDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const statusLabels: Record<string, string> = {
+    pending_gestor: 'Aguardando Gestor',
+    pending_ti: 'Em Análise TI',
+    pending_compras: 'Em Compras',
+    pending_diretoria: 'Aguardando Diretoria',
+    approved: 'Aprovado',
+    rejected: 'Recusado',
+    adjustment_needed: 'Ajuste Necessário',
+  };
+
   const [request, setRequest] = useState<Request | null>(null);
   const [links, setLinks] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [isLinked, setIsLinked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -77,6 +85,8 @@ export default function RequestDetails() {
   // States para edição técnica (TI/Compras)
   const [editValue, setEditValue] = useState('');
   const [newLink, setNewLink] = useState({ label: '', url: '' });
+  const [history, setHistory] = useState<any[]>([]);
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
     fetchRequest();
@@ -108,14 +118,13 @@ export default function RequestDetails() {
         .eq('request_id', id);
       setAttachments(attachmentsData || []);
 
-      // Verificar se já está no estoque
-      const { data: assetData } = await supabase
-        .from('assets')
-        .select('id')
+      // Buscar histórico (Auditoria)
+      const { data: historyData } = await supabase
+        .from('request_status_history')
+        .select('*, profiles(full_name)')
         .eq('request_id', id)
-        .maybeSingle();
-      
-      setIsLinked(!!assetData);
+        .order('created_at', { ascending: false });
+      setHistory(historyData || []);
     }
     setLoading(false);
   };
@@ -197,40 +206,14 @@ export default function RequestDetails() {
     }
   };
 
-  const handleAddToStock = async () => {
-    if (!request || !profile) return;
-    setActionLoading(true);
-    try {
-      const nextPatrimony = await assetService.getNextPatrimonyNumber();
-      const { error } = await assetService.createAsset({
-        nome_item: request.title,
-        descricao: request.description,
-        numero_patrimonio: nextPatrimony,
-        codigo_barras: nextPatrimony,
-        categoria: request.category,
-        valor: request.estimated_cost,
-        status: 'em_estoque',
-        request_id: request.id
-      }, profile.id);
 
-      if (!error) {
-        setIsLinked(true);
-        alert(`Ativo criado com sucesso! Patrimônio: ${nextPatrimony}`);
-      } else {
-        alert('Erro ao criar ativo: ' + error.message);
-      }
-    } catch (err: any) {
-      alert('Erro: ' + err.message);
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
-  const handleAction = async (nextStatus: string, nextStep: string) => {
+  const handleAction = async (nextStatus: string, nextStep: string, actionComment?: string) => {
     if (!request || !profile) return;
     setActionLoading(true);
     
-    const { error } = await supabase
+    // 1. Atualizar o status da solicitação
+    const { error: updateError } = await supabase
       .from('requests')
       .update({ 
         status: nextStatus,
@@ -238,8 +221,20 @@ export default function RequestDetails() {
       })
       .eq('id', request.id);
 
-    if (!error) {
+    if (!updateError) {
+      // 2. Registrar no histórico de auditoria
+      await supabase.from('request_status_history').insert([{
+        request_id: request.id,
+        old_status: request.status,
+        new_status: nextStatus,
+        changed_by: profile.id,
+        comment: actionComment || comment || 'Status atualizado pela central de decisão.'
+      }]);
+
+      setComment('');
       fetchRequest();
+    } else {
+      alert('Erro ao processar ação: ' + updateError.message);
     }
     setActionLoading(false);
   };
@@ -489,6 +484,13 @@ export default function RequestDetails() {
                </div>
                
                <div className="space-y-3 pt-2">
+                  <textarea 
+                    placeholder="Adicionar observação à aprovação/reprovação (opcional)..."
+                    className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-xs text-white placeholder:text-white/40 outline-none focus:border-primary-500 transition-all resize-none font-medium"
+                    value={comment}
+                    onChange={e => setComment(e.target.value)}
+                    rows={2}
+                  />
                   <button 
                     disabled={actionLoading}
                     onClick={() => {
@@ -514,39 +516,7 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* Caixa de Estoque (Apenas p/ TI/Admin em solicitações aprovadas) */}
-          {(profile?.role === 'ti' || profile?.role === 'master_admin') && request.status === 'approved' && (
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
-                    <Plus size={20} />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-lg">Vínculo de Estoque</h4>
-                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Integração Patrimonial</p>
-                  </div>
-               </div>
 
-               {isLinked ? (
-                 <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 p-4 rounded-2xl flex items-center gap-2">
-                    <CheckCircle2 size={18} />
-                    <span className="font-bold text-sm">Item já integrado ao inventário.</span>
-                 </div>
-               ) : (
-                 <button 
-                   disabled={actionLoading}
-                   onClick={handleAddToStock}
-                   className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
-                 >
-                   {actionLoading ? 'PROCESSANDO...' : (
-                     <>
-                       <Plus size={20} strokeWidth={3} /> ADICIONAR AO ESTOQUE
-                     </>
-                   )}
-                 </button>
-               )}
-            </div>
-          )}
 
           {/* Timeline Vertical do Fluxo */}
           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
@@ -584,6 +554,38 @@ export default function RequestDetails() {
                 })}
              </div>
           </div>
+
+          {/* Histórico de Auditoria Real */}
+          {history.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+               <h4 className="font-black text-sm uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
+                  <Clock size={18} /> Auditoria Real
+               </h4>
+               <div className="space-y-8">
+                  {history.map((h, i) => (
+                    <div key={i} className="flex gap-4 items-start border-l-2 border-slate-100 dark:border-slate-800 pl-6 relative">
+                       <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                       <div className="space-y-1">
+                          <p className="text-xs font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tighter">
+                            Ref: {statusLabels[h.new_status] || h.new_status}
+                          </p>
+                          <p className="text-[10px] font-medium text-slate-500 italic leading-snug">
+                            "{h.comment || 'Sem observação registrada.'}"
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                             <span className="text-[9px] font-black bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase">
+                                {h.profiles?.full_name?.split(' ')[0] || 'Sistema'}
+                             </span>
+                             <span className="text-[9px] font-bold text-slate-300">
+                                {new Date(h.created_at).toLocaleDateString('pt-BR')}
+                             </span>
+                          </div>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

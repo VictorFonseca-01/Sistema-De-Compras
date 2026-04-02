@@ -5,7 +5,6 @@ import {
   Barcode, 
   Plus, 
   ExternalLink,
-  Tag,
   Warehouse
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +17,11 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [categoryFilter, setCategoryFilter] = useState('todos');
+  const [localFilter, setLocalFilter] = useState('todos');
   const [showScanner, setShowScanner] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAssets();
@@ -42,11 +45,27 @@ export default function Inventory() {
     setLoading(false);
   }
 
-  const filteredAssets = assets.filter(a => 
-    a.nome_item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.numero_patrimonio.includes(searchTerm) ||
-    (a.codigo_barras && a.codigo_barras.includes(searchTerm)) ||
-    (a.modelo && a.modelo.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Extrair categorias e locais únicos para os filtros
+  const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
+  const uniqueLocals = Array.from(new Set(assets.map(a => a.local).filter(Boolean)));
+
+  const filteredAssets = assets.filter(a => {
+    const matchesSearch = 
+      a.nome_item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.numero_patrimonio.includes(searchTerm) ||
+      (a.codigo_barras && a.codigo_barras.includes(searchTerm)) ||
+      (a.modelo && a.modelo.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = categoryFilter === 'todos' || a.categoria === categoryFilter;
+    const matchesLocal = localFilter === 'todos' || a.local === localFilter;
+    
+    return matchesSearch && matchesCategory && matchesLocal;
+  });
+
+  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+  const paginatedAssets = filteredAssets.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const statusColors: any = {
@@ -102,32 +121,76 @@ export default function Inventory() {
       )}
 
       {/* Busca e Filtros */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex-1 bg-white dark:bg-slate-900 p-3 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex items-center">
-            <Search className="ml-4 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Buscar por patrimônio, nome, modelo ou código..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 bg-transparent border-none outline-none font-bold text-slate-900 dark:text-white" 
-            />
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 bg-white dark:bg-slate-900 p-3 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex items-center">
+              <Search className="ml-4 text-slate-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Buscar por patrimônio, nome, modelo ou código..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 px-4 py-2 bg-transparent border-none outline-none font-bold text-slate-900 dark:text-white" 
+              />
+          </div>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+             {['todos', 'em_estoque', 'em_uso', 'manutencao', 'baixado'].map((st) => (
+               <button
+                 key={st}
+                 onClick={() => setStatusFilter(st)}
+                 className={clsx(
+                   "px-6 py-2.5 rounded-[1.5rem] text-[10px] uppercase font-black tracking-widest transition-all",
+                   statusFilter === st 
+                    ? "bg-slate-900 dark:bg-white dark:text-slate-950 text-white shadow-lg" 
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                 )}
+               >
+                 {st.replace('_', ' ')}
+               </button>
+             ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
-           {['todos', 'em_estoque', 'em_uso', 'manutencao', 'baixado'].map((st) => (
-             <button
-               key={st}
-               onClick={() => setStatusFilter(st)}
-               className={clsx(
-                 "px-6 py-2.5 rounded-[1.5rem] text-[10px] uppercase font-black tracking-widest transition-all",
-                 statusFilter === st 
-                  ? "bg-slate-900 dark:bg-white dark:text-slate-950 text-white shadow-lg" 
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-               )}
+
+        <div className="flex flex-wrap items-center gap-4">
+           {/* Filtro de Categoria */}
+           <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+             <span className="text-[9px] font-black uppercase text-slate-400 ml-3 tracking-[0.2em]">Categoria:</span>
+             <select 
+               value={categoryFilter}
+               onChange={(e) => setCategoryFilter(e.target.value)}
+               className="bg-transparent border-none outline-none text-xs font-black text-slate-600 dark:text-slate-200 pr-4"
              >
-               {st.replace('_', ' ')}
+               <option value="todos">Todas as Categorias</option>
+               {uniqueCategories.map(cat => (
+                 <option key={cat} value={cat}>{cat}</option>
+               ))}
+             </select>
+           </div>
+
+           {/* Filtro de Local */}
+           <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+             <span className="text-[9px] font-black uppercase text-slate-400 ml-3 tracking-[0.2em]">Local:</span>
+             <select 
+               value={localFilter}
+               onChange={(e) => setLocalFilter(e.target.value)}
+               className="bg-transparent border-none outline-none text-xs font-black text-slate-600 dark:text-slate-200 pr-4"
+             >
+               <option value="todos">Todos os Locais</option>
+               {uniqueLocals.map(loc => (
+                 <option key={loc} value={loc}>{loc}</option>
+               ))}
+             </select>
+           </div>
+
+           {/* Contador de Filtro */}
+           {(categoryFilter !== 'todos' || localFilter !== 'todos') && (
+             <button 
+               onClick={() => { setCategoryFilter('todos'); setLocalFilter('todos'); }}
+               className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline ml-2"
+             >
+               Limpar Filtros Avançados
              </button>
-           ))}
+           )}
         </div>
       </div>
 
@@ -137,9 +200,9 @@ export default function Inventory() {
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
                 <th className="px-8 py-5">Patrimônio</th>
-                <th className="px-8 py-5">Plaqueta</th>
-                <th className="px-8 py-5">Ativo / Equipamento</th>
-                <th className="px-8 py-5">Categoria</th>
+                <th className="px-8 py-5">Marca / Modelo</th>
+                <th className="px-8 py-5">Local</th>
+                <th className="px-8 py-5">Usuário (Import.)</th>
                 <th className="px-8 py-5">Situação</th>
                 <th className="px-8 py-5 text-right">Ações</th>
               </tr>
@@ -156,7 +219,7 @@ export default function Inventory() {
                   <td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic font-medium">Nenhum item encontrado no estoque.</td>
                 </tr>
               ) : (
-                filteredAssets.map((asset) => (
+                 paginatedAssets.map((asset) => (
                   <tr 
                     key={asset.id} 
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group cursor-pointer"
@@ -191,14 +254,16 @@ export default function Inventory() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
-                        <span className="font-black text-slate-900 dark:text-white text-sm">{asset.nome_item}</span>
+                        <span className="font-black text-slate-900 dark:text-white text-sm truncate max-w-[200px]">{asset.nome_item}</span>
                         <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{asset.marca} {asset.modelo}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                       <div className="inline-flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <Tag size={12} />
-                          {asset.categoria}
+                       <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">{asset.local || '-'}</span>
+                    </td>
+                    <td className="px-8 py-6">
+                       <div className="flex flex-col">
+                          <span className="text-xs font-black text-primary-600 dark:text-primary-400">{asset.usuario_nome_importado || '-'}</span>
                        </div>
                     </td>
                     <td className="px-8 py-6">
@@ -220,6 +285,45 @@ export default function Inventory() {
             </tbody>
           </table>
         </div>
+
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Mostrando {Math.min(filteredAssets.length, ((currentPage - 1) * itemsPerPage) + 1)} - {Math.min(filteredAssets.length, currentPage * itemsPerPage)} de {filteredAssets.length} registros
+            </p>
+            <div className="flex gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all"
+              >
+                Anterior
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={clsx(
+                    "w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all",
+                    currentPage === i + 1 
+                      ? "bg-primary-600 text-white shadow-lg" 
+                      : "text-slate-400 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800"
+                  )}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

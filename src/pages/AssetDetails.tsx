@@ -127,9 +127,16 @@ export default function AssetDetails() {
                 <p className="text-base font-bold text-slate-600 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-800/50 px-3 py-1 rounded-lg w-fit">{asset.numero_serie || 'N/A'}</p>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Código de Barras</label>
-                <p className="text-base font-bold text-slate-600 dark:text-slate-400 font-mono">{asset.codigo_barras || 'N/A'}</p>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Localização Atual</label>
+                <p className="text-base font-black text-primary-600 uppercase italic">{asset.local || 'Estoque Central'}</p>
               </div>
+              {asset.usuario_nome_importado && (
+                <div className="space-y-1 col-span-full pt-4 border-t border-slate-50 dark:border-slate-800">
+                  <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest pl-1">Usuário Referência (Importação)</label>
+                  <p className="text-lg font-black text-slate-900 dark:text-white">{asset.usuario_nome_importado}</p>
+                  <p className="text-[10px] text-slate-400 font-medium italic">*Este usuário não está vinculado via sistema, apenas registrado na importação.</p>
+                </div>
+              )}
             </div>
 
             <div className="pt-10 border-t border-slate-100 dark:border-slate-800 space-y-3">

@@ -8,10 +8,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
-  HardDrive,
-  UserCheck,
-  Truck
+  UserCheck
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
@@ -35,11 +32,9 @@ export function Sidebar() {
     });
   }
 
-  // Seções específicas por área (Conforme solicitado SaaS Admin)
+  // Seções específicas por área (Limpeza para Sistema de Compras original)
   const adminItems = [];
-  if (profile?.role === 'master_admin' || profile?.role === 'ti') {
-    adminItems.push({ icon: HardDrive, label: 'Estoque / TI', path: '/estoque' });
-    adminItems.push({ icon: Truck, label: 'Entregar Ativo', path: '/entregar' });
+  if (profile?.role === 'master_admin') {
     adminItems.push({ icon: Users, label: 'Usuários', path: '/admin' });
   }
 
@@ -53,11 +48,11 @@ export function Sidebar() {
       {/* Logo Area */}
       <div className="p-6 flex items-center justify-between overflow-hidden">
         <div className={clsx("flex items-center gap-3 min-w-0 transition-opacity", isCollapsed ? "opacity-0 invisible" : "opacity-100 visible")}>
-          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center shrink-0">
-             <ShieldCheck className="text-white" size={20} />
+          <div className="flex items-center justify-center shrink-0">
+             <img src="/logo-branca.png" alt="Logo" className="h-8 object-contain" />
           </div>
           <div className="truncate">
-            <h1 className="text-lg font-bold text-white leading-tight">Compras TI</h1>
+            <h1 className="text-lg font-bold text-white leading-tight">Sistema de Compras</h1>
             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Global Parts</p>
           </div>
         </div>

@@ -19,15 +19,12 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [manualValue, setManualValue] = useState('');
+  const [isFlashOn, setIsFlashOn] = useState(false);
+  const [cameras, setCameras] = useState<any[]>([]);
+  const [currentCameraId, setCurrentCameraId] = useState<string | null>(null);
 
   useEffect(() => {
-    const html5QrCode = new Html5Qrcode("reader");
-    scannerRef.current = html5QrCode;
-
-    const config = { 
-      fps: 10, 
-      qrbox: { width: 250, height: 150 },
-      aspectRatio: 1.0,
+    const html5QrCode = new Html5Qrcode("reader", {
       formatsToSupport: [ 
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39,
@@ -35,21 +32,38 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.QR_CODE
       ]
+    } as any);
+    scannerRef.current = html5QrCode;
+
+    const startScanner = async () => {
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          setCameras(devices);
+          const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira')) || devices[0];
+          setCurrentCameraId(backCamera.id);
+          
+          await html5QrCode.start(
+            backCamera.id,
+            { 
+              fps: 10, 
+              qrbox: { width: 250, height: 150 },
+              aspectRatio: 1.0
+            },
+            (decodedText) => {
+              stopScanner();
+              onScan(decodedText);
+            },
+            () => {}
+          );
+        }
+      } catch (err) {
+        console.error("Erro ao iniciar câmera:", err);
+        setError("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+      }
     };
 
-    html5QrCode.start(
-      { facingMode: "environment" }, // Rear camera by default
-      config,
-      (decodedText) => {
-        // Success
-        stopScanner();
-        onScan(decodedText);
-      },
-      () => {} // Empty error callback to satisfy 4th argument
-    ).catch(err => {
-      console.error("Erro ao iniciar câmera:", err);
-      setError("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
-    });
+    startScanner();
 
     return () => {
       if (html5QrCode.isScanning) {
@@ -61,6 +75,49 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
   const stopScanner = async () => {
     if (scannerRef.current && scannerRef.current.isScanning) {
       await scannerRef.current.stop();
+    }
+  };
+
+  const toggleFlash = async () => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      try {
+        const track = (scannerRef.current as any).getRunningTrack();
+        const capabilities = track.getCapabilities() as any;
+        if (capabilities.torch) {
+          await track.applyConstraints({
+            advanced: [{ torch: !isFlashOn }]
+          });
+          setIsFlashOn(!isFlashOn);
+        } else {
+          alert('Recurso de lanterna não disponível neste hardware.');
+        }
+      } catch (err) {
+        console.error("Erro Flash:", err);
+      }
+    }
+  };
+
+  const switchCamera = async () => {
+    if (!scannerRef.current || cameras.length < 2) return;
+    
+    await stopScanner();
+    const currentIndex = cameras.findIndex(c => c.id === currentCameraId);
+    const nextIndex = (currentIndex + 1) % cameras.length;
+    const nextCamera = cameras[nextIndex];
+    setCurrentCameraId(nextCamera.id);
+
+    try {
+      await scannerRef.current.start(
+        nextCamera.id,
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        (decodedText) => {
+          stopScanner();
+          onScan(decodedText);
+        },
+        () => {}
+      );
+    } catch (err) {
+      console.error("Erro ao trocar câmera:", err);
     }
   };
 
@@ -161,14 +218,24 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
 
       <footer className="p-6 flex justify-center pb-10">
          <div className="flex gap-4">
-            <button className="w-12 h-12 bg-white/5 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all">
+            <button 
+              onClick={toggleFlash}
+              className={clsx(
+                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                isFlashOn ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "bg-white/5 text-slate-400 hover:bg-white/10"
+              )}
+            >
                <Zap size={20} />
             </button>
-            <button className="w-12 h-12 bg-white/5 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all">
+            <button 
+              onClick={switchCamera}
+              className="w-12 h-12 bg-white/5 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all"
+            >
                <RefreshCcw size={20} />
             </button>
          </div>
       </footer>
     </div>
+
   );
 }

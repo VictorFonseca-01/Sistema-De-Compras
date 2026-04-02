@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { 
   Bell, 
   Search, 
@@ -7,13 +8,66 @@ import {
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../lib/supabase';
+import { clsx } from 'clsx';
 
 export function Header() {
   const { profile } = useProfile();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (profile) fetchNotifications();
+  }, [profile]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
+  };
+
+  const fetchNotifications = async () => {
+    if (!profile) return;
+    
+    let query = supabase
+      .from('requests')
+      .select('id, title, status, created_at, profiles(full_name)')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (profile.role !== 'master_admin' && profile.role !== 'ti' && profile.role !== 'gestor') {
+      query = query.eq('user_id', profile.id);
+    }
+
+    const { data } = await query;
+    if (data) {
+      setNotifications(data);
+      const recentThreshold = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const unread = data.filter(n => new Date(n.created_at) > recentThreshold).length;
+      setUnreadCount(unread);
+    }
+  };
+
+  const getRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMins = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMins < 60) return `HÁ ${diffInMins} MINUTOS`;
+    if (diffInHours < 24) return `HÁ ${diffInHours} HORAS`;
+    return `HÁ ${diffInDays} DIAS`;
+  };
+
+  const statusLabels: Record<string, string> = {
+    pending_gestor: 'Aguardando Gestor',
+    pending_ti: 'Em Análise TI',
+    pending_compras: 'Em Compras',
+    pending_diretoria: 'Aguardando Diretoria',
+    approved: 'Aprovado',
+    rejected: 'Recusado',
+    adjustment_needed: 'Ajuste Necessário',
   };
 
   const roleLabels: Record<string, string> = {
@@ -39,10 +93,60 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => {
+              if (!showNotifications) fetchNotifications();
+              setShowNotifications(!showNotifications);
+            }}
+            className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-6 pb-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <h4 className="font-black text-sm uppercase tracking-widest text-slate-900 dark:text-white">Notificações</h4>
+                {unreadCount > 0 && <span className="text-[10px] font-black bg-primary-100 text-primary-600 px-2 py-0.5 rounded-full">{unreadCount} NOVAS</span>}
+              </div>
+              <div className="max-h-64 overflow-y-auto py-2">
+                {notifications.length === 0 ? (
+                  <div className="px-6 py-8 text-center text-xs text-slate-400 font-bold italic">Nenhuma notificação recente.</div>
+                ) : (
+                  notifications.map((n) => (
+                    <div 
+                      key={n.id}
+                      onClick={() => {
+                        window.location.href = `/solicitacao/${n.id}`;
+                        setShowNotifications(false);
+                      }}
+                      className={clsx(
+                        "px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-l-4",
+                        new Date(n.created_at) > new Date(Date.now() - 48 * 60 * 60 * 1000) ? "border-primary-600" : "border-transparent opacity-70"
+                      )}
+                    >
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{n.title}</p>
+                      <p className="text-xs text-slate-500 mt-1">Status: {statusLabels[n.status] || n.status}</p>
+                      <p className="text-[10px] font-bold text-primary-500 mt-2 uppercase">{getRelativeTime(n.created_at)}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="px-6 pt-3 border-t border-slate-100 dark:border-slate-700 text-center">
+                <button 
+                  onClick={() => { window.location.href = '/solicitacoes'; setShowNotifications(false); }}
+                  className="text-[10px] font-black text-primary-600 hover:text-primary-500 uppercase tracking-widest"
+                >
+                  Ver todas as solicitações
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="h-8 w-px bg-slate-200 dark:border-slate-800 mx-2"></div>
 
@@ -81,5 +185,6 @@ export function Header() {
         </div>
       </div>
     </header>
+
   );
 }

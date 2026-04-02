@@ -34,6 +34,8 @@ const DEFAULT_MAP: Mapping = {
   modelo: '',
   numero_serie: '',
   categoria: '',
+  local: '',
+  usuario_nome: '',
   valor: '',
   fornecedor: '',
   data_compra: '',
@@ -86,6 +88,8 @@ export default function AssetImport() {
           if (c.includes('serie') || c.includes('série') || c === 'sn') newMap.numero_serie = col;
           if (c.includes('categoria')) newMap.categoria = col;
           if (c.includes('valor') || c.includes('preço')) newMap.valor = col;
+          if (c.includes('local') || c.includes('unidade')) newMap.local = col;
+          if (c.includes('usuario') || c.includes('usuário') || c.includes('dono')) newMap.usuario_nome = col;
         });
         setMapping(newMap);
         setStep(2);
@@ -109,6 +113,8 @@ export default function AssetImport() {
         marca: row[mapping.marca] || '',
         modelo: row[mapping.modelo] || '',
         numero_serie: row[mapping.numero_serie] || '',
+        local: row[mapping.local] || '',
+        usuario_nome: row[mapping.usuario_nome] || '',
         categoria: parsed.categoria || row[mapping.categoria] || 'Outros',
         valor: parseFloat(String(row[mapping.valor] || '0').replace(',', '.')),
         fornecedor: row[mapping.fornecedor] || '',
@@ -162,6 +168,8 @@ export default function AssetImport() {
              marca: item.marca,
              modelo: item.modelo,
              numero_serie: item.numero_serie,
+             local: item.local,
+             usuario_nome_importado: item.usuario_nome,
              valor: item.valor,
              fornecedor: item.fornecedor,
              status: 'em_estoque'
@@ -336,6 +344,7 @@ export default function AssetImport() {
                           <th className="px-8 py-5">Original</th>
                           <th className="px-8 py-5">Tipo Identificado</th>
                           <th className="px-8 py-5">Patrimônio / GPS</th>
+                          <th className="px-8 py-5">Marca / Modelo</th>
                           <th className="px-8 py-5">Categoria Sugerida</th>
                           <th className="px-8 py-5">Observações</th>
                        </tr>
@@ -356,6 +365,12 @@ export default function AssetImport() {
                              </td>
                              <td className="px-8 py-5 font-black text-slate-900 dark:text-white font-mono">
                                 {item.numero_patrimonio || item.codigo_gps || '-'}
+                             </td>
+                             <td className="px-8 py-5">
+                                <div className="flex flex-col">
+                                   <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{item.marca || '-'}</span>
+                                   <span className="text-[10px] text-slate-400 font-medium uppercase">{item.modelo || '-'}</span>
+                                </div>
                              </td>
                              <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">
                                 {item.categoria}
