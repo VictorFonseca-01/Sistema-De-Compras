@@ -163,6 +163,14 @@ export default function AssetImport() {
     setStep(3);
   };
 
+  // --- HELPER: NORMALIZE NULLS ---
+  const normalizeNull = (val: any): string | null => {
+    if (val === null || val === undefined) return null;
+    const str = String(val).trim().toLowerCase();
+    if (!str || str === 'n/a' || str === 'null' || str === 'undefined' || str === '-') return null;
+    return String(val).trim(); // Mantém o original (com trim) se for válido
+  };
+
   // --- STEP 3: EXECUTE IMPORT ---
   const handleExecuteImport = async () => {
     if (!profile) return;
@@ -200,8 +208,8 @@ export default function AssetImport() {
       const assetsToUpsert = chunk.map(item => ({
         nome_item: item.nome_item,
         descricao: item.observacoes,
-        numero_patrimonio: (item.numero_patrimonio === 'N/A' || !item.numero_patrimonio) ? null : item.numero_patrimonio,
-        codigo_gps: (item.codigo_gps === 'N/A' || !item.codigo_gps) ? null : item.codigo_gps,
+        numero_patrimonio: normalizeNull(item.numero_patrimonio),
+        codigo_gps: normalizeNull(item.codigo_gps),
         tipo_ativo: item.tipo_ativo || 'Proprio',
         categoria: item.categoria,
         marca: item.marca,
