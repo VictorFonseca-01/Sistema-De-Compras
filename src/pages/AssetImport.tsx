@@ -185,91 +185,95 @@ export default function AssetImport() {
     let skippedCount = 0;
     const errors: any[] = [];
 
-    // 2. Importar um por um (para tratamento de erro individual)
-    for (const item of processedData) {
+    // 2. Processamento em Lotes (Chunking 50 por vez)
+    const chunkSize = 50;
+    for (let i = 0; i < processedData.length; i += chunkSize) {
+      const chunk = processedData.slice(i, i + chunkSize);
+      
+      const assetsToUpsert = chunk.map(item => ({
+        nome_item: item.nome_item,
+        descricao: item.observacoes,
+        numero_patrimonio: item.numero_patrimonio,
+        codigo_gps: item.codigo_gps,
+        tipo_ativo: item.tipo_ativo,
+        categoria: item.categoria,
+        marca: item.marca,
+        modelo: item.modelo,
+        numero_serie: item.numero_serie,
+        local: item.local,
+        usuario_nome_importado: item.usuario_nome,
+        empresa: item.empresa,
+        departamento: item.departamento,
+        valor: item.valor,
+        fornecedor: item.fornecedor,
+        status: 'em_estoque'
+      }));
+
       try {
-        const assetData = {
-          nome_item: item.nome_item,
-          descricao: item.observacoes,
-          numero_patrimonio: item.numero_patrimonio,
-          codigo_gps: item.codigo_gps,
-          tipo_ativo: item.tipo_ativo,
-          categoria: item.categoria,
-          marca: item.marca,
-          modelo: item.modelo,
-          numero_serie: item.numero_serie,
-          local: item.local,
-          usuario_nome_importado: item.usuario_nome,
-          empresa: item.empresa,
-          departamento: item.departamento,
-          valor: item.valor,
-          fornecedor: item.fornecedor,
-          status: 'em_estoque'
-        };
-
+        let resultData: any[] = [];
+        
         if (importMode === 'atualizar') {
-          // UPSERT: Tenta atualizar pelo número de patrimônio ou código GPS
-          const { error } = await supabase
+          const { data: upserted, error } = await supabase
             .from('assets')
-            .upsert([assetData], { 
-              onConflict: item.numero_patrimonio ? 'numero_patrimonio' : (item.codigo_gps ? 'codigo_gps' : 'id') 
-            });
-
+            .upsert(assetsToUpsert, { 
+              onConflict: 'numero_patrimonio', // Baseado no patrimônio (único)
+              ignoreDuplicates: false
+            })
+            .select('id');
           if (error) throw error;
-          updatedCount++;
+          resultData = upserted || [];
+          updatedCount += resultData.length;
         } else if (importMode === 'ignorar_duplicados') {
-          // VERIFICA SE JÁ EXISTE
-          const { data: existing } = await supabase
+          const { data: inserted, error } = await supabase
             .from('assets')
-            .select('id')
-            .or(`numero_patrimonio.eq.${item.numero_patrimonio},codigo_gps.eq.${item.codigo_gps}`)
-            .maybeSingle();
-
-          if (existing) {
-            skippedCount++;
-            continue; 
-          }
-
-          const { error } = await supabase.from('assets').insert([assetData]);
+            .upsert(assetsToUpsert, { 
+              onConflict: 'numero_patrimonio',
+              ignoreDuplicates: true
+            })
+            .select('id');
           if (error) throw error;
-          successCount++;
+          resultData = inserted || [];
+          successCount += resultData.length;
+          skippedCount += (chunk.length - resultData.length);
         } else {
-          // PADRÃO: INSERIR (pode falhar se houver duplicado no banco)
-          const { error } = await supabase.from('assets').insert([assetData]);
+          const { data: inserted, error } = await supabase
+            .from('assets')
+            .insert(assetsToUpsert)
+            .select('id');
           if (error) throw error;
-          successCount++;
+          resultData = inserted || [];
+          successCount += resultData.length;
         }
 
-        // Registrar movimentação apenas para novos ou atualizados com sucesso
-        const { data: newAsset } = await supabase
-          .from('assets')
-          .select('id')
-          .or(`numero_patrimonio.eq.${item.numero_patrimonio},codigo_gps.eq.${item.codigo_gps}`)
-          .maybeSingle();
-
-        if (newAsset) {
-          await supabase.from('asset_movements').insert([{
-            asset_id: newAsset.id,
+        // Registrar Movimentações em Lote para este bloco
+        if (resultData.length > 0) {
+          const movements = resultData.map(asset => ({
+            asset_id: asset.id,
             tipo: 'importacao',
             user_id: profile.id,
-            observacao: `Processado via arquivo (${importMode}): ${fileName}`
-          }]);
+            observacao: `Importação em lote (${importMode}): ${fileName}`
+          }));
+          await supabase.from('asset_movements').insert(movements);
         }
 
       } catch (error: any) {
-        errors.push({ row: item.row_idx, patrimonio: item.numero_patrimonio || item.codigo_gps || 'N/A', message: error.message });
-        // Registrar erro no banco
-        await supabase.from('asset_import_errors').insert([{
+        // Se o bloco falhar, tentamos salvar os erros individualmente apenas deste bloco
+        chunk.forEach(item => {
+          errors.push({ row: item.row_idx, patrimonio: item.numero_patrimonio || 'N/A', message: error.message });
+        });
+        
+        const errorLogs = chunk.map(item => ({
           batch_id: batch.id,
           row_number: item.row_idx,
-          numero_patrimonio: item.numero_patrimonio || item.codigo_gps,
+          numero_patrimonio: item.numero_patrimonio,
           error_message: error.message,
           raw_data: item
-        }]);
+        }));
+        await supabase.from('asset_import_errors').insert(errorLogs);
       }
     }
 
-    // 3. Atualizar lote com resumo
+    // 3. Finalizar Lote
     await supabase.from('asset_import_batches').update({
        success_rows: successCount + updatedCount,
        error_rows: errors.length
