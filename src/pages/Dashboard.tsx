@@ -19,45 +19,38 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
-const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: TrendingUp },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle },
-  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
+const statusMap: Record<string, { label: string; color: string; icon: any }> = {
+  pending_gestor:    { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
+  pending_ti:        { label: 'Em Análise TI', color: 'var(--gp-blue)',    icon: FileText },
+  pending_compras:   { label: 'Em Compras',    color: 'var(--gp-purple)',  icon: TrendingUp },
+  pending_diretoria: { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
+  approved:          { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
+  rejected:          { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
 };
 
-// --- Skeleton Components ---
-function MetricSkeleton() {
+function KpiSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 animate-pulse">
-      <div className="flex flex-col gap-5">
-        <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
-        <div>
-          <div className="w-24 h-3 bg-slate-100 dark:bg-slate-800 rounded-full mb-3"></div>
-          <div className="w-16 h-9 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
-        </div>
+    <div className="gp-metric animate-pulse">
+      <div className="flex items-start justify-between">
+        <div className="w-10 h-10 rounded-xl gp-skeleton" />
+      </div>
+      <div className="mt-4">
+        <div className="w-8 h-7 rounded gp-skeleton mb-2" />
+        <div className="w-20 h-3 rounded gp-skeleton" />
       </div>
     </div>
   );
 }
 
-function ActivitySkeleton() {
+function RowSkeleton() {
   return (
-    <div className="divide-y divide-slate-50 dark:divide-slate-800">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center justify-between p-6 animate-pulse">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800"></div>
-            <div>
-              <div className="w-48 h-4 bg-slate-100 dark:bg-slate-800 rounded-lg mb-2"></div>
-              <div className="w-32 h-3 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="flex items-center gap-4 px-5 py-4 animate-pulse">
+      <div className="w-9 h-9 rounded-lg gp-skeleton flex-shrink-0" />
+      <div className="flex-1">
+        <div className="w-40 h-3.5 rounded gp-skeleton mb-2" />
+        <div className="w-24 h-2.5 rounded gp-skeleton" />
+      </div>
     </div>
   );
 }
@@ -66,8 +59,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [loading, setLoading] = useState(true);
-  
-  // Dashboard 2.0 States
   const [requestStats, setRequestStats] = useState<any[]>([]);
   const [inventoryStats, setInventoryStats] = useState<any[]>([]);
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
@@ -77,49 +68,40 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      
-      // 1. Fetch Requests & Stats
+
       const { data: requests } = await supabase.from('requests').select('*, profiles(full_name)');
       if (requests) {
         const counts = {
           pending: requests.filter(r => r.status.startsWith('pending')).length,
           approved: requests.filter(r => r.status === 'approved').length,
-          rejected: requests.filter(r => r.status === 'rejected').length,
         };
         setRequestStats([
-          { label: 'Pendentes', value: counts.pending, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-          { label: 'Aprovadas', value: counts.approved, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'Pendentes', value: counts.pending, icon: Clock, colorClass: 'text-gp-warning', bgClass: 'bg-gp-warning/10' },
+          { label: 'Aprovadas', value: counts.approved, icon: CheckCircle, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
         ]);
-        setRecentRequests(requests.slice(0, 4).sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+        setRecentRequests(
+          [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
+        );
       }
 
-      // 2. Fetch Assets & Inventory Stats
       const { data: assets } = await supabase.from('assets').select('*');
       if (assets) {
-        const counts = {
-          total: assets.length,
-          stock: assets.filter(a => a.status === 'em_estoque').length,
-          use: assets.filter(a => a.status === 'em_uso').length,
-          maintenance: assets.filter(a => a.status === 'manutencao').length,
-          totalValue: assets.reduce((acc, a) => acc + (Number(a.valor) || 0), 0)
-        };
-
+        const total = assets.length;
+        const stock = assets.filter(a => a.status === 'em_estoque').length;
+        const use = assets.filter(a => a.status === 'em_uso').length;
+        const maintenance = assets.filter(a => a.status === 'manutencao').length;
         setInventoryStats([
-          { label: 'Em Estoque', value: counts.stock, icon: Package, color: 'text-primary-500', bg: 'bg-primary-500/10' },
-          { label: 'Em Uso', value: counts.use, icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'Manutenção', value: counts.maintenance, icon: Wrench, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+          { label: 'Em Estoque', value: stock, icon: Package, colorClass: 'text-gp-blue', bgClass: 'bg-gp-blue/10' },
+          { label: 'Em Uso', value: use, icon: Activity, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
+          { label: 'Manutenção', value: maintenance, icon: Wrench, colorClass: 'text-gp-error', bgClass: 'bg-gp-error/10' },
         ]);
-
-        // Simple Chart Data
-        const distribution = [
-          { label: 'Estoque', count: counts.stock, color: '#3b82f6', percent: counts.total ? (counts.stock / counts.total) * 100 : 0 },
-          { label: 'Uso', count: counts.use, color: '#10b981', percent: counts.total ? (counts.use / counts.total) * 100 : 0 },
-          { label: 'Ajuste', count: counts.maintenance, color: '#f43f5e', percent: counts.total ? (counts.maintenance / counts.total) * 100 : 0 },
-        ];
-        setChartData(distribution);
+        setChartData([
+          { label: 'Estoque', count: stock, color: 'var(--gp-blue)', percent: total ? (stock / total) * 100 : 0 },
+          { label: 'Em Uso', count: use, color: 'var(--gp-success)', percent: total ? (use / total) * 100 : 0 },
+          { label: 'Manutenção', count: maintenance, color: 'var(--gp-error)', percent: total ? (maintenance / total) * 100 : 0 },
+        ]);
       }
 
-      // 3. Fetch Recent Movements
       const { data: movements } = await supabase
         .from('asset_movements')
         .select('*, assets(nome_item, numero_patrimonio)')
@@ -129,167 +111,226 @@ export default function Dashboard() {
 
       setLoading(false);
     }
-
     fetchData();
   }, []);
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
-      {/* Header Premium */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
-            Dashboard <span className="text-primary-600">2.0</span>
+    <div className="space-y-8 pb-16 animate-fade-up">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="gp-page-title">
+            Dashboard
           </h1>
-          <p className="text-slate-500 text-lg font-medium">Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Gestor'}. Sistema 100% operacional.</p>
+          <p className="gp-page-subtitle">
+            Bem-vindo, {profile?.full_name?.split(' ')[0] || 'usuário'}. Sistema operacional.
+          </p>
         </div>
-        <div className="flex gap-3">
-           <button onClick={() => navigate('/relatorios')} className="btn-premium-secondary px-6 py-4 rounded-2xl flex items-center gap-2">
-             <FileBarChart size={20} /> RELATÓRIO EXECUTIVO
-           </button>
-           <button onClick={() => navigate('/nova-solicitacao')} className="btn-premium-primary px-8 py-4 rounded-2xl shadow-xl shadow-primary-600/20">
-             <Plus size={22} strokeWidth={3} /> NOVA SOLICITAÇÃO
-           </button>
+        <div className="flex gap-3 flex-shrink-0">
+          <button
+            onClick={() => navigate('/relatorios')}
+            className="btn-premium-secondary px-5 py-2.5 rounded-xl text-[12px]"
+          >
+            <FileBarChart size={16} strokeWidth={2} />
+            Relatório Executivo
+          </button>
+          <button
+            onClick={() => navigate('/nova-solicitacao')}
+            className="btn-premium-primary px-5 py-2.5 rounded-xl text-[12px]"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            Nova Solicitação
+          </button>
         </div>
-      </header>
-
-      {/* Grid de KPIs SaaS — Mista (Compras + Estoque) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => <MetricSkeleton key={i} />)
-        ) : (
-          <>
-            {[...requestStats, ...inventoryStats].map((stat, i) => (
-              <div key={i} className="group bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-20 h-20 ${stat.bg} rounded-bl-full opacity-20 -mr-6 -mt-6 group-hover:scale-125 transition-transform`}></div>
-                <div className="flex flex-col gap-4 relative z-10">
-                  <div className={`${stat.color} ${stat.bg} p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform`}>
-                    <stat.icon size={24} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                    <p className="text-3xl font-black text-slate-900 dark:text-white uppercase leading-none">{stat.value}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Gráfico Visual de Distribuição */}
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-           <div className="flex justify-between items-center mb-8">
-             <h3 className="text-xl font-black flex items-center gap-2">
-               <BarChart3 size={20} className="text-primary-500" />
-               Status do Inventário
-             </h3>
-           </div>
-           
-           <div className="flex-1 flex flex-col justify-center items-center gap-10">
-              <div className="relative w-48 h-48 flex items-center justify-center">
-                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                    {chartData.map((d, i) => {
-                      const offset = chartData.slice(0, i).reduce((acc, curr) => acc + curr.percent, 0);
-                      return (
-                        <circle
-                          key={i}
-                          cx="18" cy="18" r="16"
-                          fill="transparent"
-                          stroke={d.color}
-                          strokeWidth="4"
-                          strokeDasharray={`${d.percent} ${100 - d.percent}`}
-                          strokeDashoffset={-offset}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      );
-                    })}
-                 </svg>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-3xl font-black text-slate-900 dark:text-white">
-                      {chartData.reduce((acc, d) => acc + d.count, 0)}
-                    </p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ativos</p>
-                 </div>
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => <KpiSkeleton key={i} />)
+          : [...requestStats, ...inventoryStats].map((stat, i) => (
+              <div key={i} className="gp-metric group">
+                <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
+                  <stat.icon size={20} strokeWidth={2.5} />
+                </div>
+                <div className="mt-4">
+                  <p className="gp-metric-value">{stat.value}</p>
+                  <p className="gp-metric-label">{stat.label}</p>
+                </div>
               </div>
+            ))
+        }
+      </div>
 
-              <div className="w-full space-y-3">
-                 {chartData.map((d, i) => (
-                   <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }}></div>
-                         <span className="text-sm font-bold text-slate-500 dark:text-slate-400">{d.label}</span>
-                      </div>
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{Math.round(d.percent)}%</span>
-                   </div>
-                 ))}
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Donut Chart */}
+        <div className="gp-card p-8 flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
+              <BarChart3 size={20} strokeWidth={2} />
+            </div>
+            <h3 className="text-[15px] font-bold text-gp-text">Situação do Inventário</h3>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center gap-10">
+            {/* Donut */}
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--gp-border)" strokeWidth="3" />
+                {chartData.map((d, i) => {
+                  const offset = chartData.slice(0, i).reduce((acc, curr) => acc + curr.percent, 0);
+                  const circumference = 2 * Math.PI * 15.5;
+                  return (
+                    <circle
+                      key={i}
+                      cx="18" cy="18" r="15.5"
+                      fill="transparent"
+                      stroke={d.color}
+                      strokeWidth="3.5"
+                      strokeDasharray={`${(d.percent / 100) * circumference} ${circumference}`}
+                      strokeDashoffset={-((offset / 100) * circumference)}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  );
+                })}
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-3xl font-black text-gp-text">
+                  {chartData.reduce((acc, d) => acc + d.count, 0)}
+                </p>
+                <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-1">Ativos</p>
               </div>
-           </div>
+            </div>
+
+            {/* Legend */}
+            <div className="w-full space-y-3">
+              {chartData.map((d, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: d.color }} />
+                    <span className="text-[13px] font-bold text-gp-text2">{d.label}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-bold text-gp-text3 opacity-60">{d.count} un</span>
+                    <span className="text-[13px] font-black text-gp-text">
+                      {Math.round(d.percent)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Listas de Atividade Recente (Solicitações + Movimentações) */}
-        <div className="lg:col-span-2 space-y-8">
+        {/* Recent Activity — 2 columns */}
+        <div className="lg:col-span-2 space-y-6">
           {/* Recent Requests */}
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="text-lg font-black flex items-center gap-2">
-                <FileText size={18} className="text-amber-500" />
-                Novas Solicitações
-              </h3>
-              <Link to="/solicitacoes" className="btn-premium-ghost px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Ver tudo</Link>
-            </div>
-            {loading ? <ActivitySkeleton /> : (
-              <div className="divide-y divide-slate-50 dark:divide-slate-800">
-                {recentRequests.map(req => (
-                  <Link key={req.id} to={`/solicitacao/${req.id}`} className="flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30 group-hover:text-amber-600">
-                        <FileText size={18} />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-600 transition-colors truncate max-w-[200px]">{req.title}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{req.profiles?.full_name} • {new Date(req.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className={clsx("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border", statusMap[req.status]?.bg || 'bg-slate-100', statusMap[req.status]?.color || 'text-slate-500', "border-current/10")}>
-                      {statusMap[req.status]?.label || req.status}
-                    </div>
-                  </Link>
-                ))}
+          <div className="gp-card overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gp-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center">
+                  <FileText size={20} strokeWidth={2} />
+                </div>
+                <h3 className="text-[15px] font-bold text-gp-text">Solicitações Recentes</h3>
               </div>
-            )}
+              <Link
+                to="/solicitacoes"
+                className="btn-premium-ghost px-4 py-2 text-[11px] hover:bg-gp-surface2"
+              >
+                Ver todas <ArrowRight size={14} className="ml-2" />
+              </Link>
+            </div>
+
+            {loading
+              ? [1, 2, 3].map(i => <RowSkeleton key={i} />)
+              : recentRequests.length === 0
+                ? (
+                  <div className="gp-empty py-16">
+                    <div className="gp-empty-icon"><FileText size={24} /></div>
+                    <p className="text-[13px] font-bold uppercase tracking-widest opacity-50">Nenhuma solicitação ativa</p>
+                  </div>
+                )
+                : recentRequests.map(req => {
+                    const s = statusMap[req.status];
+                    return (
+                      <Link
+                        key={req.id}
+                        to={`/solicitacoes/${req.id}`}
+                        className="flex items-center gap-4 px-6 py-4 transition-all hover:bg-gp-surface2 border-b border-gp-border last:border-0 group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">
+                          <FileText size={18} className="text-gp-text3" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-bold text-gp-text truncate mb-0.5">{req.title}</p>
+                          <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-tighter opacity-60">
+                            {req.profiles?.full_name} · {new Date(req.created_at).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        {s && (
+                          <span
+                            className="gp-badge text-[9px] h-6"
+                            style={{ background: `${s.color}15`, color: s.color, borderColor: `${s.color}25` }}
+                          >
+                            {s.label}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })
+            }
           </div>
 
           {/* Recent Movements */}
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="text-lg font-black flex items-center gap-2">
-                <ArrowRight size={18} className="text-primary-500" />
-                Histórico do Estoque
-              </h3>
-              <Link to="/estoque" className="btn-premium-ghost px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Abrir Inventário</Link>
-            </div>
-            {loading ? <ActivitySkeleton /> : (
-              <div className="divide-y divide-slate-50 dark:divide-slate-800">
-                {recentMovements.length > 0 ? recentMovements.map(move => (
-                  <div key={move.id} className="flex items-center justify-between p-5 group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 group-hover:text-primary-600">
-                        <Activity size={18} />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate max-w-[200px]">{move.assets?.nome_item}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">Patr: {move.assets?.numero_patrimonio} • {new Date(move.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-black text-primary-600 bg-primary-100/50 dark:bg-primary-900/20 px-2 py-1 rounded-md uppercase">{move.tipo}</span>
-                  </div>
-                )) : (
-                  <div className="p-10 text-center text-slate-400 italic text-sm">Nenhuma movimentação registrada.</div>
-                )}
+          <div className="gp-card overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gp-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
+                  <Activity size={20} strokeWidth={2} />
+                </div>
+                <h3 className="text-[15px] font-bold text-gp-text">Movimentações do Estoque</h3>
               </div>
-            )}
+              <Link
+                to="/estoque"
+                className="btn-premium-ghost px-4 py-2 text-[11px] hover:bg-gp-surface2"
+              >
+                Ver estoque <ArrowRight size={14} className="ml-2" />
+              </Link>
+            </div>
+
+            {loading
+              ? [1, 2, 3].map(i => <RowSkeleton key={i} />)
+              : recentMovements.length === 0
+                ? (
+                  <div className="gp-empty py-16">
+                    <div className="gp-empty-icon"><Activity size={24} /></div>
+                    <p className="text-[13px] font-bold uppercase tracking-widest opacity-50">Sem movimentações pendentes</p>
+                  </div>
+                )
+                : recentMovements.map(move => (
+                    <div
+                      key={move.id}
+                      className="flex items-center gap-4 px-6 py-4 border-b border-gp-border last:border-0 transition-colors hover:bg-gp-surface2 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">
+                        <Activity size={18} className="text-gp-blue" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-bold text-gp-text truncate mb-0.5">
+                          {move.assets?.nome_item}
+                        </p>
+                        <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-tighter opacity-60">
+                          Patr: {move.assets?.numero_patrimonio} · {new Date(move.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <span className="gp-badge gp-badge-blue text-[9px] h-6">
+                        {move.tipo.toUpperCase()}
+                      </span>
+                    </div>
+                  ))
+            }
           </div>
         </div>
       </div>

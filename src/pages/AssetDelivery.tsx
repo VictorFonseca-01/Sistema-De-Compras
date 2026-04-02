@@ -11,7 +11,8 @@ import {
   CheckCircle, 
   AlertCircle,
   FileText,
-  Barcode
+  Barcode,
+  Send
 } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { BarcodeScanner } from '../components/BarcodeScanner';
@@ -107,133 +108,161 @@ export default function AssetDelivery() {
 
   if (success) {
      return (
-       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-in zoom-in duration-500">
-         <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-blue-500/20">
-           <Truck size={48} strokeWidth={3} />
-         </div>
-         <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-2">Entrega Realizada!</h2>
-         <p className="text-slate-500 text-lg max-w-sm">
-           O ativo foi vinculado ao usuário e o histórico de movimentação foi registrado com sucesso.
-         </p>
-         <div className="mt-8 flex items-center gap-2 text-slate-400 font-bold text-sm uppercase tracking-widest">
-            <div className="w-4 h-4 border-2 border-slate-300 border-t-primary-600 rounded-full animate-spin"></div>
-            Atualizando inventário...
+       <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-fade-up">
+         <div className="gp-card p-12 max-w-lg flex flex-col items-center">
+           <div className="w-20 h-20 bg-gp-blue/10 text-gp-blue rounded-2xl flex items-center justify-center mb-8 shadow-inner">
+             <Truck size={40} strokeWidth={2} />
+           </div>
+           <h2 className="text-2xl font-bold text-gp-text mb-3">Entrega Realizada!</h2>
+           <p className="text-gp-text3 text-base leading-relaxed">
+             O ativo foi vinculado ao colaborador e o histórico de movimentação foi registrado com sucesso.
+           </p>
+           <div className="mt-10 flex items-center gap-3 py-3 px-6 bg-gp-surface2 rounded-xl border border-gp-border">
+              <div className="w-4 h-4 border-2 border-gp-border2 border-t-gp-blue rounded-full animate-spin" />
+              <span className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest">Atualizando inventário...</span>
+           </div>
          </div>
        </div>
      );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700">
-      <header className="flex flex-col gap-4">
+    <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-fade-up">
+      <header className="flex flex-col gap-5">
         <button 
           onClick={() => navigate('/estoque')}
-          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
+          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[12px] uppercase tracking-wider"
         >
-          <ArrowLeft size={14} /> Descartar
+          <ArrowLeft size={16} /> Voltar ao Inventário
         </button>
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Entrega de Ativo</h1>
-        <p className="text-slate-500 text-lg">Vincule um equipamento do estoque a um colaborador.</p>
+        <div className="flex items-center gap-5">
+           <div className="w-14 h-14 bg-gp-blue text-white rounded-2xl flex items-center justify-center shadow-lg shadow-gp-blue/20">
+             <Send size={30} strokeWidth={2} />
+           </div>
+           <div>
+             <h1 className="gp-page-title text-3xl">Entrega de Ativo</h1>
+             <p className="gp-page-subtitle">Vincule um equipamento do estoque a um colaborador corporativo.</p>
+           </div>
+        </div>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-6 rounded-[2rem] border border-rose-100 dark:border-rose-800 flex gap-4 items-center">
-            <AlertCircle size={24} />
-            <p className="font-bold">{error}</p>
+          <div className="flex items-center gap-4 p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
+            <div className="w-10 h-10 bg-gp-error/10 rounded-xl flex items-center justify-center shrink-0">
+              <AlertCircle size={24} />
+            </div>
+            <p className="font-bold text-[14px]">{error}</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8">
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8 hover:border-primary-500/30 transition-all duration-500 group">
-             <h3 className="text-xl font-black flex items-center gap-3">
-               <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                 <Package size={20} />
-               </div>
-               Equipamento Selecionado
-             </h3>
-             <div className="flex gap-4 items-end">
-               <div className="flex-1 space-y-3">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ativo disponível</label>
-                 {loading ? (
-                   <div className="h-[60px] w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
-                 ) : (
-                   <SearchableSelect 
-                     options={assetOptions}
-                     value={selectedAssetId}
-                     onChange={setSelectedAssetId}
-                     placeholder="Selecione o patrimônio..."
-                   />
-                 )}
-               </div>
-               <button 
-                 type="button"
-                 onClick={() => setShowScanner(true)}
-                 disabled={loading}
-                 className="h-[60px] px-6 bg-slate-900 text-white dark:bg-white dark:text-slate-950 rounded-2xl flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50"
-               >
-                 <Barcode size={20} />
-                 Scan
-               </button>
-             </div>
-             <p className="text-[10px] text-slate-400 font-bold italic ml-1">Somente itens com status "Em Estoque" aparecem nesta lista.</p>
+        <div className="grid grid-cols-1 gap-6">
+          {/* Seção 1: Equipamento */}
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+            <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+              <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
+                <Package size={20} strokeWidth={2} />
+              </div>
+              <h3 className="text-lg font-bold text-gp-text tracking-tight">Equipamento Selecionado</h3>
+            </div>
 
-             {showScanner && (
-               <BarcodeScanner 
-                 onScan={handleScanAsset}
-                 onClose={() => setShowScanner(false)} 
-               />
-             )}
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex-1 w-full space-y-2">
+                <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Ativo Disponível</label>
+                {loading && !assets.length ? (
+                  <div className="h-14 w-full bg-gp-surface2 animate-pulse rounded-xl" />
+                ) : (
+                  <SearchableSelect 
+                    options={assetOptions}
+                    value={selectedAssetId}
+                    onChange={setSelectedAssetId}
+                    placeholder="Selecione o patrimônio..."
+                  />
+                )}
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowScanner(true)}
+                disabled={loading}
+                className="w-full md:w-auto h-14 px-8 bg-gp-surface2 border border-gp-border text-gp-text rounded-xl flex items-center justify-center gap-3 font-bold uppercase text-[11px] tracking-widest transition-all hover:bg-gp-surface3 active:scale-95 disabled:opacity-50"
+              >
+                <Barcode size={22} className="text-gp-blue-light" />
+                Escanear
+              </button>
+            </div>
+            <p className="text-[11px] text-gp-text3 opacity-60 font-bold italic">Somente itens com status <span className="text-gp-success">"Em Estoque"</span> são listados.</p>
+
+            {showScanner && (
+              <BarcodeScanner 
+                onScan={handleScanAsset}
+                onClose={() => setShowScanner(false)} 
+              />
+            )}
           </section>
 
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8 hover:border-blue-500/30 transition-all duration-500 group">
-             <h3 className="text-xl font-black flex items-center gap-3">
-               <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                 <User size={20} />
-               </div>
-               Colaborador de Destino
-             </h3>
-             <div className="space-y-3">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Funcionário Recebedor</label>
-               {loading ? (
-                 <div className="h-[60px] w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
-               ) : (
-                 <SearchableSelect 
-                   options={userOptions}
-                   value={selectedUserId}
-                   onChange={setSelectedUserId}
-                   placeholder="Buscar colaborador por nome..."
-                 />
-               )}
-             </div>
+          {/* Seção 2: Colaborador */}
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+            <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+              <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
+                <User size={20} strokeWidth={2} />
+              </div>
+              <h3 className="text-lg font-bold text-gp-text tracking-tight">Colaborador de Destino</h3>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Funcionário Recebedor</label>
+              {loading && !users.length ? (
+                <div className="h-14 w-full bg-gp-surface2 animate-pulse rounded-xl" />
+              ) : (
+                <SearchableSelect 
+                  options={userOptions}
+                  value={selectedUserId}
+                  onChange={setSelectedUserId}
+                  placeholder="Buscar colaborador por nome..."
+                />
+              )}
+            </div>
           </section>
 
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
-             <h3 className="text-xl font-black flex items-center gap-3">
-               <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
-                 <FileText size={20} />
-               </div>
-               Observações de Entrega
-             </h3>
-             <textarea
+          {/* Seção 3: Observações */}
+          <section className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2">
+            <div className="p-8 sm:p-10 space-y-8 relative z-10">
+              <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+                <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                  <FileText size={20} strokeWidth={2} />
+                </div>
+                <h3 className="text-lg font-bold text-gp-text tracking-tight">Observações de Entrega</h3>
+              </div>
+              
+              <textarea
                 rows={4}
-                placeholder="Ex: Entregue com carregador, mochila e mouse. Equipamento sem riscos aparentes."
-                className="w-full px-8 py-6 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[2rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-medium text-slate-600 dark:text-slate-300 resize-none leading-relaxed"
+                placeholder="Ex: Entregue com carregador, mochila e mouse. Equipamento em excelente estado."
+                className="gp-input px-6 py-4 min-h-[120px] resize-none"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               />
+            </div>
+            <Truck size={160} className="absolute -right-16 -bottom-16 text-gp-blue opacity-[0.03] -rotate-12 pointer-events-none" />
           </section>
         </div>
 
-        <div className="flex justify-end pt-5">
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-8">
+           <button
+             type="button"
+             onClick={() => navigate('/estoque')}
+             className="w-full sm:w-auto px-10 py-3.5 btn-premium-secondary rounded-xl text-[12px] font-bold order-2 sm:order-1"
+           >
+             CANCELAR
+           </button>
            <button
              type="submit"
              disabled={loading || !selectedAssetId || !selectedUserId}
-             className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-[2rem] shadow-2xl shadow-primary-500/30"
+             className="w-full sm:w-auto px-12 py-3.5 btn-premium-primary rounded-xl text-[12px] font-bold order-1 sm:order-2 shadow-gp-blue/20"
            >
-             {loading ? 'PROCESSANDO...' : (
+             {loading ? (
+               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+             ) : (
                <>
-                 <CheckCircle size={22} strokeWidth={3} />
+                 <CheckCircle size={18} strokeWidth={2} />
                  CONFIRMAR ENTREGA
                </>
              )}

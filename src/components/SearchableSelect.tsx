@@ -16,7 +16,14 @@ interface SearchableSelectProps {
   disabled?: boolean;
 }
 
-export function SearchableSelect({ options, value, onChange, placeholder = "Selecione...", className, disabled }: SearchableSelectProps) {
+export function SearchableSelect({
+  options,
+  value,
+  onChange,
+  placeholder = 'Selecione...',
+  className,
+  disabled,
+}: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -33,11 +40,11 @@ export function SearchableSelect({ options, value, onChange, placeholder = "Sele
         setFocusedIndex(-1);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(option => 
+  const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -50,7 +57,6 @@ export function SearchableSelect({ options, value, onChange, placeholder = "Sele
       }
       return;
     }
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -78,74 +84,85 @@ export function SearchableSelect({ options, value, onChange, placeholder = "Sele
   };
 
   return (
-    <div 
-      className={clsx("relative w-full", className)} 
-      ref={wrapperRef}
-      onKeyDown={handleKeyDown}
-    >
-      <div 
+    <div className={clsx('relative w-full', className)} ref={wrapperRef} onKeyDown={handleKeyDown}>
+      {/* Trigger */}
+      <div
         tabIndex={disabled ? -1 : 0}
-        className={clsx(
-          "w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl flex justify-between items-center transition-all focus:outline-none focus:ring-2 focus:ring-primary-500",
-          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        )}
-        onClick={() => { 
+        onClick={() => {
           if (disabled) return;
-          setIsOpen(!isOpen); 
+          setIsOpen(!isOpen);
           if (!isOpen) {
             setSearchTerm('');
             setFocusedIndex(-1);
             setTimeout(() => inputRef.current?.focus(), 10);
           }
         }}
+        className={clsx(
+          'w-full px-4 py-2.5 rounded-[10px] flex justify-between items-center transition-all outline-none text-[14px]',
+          'bg-gp-surface2 border-[1.5px] border-gp-border',
+          isOpen ? 'border-gp-blue ring-3 ring-gp-focus-ring bg-gp-surface' : 'hover:border-gp-border2',
+          value ? 'text-gp-text' : 'text-gp-text3',
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        )}
       >
-        <span className={clsx("truncate", value ? "text-slate-900 dark:text-slate-100 font-medium" : "text-slate-500")}>
+        <span className="truncate">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown size={18} className="text-slate-500 shrink-0 ml-2" />
+        <ChevronDown
+          size={16}
+          strokeWidth={2}
+          className={clsx('flex-shrink-0 ml-2 transition-transform duration-200 text-gp-text3', isOpen && 'rotate-180 text-gp-blue')}
+        />
       </div>
 
+      {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 flex flex-col overflow-hidden">
-          <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+        <div
+          className={clsx(
+            'absolute z-50 w-full mt-1.5 rounded-xl overflow-hidden animate-fade-up',
+            'bg-gp-surface border-[1.5px] border-gp-border shadow-gp-shadow-lg'
+          )}
+        >
+          {/* Search */}
+          <div className="p-2 border-b border-gp-border">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3" />
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 text-sm rounded-lg border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 text-slate-900 dark:text-slate-100 placeholder-slate-400"
-                placeholder="Pesquisar..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setFocusedIndex(0);
-                }}
+                onChange={e => { setSearchTerm(e.target.value); setFocusedIndex(0); }}
+                placeholder="Pesquisar..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg text-[13px] outline-none transition-all bg-gp-surface2 border border-gp-border text-gp-text focus:border-gp-blue"
               />
             </div>
           </div>
-          <div className="overflow-y-auto p-1 py-2">
+
+          {/* Options */}
+          <div className="overflow-y-auto max-h-52 p-1">
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((option, idx) => (
-                <div
-                  key={option.value}
-                  className={clsx(
-                    "px-4 py-2 text-sm rounded-lg cursor-pointer transition-colors",
-                    (focusedIndex === idx || option.value === value) 
-                      ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium"
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                  )}
-                  onMouseEnter={() => setFocusedIndex(idx)}
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                    setSearchTerm('');
-                  }}
-                >
-                  {option.label}
-                </div>
-              ))
+              filteredOptions.map((option, idx) => {
+                const isSelected = option.value === value;
+                const isFocused = focusedIndex === idx;
+                return (
+                  <div
+                    key={option.value}
+                    onMouseEnter={() => setFocusedIndex(idx)}
+                    onClick={() => { onChange(option.value); setIsOpen(false); setSearchTerm(''); }}
+                    className={clsx(
+                      'px-3 py-2.5 rounded-lg cursor-pointer text-[13px] transition-all',
+                      isSelected ? 'bg-gp-selected text-gp-blue-light font-bold' : 
+                      isFocused ? 'bg-gp-hover text-gp-text' : 'text-gp-text2 hover:bg-gp-hover'
+                    )}
+                  >
+                    {option.label}
+                  </div>
+                );
+              })
             ) : (
-              <div className="px-4 py-3 text-sm text-center text-slate-500">Nenhuma opção encontrada</div>
+              <div className="px-4 py-3 text-center text-[13px] text-gp-text3">
+                Nenhuma opção encontrada
+              </div>
             )}
           </div>
         </div>

@@ -8,25 +8,17 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Domain check
     if (!email.endsWith('@globalp.com.br')) {
-      setError('Apenas e-mails do domínio @globalp.com.br são permitidos.');
+      setError('Apenas e-mails @globalp.com.br são permitidos.');
       return;
     }
-
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError('Credenciais inválidas ou erro ao conectar.');
       setLoading(false);
@@ -36,58 +28,67 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 font-sans">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-700">
-        <div className="bg-slate-950 p-12 text-white text-center border-b border-white/5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-transparent pointer-events-none opacity-50"></div>
-          <div className="relative z-10 space-y-2">
-              <div className="w-20 h-20 bg-slate-900/50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-white/5 p-4">
-                 <img src="/logo-branca.png" alt="Global Parts Logo" className="w-full h-full object-contain" />
-              </div>
-             <h2 className="text-4xl font-black tracking-tighter uppercase">Sistema de Compras</h2>
-             <p className="text-primary-400 font-black text-[10px] uppercase tracking-[0.3em]">Global Parts • Infraestrutura</p>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gp-bg">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
+        {/* Card Header */}
+        <div className="px-8 pt-10 pb-8 text-center bg-gp-sidebar border-b border-gp-border">
+          <div className="w-14 h-14 mx-auto mb-5 rounded-xl flex items-center justify-center p-3 bg-gp-blue/10 border border-gp-blue/20">
+            <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain" />
           </div>
+          <h1 className="text-xl font-bold text-gp-text tracking-tight">Sistema de Compras</h1>
+          <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
+            Global Parts · Infraestrutura
+          </p>
         </div>
-        
-        <form onSubmit={handleLogin} className="p-10 space-y-8">
+
+        {/* Form */}
+        <form onSubmit={handleLogin} className="px-8 py-8 space-y-6">
           {error && (
-            <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-4 rounded-2xl border border-rose-100 dark:border-rose-800 flex gap-4 items-center text-sm font-bold animate-in shake duration-500">
-              <div className="w-8 h-8 bg-rose-100 dark:bg-rose-900/50 rounded-xl flex items-center justify-center shrink-0">
-                <AlertCircle size={18} />
-              </div>
+            <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-medium bg-gp-error/10 border border-gp-error/20 text-gp-error">
+              <AlertCircle size={16} className="flex-shrink-0" />
               {error}
             </div>
           )}
-          
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-              <div className="relative group">
-                <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-600 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 rounded-full"></div>
-                <Mail className="absolute left-6 top-5 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
+
+          <div className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
+                E-mail Corporativo
+              </label>
+              <div className="relative">
+                <Mail
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
+                />
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="usuario@globalp.com.br"
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white border-2 border-transparent rounded-[1.5rem] focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold placeholder:text-slate-500"
                   required
+                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Senha de Acesso</label>
-              <div className="relative group">
-                <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-600 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 rounded-full"></div>
-                <Lock className="absolute left-6 top-5 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
+            {/* Password */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
+                Senha de Acesso
+              </label>
+              <div className="relative">
+                <Lock
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
+                />
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white border-2 border-transparent rounded-[1.5rem] focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold placeholder:text-slate-500"
                   required
+                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
                 />
               </div>
             </div>
@@ -96,23 +97,26 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-premium-primary py-5 rounded-[2rem] shadow-2xl shadow-primary-600/20"
+            className="btn-premium-primary w-full py-3.5 rounded-xl text-[13px]"
           >
             {loading ? (
-              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                ENTRAR NO SISTEMA
-                <ArrowRight size={22} strokeWidth={3} />
+                Entrar no Sistema
+                <ArrowRight size={18} strokeWidth={2.5} />
               </>
             )}
           </button>
 
-          <div className="pt-10 border-t border-slate-100 dark:border-slate-800 space-y-6 text-center">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
-              Não possui acesso? {' '}
-              <Link to="/cadastro" className="text-primary-600 hover:text-primary-500 transition-colors">
-                CADASTRAR MINHA CONTA
+          <div className="pt-5 border-t border-gp-border text-center">
+            <p className="text-[12px] text-gp-text3">
+              Não possui acesso?{' '}
+              <Link
+                to="/cadastro"
+                className="font-bold text-gp-blue hover:text-gp-blue/80 transition-colors"
+              >
+                Cadastrar conta
               </Link>
             </p>
           </div>

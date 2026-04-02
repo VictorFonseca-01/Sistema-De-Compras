@@ -12,7 +12,10 @@ import {
   Wrench,
   Ban,
   MoreVertical,
-  Activity
+  Activity,
+  Calendar,
+  Building2,
+  Cpu
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -56,82 +59,82 @@ export default function AssetDetails() {
     setLoading(false);
   }
 
-  const statusColors: any = {
-    em_estoque: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-sm shadow-emerald-500/5',
-    em_uso: 'bg-blue-500/10 text-blue-600 border-blue-500/20 shadow-sm shadow-blue-500/5',
-    manutencao: 'bg-amber-500/10 text-amber-600 border-amber-500/20 shadow-sm shadow-amber-500/5',
-    baixado: 'bg-rose-500/10 text-rose-600 border-rose-500/20 shadow-sm shadow-rose-500/5',
-  };
-
-  const statusLabels: any = {
-    em_estoque: 'Disponível no Estoque',
-    em_uso: 'Em Uso Externo',
-    manutencao: 'Em Manutenção Técnica',
-    baixado: 'Ativo Baixado / Descarte',
+  const statusMap: any = {
+    em_estoque: { label: 'Disponível no Estoque', badge: 'gp-badge-success' },
+    em_uso: { label: 'Em Uso Externo', badge: 'gp-badge-blue' },
+    manutencao: { label: 'Em Manutenção Técnica', badge: 'gp-badge-warning' },
+    baixado: { label: 'Ativo Baixado / Descarte', badge: 'gp-badge-red' },
   };
 
   if (loading) return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20">
-      <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded mb-4"></div>
+    <div className="max-w-6xl mx-auto space-y-8 pb-16 animate-fade-up">
+      <div className="h-4 w-32 bg-gp-border rounded mb-4 animate-pulse"></div>
       <div className="flex justify-between items-end">
         <div className="space-y-4">
-          <div className="h-6 w-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
-          <div className="h-12 w-96 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl"></div>
-          <div className="h-6 w-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
+          <div className="h-6 w-40 bg-gp-border rounded animate-pulse"></div>
+          <div className="h-12 w-96 bg-gp-border rounded-xl animate-pulse"></div>
+          <div className="h-6 w-48 bg-gp-border rounded animate-pulse"></div>
         </div>
         <div className="flex gap-3">
-          <div className="h-14 w-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
-          <div className="h-14 w-14 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
+          <div className="h-12 w-48 bg-gp-border rounded-xl animate-pulse"></div>
+          <div className="h-12 w-12 bg-gp-border rounded-xl animate-pulse"></div>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 h-[600px] bg-slate-50 dark:bg-slate-900/50 animate-pulse rounded-[2.5rem]"></div>
-        <div className="h-[400px] bg-slate-50 dark:bg-slate-900/50 animate-pulse rounded-[2.5rem]"></div>
+        <div className="lg:col-span-2 h-[500px] bg-gp-surface2 border border-gp-border rounded-[2rem] animate-pulse"></div>
+        <div className="h-[400px] bg-gp-surface2 border border-gp-border rounded-[2rem] animate-pulse"></div>
       </div>
     </div>
   );
   if (!asset) return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-[2rem] flex items-center justify-center mb-6">
-        <Package size={40} />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-up">
+      <div className="gp-card p-12 max-w-md flex flex-col items-center">
+        <div className="w-20 h-20 bg-gp-surface2 text-gp-text3 rounded-2xl flex items-center justify-center mb-6">
+          <Package size={40} />
+        </div>
+        <h2 className="text-xl font-bold text-gp-text mb-2">Ativo não encontrado</h2>
+        <p className="text-gp-text3 text-sm font-medium">Verifique o link ou se o item ainda existe no inventário.</p>
+        <button 
+          onClick={() => navigate('/estoque')} 
+          className="btn-premium-primary px-8 py-3 rounded-xl mt-8"
+        >
+          VOLTAR AO ESTOQUE
+        </button>
       </div>
-      <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Ativo não encontrado</h2>
-      <p className="text-slate-500 font-medium">Verifique o link ou se o item ainda existe no inventário.</p>
-      <button onClick={() => navigate('/estoque')} className="mt-8 text-primary-600 font-black uppercase text-xs tracking-widest hover:underline">Voltar ao Estoque</button>
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700 pb-20">
-      <header className="flex flex-col gap-4">
+    <div className="max-w-6xl mx-auto space-y-8 pb-20 animate-fade-up">
+      <header className="flex flex-col gap-5">
         <button 
           onClick={() => navigate('/estoque')}
-          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
+          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[12px] uppercase tracking-wider"
         >
-          <ArrowLeft size={14} /> Voltar ao Estoque
+          <ArrowLeft size={16} /> Voltar ao Estoque
         </button>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div className="space-y-1">
+          <div className="space-y-2">
              <div className="flex items-center gap-2">
-                <span className={clsx("px-2 py-0.5 rounded-lg text-[10px] font-black border uppercase tracking-wider", statusColors[asset.status])}>
-                  {statusLabels[asset.status]}
+                <span className={clsx("gp-badge", statusMap[asset.status]?.badge || 'gp-badge-gray')}>
+                  {statusMap[asset.status]?.label.toUpperCase()}
                 </span>
              </div>
-             <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{asset.nome_item}</h1>
-             <p className="text-slate-500 font-bold text-lg flex items-center gap-2">
-                <Tag size={18} /> Patrimônio #{asset.numero_patrimonio}
+             <h1 className="gp-page-title text-3xl md:text-4xl">{asset.nome_item}</h1>
+             <p className="gp-page-subtitle flex items-center gap-2">
+                <Tag size={18} className="text-gp-blue" /> Patrimônio #{asset.numero_patrimonio}
              </p>
           </div>
           <div className="flex gap-3">
               <button 
                 onClick={() => navigate('/entregar', { state: { assetId: asset.id } })}
                 disabled={asset.status !== 'em_estoque'}
-                className="btn-premium-primary px-8 py-3.5 rounded-2xl shadow-xl shadow-primary-600/20"
+                className="btn-premium-primary px-6 py-3 rounded-xl shadow-gp-blue/20"
               >
-                <Truck size={20} strokeWidth={3} />
+                <Truck size={18} strokeWidth={2} />
                 ENTREGAR P/ USUÁRIO
               </button>
-             <button className="btn-premium-secondary p-3.5 rounded-2xl shadow-sm">
+             <button className="btn-premium-secondary p-3 rounded-xl">
                <MoreVertical size={20} />
              </button>
           </div>
@@ -140,72 +143,88 @@ export default function AssetDetails() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Lado Esquerdo: Detalhes */}
-        <div className="lg:col-span-2 space-y-8">
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Fabricante / Marca</label>
-                <p className="text-lg font-black text-slate-900 dark:text-white">{asset.marca || 'N/A'}</p>
+        <div className="lg:col-span-2 space-y-6">
+          <section className="gp-card p-8 sm:p-10 space-y-10">
+            {/* Main Specs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Fabricante / Marca</label>
+                <p className="text-lg font-bold text-gp-text">{asset.marca || 'N/A'}</p>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Modelo Comercial</label>
-                <p className="text-lg font-black text-slate-900 dark:text-white">{asset.modelo || 'N/A'}</p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Modelo Comercial</label>
+                <p className="text-lg font-bold text-gp-text">{asset.modelo || 'N/A'}</p>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Número de Série (SN)</label>
-                <p className="text-base font-bold text-slate-600 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-800/50 px-3 py-1 rounded-lg w-fit">{asset.numero_serie || 'N/A'}</p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Número de Série (SN)</label>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gp-surface2 border border-gp-border rounded-lg w-fit">
+                   <Cpu size={14} className="text-gp-blue" />
+                   <code className="text-[13px] font-bold text-gp-text font-mono">{asset.numero_serie || 'N/A'}</code>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Localização Atual</label>
-                <p className="text-base font-black text-primary-600 uppercase italic">{asset.local || 'Estoque Central'}</p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Localização Atual</label>
+                <div className="flex items-center gap-2">
+                   <Building2 size={16} className="text-gp-blue" />
+                   <p className="text-sm font-bold text-gp-text uppercase tracking-wide">{asset.local || 'Estoque Central'}</p>
+                </div>
               </div>
               {asset.usuario_nome_importado && (
-                <div className="space-y-1 col-span-full pt-4 border-t border-slate-50 dark:border-slate-800">
-                  <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest pl-1">Usuário Referência (Importação)</label>
-                  <p className="text-lg font-black text-slate-900 dark:text-white">{asset.usuario_nome_importado}</p>
-                  <p className="text-[10px] text-slate-400 font-medium italic">*Este usuário não está vinculado via sistema, apenas registrado na importação.</p>
+                <div className="space-y-1.5 col-span-full pt-6 border-t border-gp-border">
+                  <label className="text-[10px] font-bold text-gp-error uppercase tracking-widest ml-1">Usuário de Referência (Importação)</label>
+                  <div className="flex items-center gap-3">
+                    <User size={18} className="text-gp-error opacity-70" />
+                    <p className="text-lg font-bold text-gp-text">{asset.usuario_nome_importado}</p>
+                  </div>
+                  <p className="text-[10px] text-gp-text3 font-medium italic mt-1">*Este usuário não está vinculado via sistema, apenas registrado na importação.</p>
                 </div>
               )}
             </div>
 
-            <div className="pt-10 border-t border-slate-100 dark:border-slate-800 space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Descrição Técnica / Observações</label>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                {asset.descricao || asset.observacoes || 'Nenhum detalhe adicional informado.'}
-              </p>
+            {/* Description */}
+            <div className="pt-8 border-t border-gp-border space-y-3">
+              <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Descrição Técnica / Observações</label>
+              <div className="p-5 bg-gp-surface2 rounded-2xl border border-gp-border">
+                <p className="text-gp-text2 text-[14px] leading-relaxed font-medium">
+                  {asset.descricao || asset.observacoes || 'Nenhum detalhe adicional informado.'}
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-slate-100 dark:border-slate-800">
-               <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Custo Aquisição</p>
-                  <p className="text-xl font-black text-emerald-600">R$ {asset.valor ? asset.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}</p>
+            {/* Financials */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+               <div className="p-5 bg-gp-surface2 border border-gp-border rounded-2xl">
+                  <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-2">Custo Aquisição</p>
+                  <p className="text-xl font-bold text-gp-success leading-none">R$ {asset.valor ? asset.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}</p>
                </div>
-               <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Data da Compra</p>
-                  <p className="text-xl font-black text-slate-700 dark:text-slate-300">
+               <div className="p-5 bg-gp-surface2 border border-gp-border rounded-2xl">
+                  <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <Calendar size={12} /> Data da Compra
+                  </p>
+                  <p className="text-xl font-bold text-gp-text leading-none">
                     {asset.data_compra ? new Date(asset.data_compra).toLocaleDateString() : 'N/A'}
                   </p>
                </div>
-               <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fornecedor</p>
-                  <p className="text-lg font-black text-slate-700 dark:text-slate-300 truncate">{asset.fornecedor || 'N/A'}</p>
+               <div className="p-5 bg-gp-surface2 border border-gp-border rounded-2xl">
+                  <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-2">Fornecedor</p>
+                  <p className="text-[15px] font-bold text-gp-text truncate leading-none">{asset.fornecedor || 'N/A'}</p>
                </div>
             </div>
           </section>
 
           {/* Quick Actions (Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
              {[
-               { icon: RotateCcw, label: 'Registrar Devolução', color: 'text-blue-500', bg: 'bg-blue-50' },
-               { icon: Wrench, label: 'Manutenção', color: 'text-amber-500', bg: 'bg-amber-50' },
-               { icon: Ban, label: 'Dar Baixa (Descarte)', color: 'text-rose-500', bg: 'bg-rose-50' },
-               { icon: Package, label: 'Mover Localização', color: 'text-slate-500', bg: 'bg-slate-50' }
+               { icon: RotateCcw, label: 'Devolução', color: 'text-gp-blue', bg: 'bg-gp-blue-muted', hover: 'hover:border-gp-blue' },
+               { icon: Wrench, label: 'Manutenção', color: 'text-gp-warning', bg: 'bg-gp-warning/10', hover: 'hover:border-gp-warning' },
+               { icon: Ban, label: 'Baixa', color: 'text-gp-error', bg: 'bg-gp-error/10', hover: 'hover:border-gp-error' },
+               { icon: Package, label: 'Mover Local', color: 'text-gp-text3', bg: 'bg-gp-surface3', hover: 'hover:border-gp-blue' }
              ].map((action, i) => (
-                <button key={i} className="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl group hover:border-primary-500 transition-all hover:shadow-xl hover:-translate-y-1">
-                   <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center mb-3", action.bg, action.color)}>
+                <button key={i} className={clsx("flex flex-col items-center justify-center p-6 gp-card transition-all group", action.hover)}>
+                   <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110", action.bg, action.color)}>
                       <action.icon size={22} />
                    </div>
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center group-hover:text-primary-600">{action.label}</span>
+                   <span className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest text-center">{action.label}</span>
                 </button>
              ))}
           </div>
@@ -213,51 +232,57 @@ export default function AssetDetails() {
 
         {/* Lado Direito: Timeline de Movimentações */}
         <div className="space-y-6">
-           <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
-              <History className="absolute -right-10 -bottom-10 text-white/5 -rotate-12" size={160} />
-              <h3 className="text-xl font-black flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                  <Activity size={20} />
-                </div>
-                Rastreabilidade
-              </h3>
-              <p className="text-white/60 text-sm mt-2 relative z-10 font-medium">Histórico completo de posse e manutenção deste ativo.</p>
+           <div className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2 p-8">
+              <History className="absolute -right-10 -bottom-10 text-gp-blue opacity-[0.05] -rotate-12" size={160} />
+              <div className="relative z-10">
+                <h3 className="text-lg font-bold text-gp-text flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                    <Activity size={20} strokeWidth={2} />
+                  </div>
+                  Rastreabilidade
+                </h3>
+                <p className="text-gp-text3 text-sm mt-3 font-medium leading-relaxed">Histórico completo de auditoria para o ciclo de vida deste ativo.</p>
+              </div>
            </div>
 
-           <div className="space-y-4">
-              {movements.map((move, i) => (
-                <div key={move.id} className="relative pl-10 group pb-4">
+           <div className="space-y-6 px-2">
+              {movements.length === 0 ? (
+                <div className="py-10 text-center text-gp-text3 italic text-sm">
+                  Nenhuma movimentação registrada.
+                </div>
+              ) : movements.map((move, i) => (
+                <div key={move.id} className="relative pl-12 group">
                    {/* Linha vertical */}
-                   {i !== movements.length - 1 && <div className="absolute left-[19px] top-8 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800"></div>}
+                   {i !== movements.length - 1 && <div className="absolute left-[19px] top-10 bottom-[-24px] w-0.5 bg-gp-border"></div>}
                    
-                   {/* Circle with glow */}
+                   {/* Circle Badge */}
                    <div className={clsx(
-                     "absolute left-0 top-1 w-10 h-10 rounded-2xl border-4 border-white dark:border-slate-950 flex items-center justify-center z-10 transition-all shadow-sm",
-                     move.tipo === 'entrada' ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 
-                     move.tipo === 'entrega' ? 'bg-blue-500 text-white shadow-blue-500/20' :
-                     'bg-slate-400 text-white shadow-slate-400/20'
+                     "absolute left-0 top-0 w-10 h-10 rounded-[14px] border-[3px] border-background flex items-center justify-center z-10 transition-all shadow-sm ring-4 ring-background",
+                     move.tipo === 'entrada' ? 'bg-gp-success text-white shadow-gp-success/30' : 
+                     move.tipo === 'entrega' ? 'bg-gp-blue text-white shadow-gp-blue/30' :
+                     'bg-gp-text3 text-white'
                    )}>
                       {move.tipo === 'entrada' ? <Package size={14} /> : 
                        move.tipo === 'entrega' ? <User size={14} /> :
                        <Activity size={14} />}
                    </div>
 
-                   <div className="space-y-1">
-                      <div className="flex justify-between items-start">
-                         <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                   <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                         <p className="text-[10px] font-bold uppercase tracking-widest text-gp-text3">
                            {new Date(move.created_at).toLocaleDateString()} — {new Date(move.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                          </p>
-                         <span className="text-[10px] font-black text-slate-400 opacity-50">#{move.id.slice(0, 4)}</span>
+                         <span className="text-[9px] font-black text-gp-text3 opacity-30">#{move.id.slice(0, 4).toUpperCase()}</span>
                       </div>
-                      <h4 className="font-black text-slate-900 dark:text-white capitalize leading-tight">
+                      <h4 className="font-bold text-gp-text text-[15px] capitalize leading-tight">
                          {move.tipo === 'entrega' ? `Atribuído a ${move.destino?.full_name || 'Desconhecido'}` : 
                           move.tipo === 'entrada' ? 'Entrada no Inventário' : move.tipo}
                       </h4>
-                      <p className="text-sm text-slate-500 font-medium leading-relaxed italic">
-                         "{move.observacao || 'Nenhum detalhe.'}"
+                      <p className="text-[13px] text-gp-text3 font-medium leading-relaxed italic border-l-2 border-gp-border pl-3 my-2">
+                         "{move.observacao || 'Nenhum detalhe adicional.'}"
                       </p>
-                      <p className="text-[10px] font-black text-primary-600 uppercase tracking-tighter">
-                         Por: {move.users?.full_name || 'Sistema'}
+                      <p className="text-[9px] font-bold text-gp-blue-light uppercase tracking-widest">
+                         Auditado por: {move.users?.full_name || 'Sistema'}
                       </p>
                    </div>
                 </div>

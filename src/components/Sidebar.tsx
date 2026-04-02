@@ -23,102 +23,149 @@ export function Sidebar() {
     { icon: ListOrdered, label: 'Minhas Solicitações', path: '/solicitacoes' },
   ];
 
-  // Adiciona seção de Estoque/Patrimônio
   if (profile?.role === 'master_admin' || profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'gestor' || profile?.role === 'diretoria') {
-    navItems.push({
-      icon: Warehouse,
-      label: 'Estoque',
-      path: '/estoque'
-    });
+    navItems.push({ icon: Warehouse, label: 'Estoque', path: '/estoque' });
   }
 
-  // Adiciona seção de Aprovações para quem tem poder de decisão
   if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'ti' || profile?.role === 'diretoria') {
-    navItems.push({ 
-      icon: UserCheck, 
-      label: 'Fila de Aprovação', 
-      path: '/solicitacoes' 
-    });
+    navItems.push({ icon: UserCheck, label: 'Fila de Aprovação', path: '/solicitacoes' });
   }
 
-  // Seções específicas por área (Limpeza para Sistema de Compras original)
-  const adminItems = [];
+  const adminItems: { icon: any; label: string; path: string }[] = [];
   if (profile?.role === 'master_admin') {
     adminItems.push({ icon: Users, label: 'Usuários', path: '/admin' });
   }
 
   return (
-    <aside 
+    <aside
+      style={{ background: 'var(--gp-sidebar)', borderRight: '1px solid var(--gp-border)' }}
       className={clsx(
-        "bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 flex flex-col h-screen sticky top-0 transition-all duration-300 z-40 border-r border-slate-200 dark:border-slate-800",
-        isCollapsed ? "w-20" : "w-64"
+        'flex flex-col h-screen sticky top-0 transition-all duration-300 z-40 flex-shrink-0',
+        isCollapsed ? 'w-[68px]' : 'w-60'
       )}
     >
-      {/* Logo Area */}
-      <div className="p-6 flex items-center justify-between overflow-hidden">
-        <div className={clsx("flex items-center gap-3 transition-opacity duration-500", isCollapsed ? "opacity-0 invisible" : "opacity-100 visible")}>
-          <div className="flex items-center justify-center shrink-0">
-             <img src="/logo-branca.png" alt="Logo" className="h-9 object-contain dark:brightness-100 brightness-0 contrast-125 transition-all duration-300" />
+      {/* Logo */}
+      <div className="h-14 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--gp-border)' }}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center">
+              <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-bold text-white leading-none truncate">Sistema de Compras</p>
+              <p className="text-[10px] mt-0.5 font-semibold tracking-widest uppercase" style={{ color: 'var(--gp-blue-light)' }}>Global Parts</p>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-[17px] font-black text-slate-900 dark:text-white leading-none tracking-tight">Sistema de Compras</h1>
-            <p className="text-[9px] uppercase tracking-[0.2em] text-primary-600 dark:text-primary-400 font-black mt-1">Global Parts</p>
+        )}
+        {isCollapsed && (
+          <div className="mx-auto w-7 h-7 flex items-center justify-center">
+            <img src="/logo-branca.png" alt="GP" className="w-full h-full object-contain" />
           </div>
-        </div>
-        <button 
+        )}
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={clsx(
-            "p-2 btn-premium-ghost rounded-lg",
-            isCollapsed && "mx-auto"
+            'w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200',
+            isCollapsed && 'hidden'
           )}
+          style={{ color: 'var(--gp-text3)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-text2)'; (e.currentTarget as HTMLElement).style.background = 'var(--gp-hover)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-text3)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
-          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          <ChevronLeft size={14} />
         </button>
       </div>
 
-      {/* Nav Section */}
-      <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto no-scrollbar">
-        {!isCollapsed && (
-          <div className="px-3 mb-6">
-            <NavLink 
-              to="/nova-solicitacao"
-              onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
-              className="w-full btn-premium-primary py-3.5 rounded-2xl text-[11px] tracking-widest relative overflow-hidden group/link"
-            >
-              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/link:translate-y-0 transition-transform duration-300"></div>
-              <PlusCircle size={18} strokeWidth={3} className="relative z-10" />
-              <span className="relative z-10 uppercase">Nova Solicitação</span>
-            </NavLink>
-          </div>
-        )}
+      {/* New Request CTA */}
+      {!isCollapsed && (
+        <div className="px-3 pt-4 pb-2">
+          <NavLink
+            to="/nova-solicitacao"
+            onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[11px] font-bold tracking-wide uppercase text-white transition-all duration-200"
+            style={{ background: 'var(--gp-blue)', boxShadow: 'var(--gp-shadow-blue)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue-hover)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue)'; }}
+          >
+            <PlusCircle size={15} strokeWidth={2.5} />
+            Nova Solicitação
+          </NavLink>
+        </div>
+      )}
 
+      {isCollapsed && (
+        <div className="px-3 pt-4 pb-2">
+          <NavLink
+            to="/nova-solicitacao"
+            className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 text-white"
+            style={{ background: 'var(--gp-blue)' }}
+            title="Nova Solicitação"
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue-hover)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue)'; }}
+          >
+            <PlusCircle size={16} strokeWidth={2.5} />
+          </NavLink>
+        </div>
+      )}
+
+      {/* Nav */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-2 py-2 space-y-4">
+        {/* Main Menu */}
         <div>
-          {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500/60">Menu Principal</p>}
-          <nav className="space-y-1">
+          {!isCollapsed && (
+            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-text3)' }}>
+              Menu Principal
+            </p>
+          )}
+          <nav className="space-y-0.5">
             {navItems.map((item) => (
               <NavLink
                 key={item.label}
                 to={item.path}
+                end={item.path === '/'}
                 onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
+                title={isCollapsed ? item.label : undefined}
                 className={({ isActive }) => clsx(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden",
-                  isActive 
-                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm shadow-primary-500/5" 
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white hover:shadow-sm"
+                  'flex items-center gap-3 rounded-lg transition-all duration-150 group relative',
+                  isCollapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+                  isActive
+                    ? 'font-semibold'
+                    : 'font-medium'
                 )}
+                style={({ isActive }) => ({
+                  background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
+                  color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+                  borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
+                })}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!el.querySelector('.active-indicator')) {
+                    el.style.background = 'rgba(255,255,255,0.04)';
+                    el.style.color = 'var(--gp-text2)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!el.className.includes('active-indicator')) {
+                    // let NavLink handle active state restoration through className
+                  }
+                }}
               >
                 {({ isActive }) => (
                   <>
-                    <item.icon size={20} className={clsx("shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-3deg]", isCollapsed && "mx-auto", isActive && "text-primary-600 dark:text-primary-500 drop-shadow-[0_0_6px_rgba(99,102,241,0.4)]")} />
-                    {!isCollapsed && <span className="transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>}
-                    {isActive && !isCollapsed && (
-                      <span className="absolute right-3 w-2 h-2 rounded-full bg-primary-600 dark:bg-primary-500 shadow-lg shadow-primary-500/50 animate-pulse"></span>
+                    <item.icon
+                      size={18}
+                      strokeWidth={isActive ? 2.5 : 2}
+                      className="flex-shrink-0"
+                    />
+                    {!isCollapsed && (
+                      <span className="text-[13px] truncate">{item.label}</span>
                     )}
-                    {isCollapsed && (
-                      <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-xl translate-x-1 group-hover:translate-x-0">
-                        {item.label}
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-700 rotate-45"></div>
-                      </div>
+                    {isActive && !isCollapsed && (
+                      <span
+                        className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--gp-blue-light)' }}
+                      />
                     )}
                   </>
                 )}
@@ -127,22 +174,38 @@ export function Sidebar() {
           </nav>
         </div>
 
+        {/* Admin Section */}
         {adminItems.length > 0 && (
           <div>
-            {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500/60">Administração</p>}
-            <nav className="space-y-1">
+            {!isCollapsed && (
+              <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-text3)' }}>
+                Administração
+              </p>
+            )}
+            <nav className="space-y-0.5">
               {adminItems.map((item) => (
                 <NavLink
                   key={item.label}
                   to={item.path}
                   onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
-                   className={({ isActive }) => clsx(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group",
-                    isActive && item.path === '/admin' ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm shadow-primary-500/5" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white hover:shadow-sm"
+                  title={isCollapsed ? item.label : undefined}
+                  className={({ isActive }) => clsx(
+                    'flex items-center gap-3 rounded-lg transition-all duration-150',
+                    isCollapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+                    isActive ? 'font-semibold' : 'font-medium'
                   )}
+                  style={({ isActive }) => ({
+                    background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
+                    color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+                    borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
+                  })}
                 >
-                  <item.icon size={20} className={clsx("shrink-0 transition-all duration-300 group-hover:scale-110", isCollapsed && "mx-auto")} />
-                  {!isCollapsed && <span className="transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>}
+                  {({ isActive }) => (
+                    <>
+                      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className="flex-shrink-0" />
+                      {!isCollapsed && <span className="text-[13px] truncate">{item.label}</span>}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </nav>
@@ -150,20 +213,41 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Footer Area */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 mt-auto">
-        <NavLink 
+      {/* Footer */}
+      <div className="px-2 pb-3 pt-2 flex-shrink-0" style={{ borderTop: '1px solid var(--gp-border)' }}>
+        {/* Expand button when collapsed */}
+        {isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(false)}
+            className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 mb-1"
+            style={{ color: 'var(--gp-text3)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text3)'; }}
+          >
+            <ChevronRight size={14} />
+          </button>
+        )}
+
+        <NavLink
           to="/configuracoes"
           onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
+          title={isCollapsed ? 'Configurações' : undefined}
           className={({ isActive }) => clsx(
-            "flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all duration-300",
-            isActive 
-              ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold" 
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+            'flex items-center gap-3 rounded-lg transition-all duration-150',
+            isCollapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+            isActive ? 'font-semibold' : 'font-medium'
           )}
+          style={({ isActive }) => ({
+            background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
+            color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+          })}
         >
-          <Settings size={20} className={clsx("shrink-0", isCollapsed && "mx-auto")} />
-          {!isCollapsed && <span className="font-semibold text-sm">Configurações</span>}
+          {({ isActive }) => (
+            <>
+              <Settings size={18} strokeWidth={isActive ? 2.5 : 2} className="flex-shrink-0" />
+              {!isCollapsed && <span className="text-[13px]">Configurações</span>}
+            </>
+          )}
         </NavLink>
       </div>
     </aside>

@@ -5,11 +5,9 @@ import {
   Barcode, 
   Plus, 
   ExternalLink,
-  Warehouse,
   Trash2,
   AlertTriangle,
   Table as TableIcon,
-  X,
   CheckCircle,
   Filter,
   Package
@@ -61,7 +59,6 @@ export default function Inventory() {
   }
 
   const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
-  const uniqueLocals = Array.from(new Set(assets.map(a => a.local).filter(Boolean)));
 
   async function executeEmptyInventory() {
     setIsDeleting(true);
@@ -118,10 +115,10 @@ export default function Inventory() {
   };
 
   const statusColors: any = {
-    em_estoque: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/10',
-    em_uso: 'text-blue-500 bg-blue-500/10 border-blue-500/20 shadow-blue-500/10',
-    manutencao: 'text-amber-500 bg-amber-500/10 border-amber-500/20 shadow-amber-500/10',
-    baixado: 'text-rose-500 bg-rose-500/10 border-rose-500/20 shadow-rose-500/10',
+    em_estoque: 'gp-badge-green',
+    em_uso: 'gp-badge-blue',
+    manutencao: 'gp-badge-amber',
+    baixado: 'gp-badge-red',
   };
 
   const statusLabels: any = {
@@ -132,60 +129,59 @@ export default function Inventory() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 pb-20 font-sans">
+    <div className="space-y-6 animate-fade-up pb-20">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-3 leading-none">
-             <Warehouse className="text-primary-600" size={40} />
-             Inventário <span className="text-primary-600">Global</span>
+          <h1 className="gp-page-title text-3xl">
+             Inventário Global
           </h1>
-          <p className="text-slate-500 text-lg font-medium">Controle centralizado de ativos, hardware e patrimônio físico.</p>
+          <p className="gp-page-subtitle">Controle centralizado de ativos, hardware e patrimônio físico.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           {profile?.role === 'master_admin' && assets.length > 0 && (
             <button 
               onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
-              className="btn-premium-danger px-6 py-3 rounded-2xl shadow-sm"
+              className="btn-premium-danger px-5 py-2.5 rounded-xl text-[11px]"
             >
-              <Trash2 size={20} />
-              {isDeleting ? 'Esvaziando...' : 'Zerar Estoque'}
+              <Trash2 size={16} />
+              {isDeleting ? 'ESVAZIANDO...' : 'ZERAR ESTOQUE'}
             </button>
           )}
-          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary px-6 py-3 rounded-2xl shadow-xl shadow-primary-600/20">
-            <Plus size={20} strokeWidth={3} /> Novo Ativo
+          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary px-5 py-2.5 rounded-xl text-[11px]">
+            <Plus size={16} strokeWidth={3} /> NOVO ATIVO
           </button>
-          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary px-6 py-3 rounded-2xl">
-            <TableIcon size={20} /> Importar Excel
+          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary px-5 py-2.5 rounded-xl text-[11px]">
+            <TableIcon size={16} /> IMPORTAR EXCEL
           </button>
-          <button onClick={() => setShowScanner(true)} className="btn-premium-dark px-6 py-3 rounded-2xl">
-            <Barcode size={20} strokeWidth={3} /> Escanear
+          <button onClick={() => setShowScanner(true)} className="btn-premium-dark px-5 py-2.5 rounded-xl text-[11px]">
+            <Barcode size={16} strokeWidth={3} /> ESCANEAR
           </button>
         </div>
       </header>
 
       {showScanner && <BarcodeScanner onScan={(text) => { setSearchTerm(text); setShowScanner(false); }} onClose={() => setShowScanner(false)} />}
 
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 animate-in slide-in-from-top-4 duration-700">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="gp-filter-bar space-y-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative group">
-            <Search className="absolute left-6 top-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
+            <Search className="absolute left-4 top-3 text-gp-text3 group-focus-within:text-gp-blue transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Pesquisar por patrimônio, nome, modelo, local, empresa ou CPF/Usuário..."
+              placeholder="Pesquisar por patrimônio, nome, modelo, local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent rounded-[1.5rem] outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-800 dark:text-slate-100 placeholder:text-slate-400" 
+              className="gp-input pl-11 h-11" 
             />
           </div>
           
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-[1.5rem]">
+          <div className="flex items-center gap-1 bg-gp-surface2 p-1 rounded-xl border border-gp-border">
              {[{ id: 'recent', label: 'Recentes' }, { id: 'az', label: 'A-Z' }].map((sort) => (
                 <button 
                   key={sort.id} 
                   onClick={() => setSortOrder(sort.id as any)} 
                   className={clsx(
-                    "px-6 py-2 rounded-xl text-[10px] uppercase font-black tracking-widest transition-all", 
-                    sortOrder === sort.id ? "btn-premium-primary shadow-lg" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    "px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", 
+                    sortOrder === sort.id ? "bg-gp-blue text-white shadow-md shadow-gp-blue/20" : "text-gp-text3 hover:text-gp-text"
                   )}
                 >
                   {sort.label}
@@ -194,14 +190,14 @@ export default function Inventory() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-2xl relative group/select">
-             <Filter size={14} className="text-slate-400" />
-             <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">Situação:</span>
+        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gp-border">
+           <div className="flex items-center gap-2.5 px-4 py-2 bg-gp-surface2 border border-gp-border rounded-xl">
+             <Filter size={14} className="text-gp-text3" />
+             <span className="text-[10px] font-bold uppercase text-gp-text3 tracking-widest">Situação</span>
              <select 
                value={statusFilter} 
                onChange={(e) => setStatusFilter(e.target.value)} 
-               className="bg-transparent border-none outline-none text-xs font-black text-slate-700 dark:text-slate-200 pr-8 appearance-none cursor-pointer"
+               className="bg-transparent border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px]"
              >
                 {['todos', 'em_estoque', 'em_uso', 'manutencao', 'baixado'].map(st => (
                   <option key={st} value={st}>{st === 'todos' ? 'Todas' : statusLabels[st]}</option>
@@ -209,175 +205,188 @@ export default function Inventory() {
              </select>
            </div>
 
-           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-2xl relative group/select">
-             <Package size={14} className="text-slate-400" />
-             <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">Categoria:</span>
-             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-transparent border-none outline-none text-xs font-black text-slate-700 dark:text-slate-200 pr-8 appearance-none cursor-pointer">
+           <div className="flex items-center gap-2.5 px-4 py-2 bg-gp-surface2 border border-gp-border rounded-xl">
+             <Package size={14} className="text-gp-text3" />
+             <span className="text-[10px] font-bold uppercase text-gp-text3 tracking-widest">Categoria</span>
+             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-transparent border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px]">
                <option value="todos">Todas</option>
                {uniqueCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-             </select>
-           </div>
-
-           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-5 py-3 rounded-2xl relative group/select">
-             <Warehouse size={14} className="text-slate-400" />
-             <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">Local:</span>
-             <select value={localFilter} onChange={(e) => setLocalFilter(e.target.value)} className="bg-transparent border-none outline-none text-xs font-black text-slate-700 dark:text-slate-200 pr-8 appearance-none cursor-pointer">
-               <option value="todos">Todos</option>
-               {uniqueLocals.map(loc => <option key={loc} value={loc}>{loc}</option>)}
              </select>
            </div>
 
            {(statusFilter !== 'todos' || categoryFilter !== 'todos' || localFilter !== 'todos' || searchTerm !== '') && (
              <button 
                onClick={() => { setStatusFilter('todos'); setCategoryFilter('todos'); setLocalFilter('todos'); setSearchTerm(''); }} 
-               className="btn-premium-ghost px-4 py-2 rounded-xl text-[9px] uppercase tracking-widest text-rose-500 hover:text-rose-600"
+               className="btn-premium-ghost px-4 py-2 text-[10px] text-gp-error hover:bg-gp-error/5"
              >
-               Limpar Filtros
+               LIMPAR FILTROS
              </button>
            )}
         </div>
+      <div className="gp-table-wrap">
+        <table className="gp-table">
+          <thead>
+            <tr>
+              <th>Ativo / Identificação</th>
+              <th>Especificações</th>
+              <th>Localidade & Empresa</th>
+              <th>Responsável (Import.)</th>
+              <th>Status</th>
+              <th className="text-right">Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="animate-pulse">
+                  <td colSpan={6} className="h-20 bg-gp-surface2/50"></td>
+                </tr>
+              ))
+            ) : filteredAssets.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-20 text-center text-gp-text3 italic font-medium">
+                  Nenhum item encontrado no inventário.
+                </td>
+              </tr>
+            ) : (
+              paginatedAssets.map((asset) => {
+                const displayName = (asset.nome_item === 'Item sem nome' || !asset.nome_item) 
+                  ? (asset.modelo || asset.marca || 'Ativo sem Identificação') 
+                  : asset.nome_item;
+                return (
+                  <tr key={asset.id} className="cursor-pointer" onClick={() => navigate(`/estoque/${asset.id}`)}>
+                    <td>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gp-surface2 flex items-center justify-center font-bold text-gp-text3 group-hover:bg-gp-blue group-hover:text-white transition-all">
+                          {displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gp-text leading-none mb-1">
+                            {asset.numero_patrimonio || 'S/N'}
+                          </p>
+                          <p className="text-[10px] font-bold text-gp-blue uppercase tracking-widest flex items-center gap-1 opacity-70">
+                             CODE: {asset.codigo_gps || asset.codigo_barras || 'PENDENTE'}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-gp-text truncate max-w-[200px]">{displayName}</span>
+                        <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-wide">{asset.marca || 'S/M'} • {asset.modelo || 'S/M'}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gp-text uppercase tracking-wide truncate max-w-[150px]">{asset.local || 'Estoque'}</span>
+                        <span className="text-[10px] text-gp-text3 font-bold uppercase">{asset.empresa || 'GLOBAL'}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gp-blue truncate max-w-[150px]">{asset.usuario_nome_importado || '-'}</span>
+                        <span className="text-[9px] text-gp-text3 font-bold uppercase tracking-tighter">{asset.departamento || 'GERAL'}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={clsx("gp-badge", statusColors[asset.status])}>
+                        {statusLabels[asset.status] || asset.status}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      <div className="inline-flex items-center justify-center w-8 h-8 text-gp-text3 group-hover:text-gp-blue rounded-lg group-hover:bg-gp-blue/10 transition-all">
+                        <ExternalLink size={16} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
-                <th className="px-8 py-5">Ativo / Identificação</th>
-                <th className="px-8 py-5">Especificações</th>
-                <th className="px-8 py-5">Localidade & Empresa</th>
-                <th className="px-8 py-5">Responsável (Import.)</th>
-                <th className="px-8 py-5">Status</th>
-                <th className="px-8 py-5 text-right">Auditoria</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-              {loading ? Array.from({ length: 5 }).map((_, i) => (<tr key={i} className="animate-pulse"><td colSpan={6} className="px-8 py-8 h-20 bg-slate-50/10"></td></tr>)) : filteredAssets.length === 0 ? (<tr><td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic font-medium">Nenhum item encontrado no inventário.</td></tr>) : (
-                paginatedAssets.map((asset) => {
-                  const displayName = (asset.nome_item === 'Item sem nome' || !asset.nome_item) ? (asset.modelo || asset.marca || 'Ativo sem Identificação') : asset.nome_item;
-                  return (
-                    <tr key={asset.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group cursor-pointer" onClick={() => navigate(`/estoque/${asset.id}`)}>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className={clsx(
-                             "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg transition-all shadow-sm border",
-                             "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-primary-600 group-hover:text-white group-hover:border-primary-500"
-                          )}>
-                            {displayName.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-black text-slate-900 dark:text-white text-base tracking-tight leading-none mb-1">
-                              {asset.numero_patrimonio || 'S/N'}
-                            </span>
-                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest flex items-center gap-1">
-                               <Barcode size={10} /> CODE: {asset.codigo_gps || asset.codigo_barras || 'PENDENTE'}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-black text-slate-900 dark:text-slate-100 text-sm truncate max-w-[200px]">{displayName}</span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">{asset.marca || 'Sem Marca'} • {asset.modelo || 'Sem Modelo'}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate max-w-[150px]">{asset.local || 'Estoque Central'}</span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase">{asset.empresa || 'GLOBAL'}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-black text-primary-600 dark:text-primary-400 truncate max-w-[150px]">{asset.usuario_nome_importado || '-'}</span>
-                          <span className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">{asset.departamento || 'GERAL'}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={clsx(
-                           "px-4 py-2 rounded-xl text-[10px] font-black border uppercase tracking-wider shadow-sm",
-                           statusColors[asset.status] || 'bg-slate-100 text-slate-600 border-slate-200'
-                        )}>
-                          {statusLabels[asset.status] || asset.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="inline-flex items-center justify-center w-10 h-10 text-slate-400 group-hover:text-primary-600 rounded-2xl group-hover:bg-primary-50 dark:group-hover:bg-primary-950 transition-all shadow-sm">
-                          <ExternalLink size={18} />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-        {totalPages > 1 && (
-          <div className="px-8 py-8 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mostrando {paginatedAssets.length} de {filteredAssets.length} registros no filtro atual</p>
-            <div className="flex gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black disabled:opacity-50">Anterior</button>
-              {getPaginationGroup().map((page, i) => (
-                <button 
-                  key={i} 
-                  disabled={page === '...'} 
-                  onClick={() => typeof page === 'number' && setCurrentPage(page)} 
-                  className={clsx(
-                    "w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all", 
-                    currentPage === page ? "btn-premium-primary shadow-lg pointer-events-none" : "btn-premium-secondary border border-slate-100 dark:border-slate-800"
-                  )}
-                >
-                  {page}
-                </button>
-              ))}
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black disabled:opacity-50">Próxima</button>
-            </div>
+      {totalPages > 1 && (
+        <div className="p-8 bg-gp-surface2 border-t border-gp-border flex items-center justify-between rounded-b-2xl">
+          <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest">
+            Mostrando {paginatedAssets.length} de {filteredAssets.length} registros
+          </p>
+          <div className="flex gap-1.5">
+            <button 
+              disabled={currentPage === 1} 
+              onClick={() => setCurrentPage(prev => prev - 1)} 
+              className="gp-page-btn w-auto px-4 text-[10px] uppercase"
+            >
+              Anterior
+            </button>
+            {getPaginationGroup().map((page, i) => (
+              <button 
+                key={i} 
+                disabled={page === '...'} 
+                onClick={() => typeof page === 'number' && setCurrentPage(page)} 
+                className={clsx(
+                  "gp-page-btn", 
+                  currentPage === page && "active shadow-lg"
+                )}
+              >
+                {page}
+              </button>
+            ))}
+            <button 
+              disabled={currentPage === totalPages} 
+              onClick={() => setCurrentPage(prev => prev + 1)} 
+              className="gp-page-btn w-auto px-4 text-[10px] uppercase"
+            >
+              Próxima
+            </button>
           </div>
-        )}
+        </div>
+      )}
       </div>
 
       {showEmptyConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 border border-slate-200 dark:border-slate-800">
-            <div className="p-10">
-              <div className="flex justify-between items-start mb-8">
-                 <div className="w-16 h-16 rounded-3xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0 shadow-inner">
-                    {emptyConfirmStep === 3 ? <CheckCircle size={32} /> : <AlertTriangle size={32} />}
+        <div className="gp-modal-overlay">
+          <div className="gp-modal max-w-md animate-fade-up">
+            <div className="p-10 text-center">
+              <div className="flex justify-center mb-8">
+                 <div className={clsx(
+                   "w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner",
+                   emptyConfirmStep === 3 ? "bg-gp-success/10 text-gp-success" : "bg-gp-error/10 text-gp-error"
+                 )}>
+                    {emptyConfirmStep === 3 ? <CheckCircle size={32} strokeWidth={2.5} /> : <AlertTriangle size={32} strokeWidth={2.5} />}
                  </div>
-                 <button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50"><X size={28} /></button>
               </div>
               
               {emptyConfirmStep === 1 && (
                 <div className="space-y-6">
-                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">Liquidação Total?</h3>
-                  <p className="text-slate-500 font-medium leading-relaxed">Você está prestes a apagar permanentemente <strong className="text-slate-900 dark:text-white font-black underline decoration-rose-500/30DecorationThickness[2px]">{assets.length} registros</strong> de patrimônio. Esta ação é irreversível.</p>
-                  <div className="pt-8 flex flex-col gap-3">
-                    <button onClick={() => setEmptyConfirmStep(2)} className="w-full btn-premium-danger py-5 rounded-2xl shadow-xl shadow-rose-500/20">ESTOU CIENTE, CONTINUAR</button>
-                    <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-ghost py-4 rounded-xl text-slate-500">CANCELAR OPERAÇÃO</button>
+                  <h3 className="text-2xl font-bold text-gp-text tracking-tight">Liquidação Total?</h3>
+                  <p className="text-gp-text3 font-medium text-[15px] leading-relaxed">Você está prestes a apagar permanentemente <strong className="text-gp-text font-bold">{assets.length} registros</strong> de patrimônio.</p>
+                  <div className="pt-6 space-y-3">
+                    <button onClick={() => setEmptyConfirmStep(2)} className="w-full btn-premium-danger py-4 rounded-xl shadow-lg">CONTINUAR</button>
+                    <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-ghost py-3 rounded-xl text-gp-text3">CANCELAR</button>
                   </div>
                 </div>
               )}
 
               {emptyConfirmStep === 2 && (
                 <div className="space-y-6">
-                  <h3 className="text-3xl font-black text-rose-600 tracking-tighter leading-none uppercase italic">Atenção Crítica</h3>
-                  <p className="text-slate-500 font-medium leading-relaxed">O sistema removerá todos os dados estruturais de hardware vinculados a esta conta.</p>
-                  <div className="pt-8 flex flex-col gap-3">
-                    <button onClick={executeEmptyInventory} disabled={isDeleting} className="w-full btn-premium-danger py-5 rounded-2xl shadow-2xl flex items-center justify-center disabled:opacity-70">
-                      {isDeleting ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> : 'SIM, DELETAR TUDO AGORA'}
+                  <h3 className="text-2xl font-bold text-gp-error tracking-tight">Ação Irreversível</h3>
+                  <p className="text-gp-text3 font-medium text-[15px] leading-relaxed">O sistema removerá todos os dados estruturais de hardware vinculados.</p>
+                  <div className="pt-6 space-y-3">
+                    <button onClick={executeEmptyInventory} disabled={isDeleting} className="w-full btn-premium-danger py-4 rounded-xl shadow-xl flex items-center justify-center">
+                      {isDeleting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'SIM, DELETAR TUDO'}
                     </button>
-                    <button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="w-full btn-premium-ghost py-4 rounded-xl text-slate-500">VOLTAR</button>
+                    <button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="w-full btn-premium-ghost py-3 rounded-xl">VOLTAR</button>
                   </div>
                 </div>
               )}
 
               {emptyConfirmStep === 3 && (
-                <div className="space-y-6 text-center">
-                  <h3 className="text-3xl font-black text-emerald-600 tracking-tighter mt-2 leading-none">ZERADO!</h3>
-                  <p className="text-slate-500 font-medium leading-relaxed">O inventário foi limpo com sucesso e com segurança via servidor. 🛠️✨</p>
-                  <div className="pt-8">
-                    <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-dark py-5 rounded-2xl shadow-xl">RETORNAR AO DASHBOARD</button>
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-gp-success tracking-tight">Zerado!</h3>
+                  <p className="text-gp-text3 font-medium text-[15px]">O inventário foi limpo com sucesso via servidor.</p>
+                  <div className="pt-6">
+                    <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-dark py-4 rounded-xl shadow-lg">CONCLUÍDO</button>
                   </div>
                 </div>
               )}

@@ -3,13 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
   FileText, 
-  ExternalLink, 
   Clock, 
   CheckCircle2, 
   XCircle,
-  AlertCircle,
   Plus,
-  Search
+  Search,
+  Filter,
+  ArrowUpRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -29,14 +29,14 @@ interface Request {
   };
 }
 
-const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
+const statusMap: Record<string, { label: string; badgeClass: string; icon: any }> = {
+  pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-warning', icon: Clock },
+  pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
+  pending_compras: { label: 'Em Compras', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
+  approved: { label: 'Aprovado Final', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
+  rejected: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário', badgeClass: 'gp-badge-warning', icon: Clock },
 };
 
 export default function MyRequests() {
@@ -87,33 +87,35 @@ export default function MyRequests() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-fade-up pb-16">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Solicitações</h1>
-          <p className="text-slate-500 text-lg font-medium">Central de acompanhamento e auditoria de compras.</p>
+          <h1 className="gp-page-title">Solicitações</h1>
+          <p className="gp-page-subtitle">Central de acompanhamento e auditoria de compras corporativas.</p>
         </div>
         <Link 
           to="/nova-solicitacao"
-          className="btn-premium-primary px-8 py-4 rounded-2xl shadow-xl shadow-primary-600/20"
+          className="btn-premium-primary px-6 py-3 rounded-xl shadow-gp-blue/20"
         >
-          <Plus size={22} strokeWidth={3} />
+          <Plus size={18} strokeWidth={2} />
           NOVA SOLICITAÇÃO
         </Link>
       </header>
 
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-6 items-center animate-in slide-in-from-top-4 duration-700">
+      {/* Filters Bar */}
+      <div className="gp-card p-5 flex flex-col md:flex-row gap-5 items-center">
         <div className="relative flex-1 w-full group">
-          <Search size={20} className="absolute left-6 top-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="Pesquisar por título, ID ou nome do solicitante..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent rounded-2xl outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Pesquisar por título ou solicitante..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="gp-input pl-11 pr-4 py-3"
+          />
         </div>
-        <div className="w-full md:w-72">
+        <div className="w-full md:w-64 flex items-center gap-3">
+          <Filter size={16} className="text-gp-text3 flex-shrink-0" />
           <SearchableSelect 
             options={[
               { value: 'all', label: 'Todos os Status' },
@@ -126,87 +128,90 @@ export default function MyRequests() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="gp-table-wrap">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="gp-table">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-100 dark:border-slate-800">
-                 <th className="px-8 py-5">Identidade</th>
-                <th className="px-8 py-5">Título & Prioridade</th>
-                <th className="px-8 py-5">Status Atual</th>
-                <th className="px-8 py-5 text-right">Ação</th>
+              <tr>
+                <th>IDENTIDADE</th>
+                <th>TÍTULO & PRIORIDADE</th>
+                <th>STATUS ATUAL</th>
+                <th className="text-right">AÇÃO</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+            <tbody>
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="px-8 py-6">
+                    <td>
                       <div className="flex flex-col gap-2">
-                        <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
-                        <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 animate-pulse rounded opacity-50"></div>
+                        <div className="h-4 w-32 bg-gp-border rounded animate-pulse" />
+                        <div className="h-3 w-20 bg-gp-border/50 rounded animate-pulse" />
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td>
                       <div className="flex flex-col gap-2">
-                        <div className="h-4 w-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
-                        <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800 animate-pulse rounded opacity-50"></div>
+                        <div className="h-4 w-40 bg-gp-border rounded animate-pulse" />
+                        <div className="h-3 w-24 bg-gp-border/50 rounded animate-pulse" />
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <div className="h-7 w-28 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl"></div>
+                    <td>
+                      <div className="h-6 w-28 bg-gp-border rounded-lg animate-pulse" />
                     </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl ml-auto"></div>
+                    <td className="text-right">
+                      <div className="w-9 h-9 bg-gp-border rounded-lg animate-pulse ml-auto" />
                     </td>
                   </tr>
                 ))
               ) : filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-20 text-center text-slate-500 italic font-medium">
-                    Nenhuma solicitação encontrada.
+                  <td colSpan={4} className="px-8 py-20 text-center text-gp-text3 italic font-medium">
+                    Nenhuma solicitação encontrada para os filtros aplicados.
                   </td>
                 </tr>
               ) : (
                 filteredRequests.map((req) => {
-                  const status = statusMap[req.status] || { label: req.status, color: 'text-slate-700', bg: 'bg-slate-100', icon: Clock };
+                  const status = statusMap[req.status] || { label: req.status, badgeClass: 'gp-badge-gray', icon: Clock };
                   return (
-                    <tr key={req.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all cursor-pointer group hover:-translate-y-0.5 duration-300" onClick={() => navigate(`/solicitacao/${req.id}`)}>
-                      <td className="px-8 py-6">
+                    <tr 
+                      key={req.id} 
+                      className="cursor-pointer group hover:bg-gp-hover transition-all" 
+                      onClick={() => navigate(`/solicitacao/${req.id}`)}
+                    >
+                      <td>
                         <div className="flex flex-col">
-                          <span className="font-black text-slate-900 dark:text-white text-sm">
+                          <span className="font-bold text-gp-text text-sm">
                             {req.profiles?.full_name || 'Usuário'}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">
+                          <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest mt-1">
                             {req.profiles?.department || 'Geral'} • {new Date(req.created_at).toLocaleDateString()}
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td>
                         <div className="flex flex-col max-w-sm">
-                          <span className="font-black text-slate-900 dark:text-slate-100 group-hover:text-primary-600 transition-colors">
+                          <span className="font-bold text-gp-text group-hover:text-gp-blue transition-colors">
                             {req.title}
                           </span>
                           <span className={clsx(
-                             "text-[9px] font-black uppercase tracking-widest mt-1",
-                             (req.priority === 'alta' || req.priority === 'critica') ? 'text-rose-500' : 'text-slate-400'
+                             "text-[9px] font-bold uppercase tracking-widest mt-1",
+                             (req.priority === 'alta' || req.priority === 'critica') ? 'text-gp-error' : 'text-gp-text3'
                           )}>
                              Pioridade {req.priority} • {req.category}
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <div className={clsx("inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black border shadow-sm", status.bg, status.color, "border-current/10")}>
-                          <status.icon size={13} strokeWidth={3} />
+                      <td>
+                        <div className={clsx("gp-badge", status.badgeClass)}>
+                          <status.icon size={12} strokeWidth={2} />
                           {status.label.toUpperCase()}
                         </div>
                       </td>
-                      <td className="px-8 py-6 text-right">
+                      <td className="text-right">
                         <button 
-                          onClick={() => navigate(`/solicitacao/${req.id}`)}
-                          className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-primary-600 group-hover:text-white transition-all shadow-sm"
+                          className="w-9 h-9 rounded-lg flex items-center justify-center bg-gp-surface3 text-gp-text3 group-hover:bg-gp-blue-light group-hover:text-white transition-all shadow-sm"
                         >
-                          <ExternalLink size={18} />
+                          <ArrowUpRight size={18} />
                         </button>
                       </td>
                     </tr>

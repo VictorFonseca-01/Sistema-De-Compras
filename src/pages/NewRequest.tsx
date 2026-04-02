@@ -11,7 +11,8 @@ import {
   FileText,
   BadgeDollarSign,
   Zap,
-  Plus
+  Plus,
+  Info
 } from 'lucide-react';
 
 import { clsx } from 'clsx';
@@ -42,6 +43,8 @@ const prioridadeOptions = [
   { value: 'alta', label: 'Alta' },
   { value: 'critica', label: 'Crítica (Interrupção de serviço)' },
 ];
+
+const labelClass = 'block text-[11px] font-bold uppercase tracking-widest mb-2 opacity-70 ml-1';
 
 export default function NewRequest() {
   const navigate = useNavigate();
@@ -158,98 +161,104 @@ export default function NewRequest() {
 
   if (success) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-in zoom-in duration-500">
-        <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-emerald-500/20">
-          <CheckCircle size={48} strokeWidth={3} />
-        </div>
-        <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-2">Solicitação Enviada!</h2>
-        <p className="text-slate-500 text-lg max-w-sm">
-          Sua requisição foi protocolada com sucesso e já está na fila de aprovação do seu gestor.
-        </p>
-        <div className="mt-8 flex items-center gap-2 text-slate-400 font-bold text-sm uppercase tracking-widest">
-           <div className="w-4 h-4 border-2 border-slate-300 border-t-primary-600 rounded-full animate-spin"></div>
-           Redirecionando...
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-fade-up">
+        <div className="gp-card p-12 max-w-lg flex flex-col items-center">
+          <div className="w-20 h-20 bg-gp-success/10 text-gp-success rounded-2xl flex items-center justify-center mb-8 shadow-inner">
+            <CheckCircle size={40} strokeWidth={2} />
+          </div>
+          <h2 className="text-2xl font-bold text-gp-text mb-3">Solicitação Protocolada</h2>
+          <p className="text-gp-text3 text-base leading-relaxed">
+            Sua requisição foi enviada com sucesso e já está aguardando a aprovação do seu gestor imediato.
+          </p>
+          <div className="mt-10 flex items-center gap-3 py-3 px-6 bg-gp-surface2 rounded-xl border border-gp-border">
+             <div className="w-4 h-4 border-2 border-gp-border2 border-t-gp-blue rounded-full animate-spin" />
+             <span className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest">Redirecionando...</span>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-fade-up">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
            <button 
              onClick={() => navigate(-1)}
-             className="btn-premium-ghost px-3 py-1 rounded-lg text-xs uppercase tracking-widest mb-2"
+             className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors mb-2 text-[12px] uppercase tracking-wider"
            >
-             <ArrowLeft size={14} /> Voltar
+             <ArrowLeft size={16} /> Voltar
            </button>
-           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Nova Solicitação</h1>
-           <p className="text-slate-500 text-lg">Inicie um novo processo de aquisição de infraestrutura.</p>
+           <h1 className="gp-page-title">Nova Solicitação</h1>
+           <p className="gp-page-subtitle">Inicie um novo processo de aquisição de infraestrutura corporativa.</p>
         </div>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-6 rounded-[2rem] border border-rose-100 dark:border-rose-800 flex gap-4 items-center animate-in shake duration-500">
-            <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/50 rounded-xl flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-4 p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
+            <div className="w-10 h-10 bg-gp-error/10 rounded-xl flex items-center justify-center shrink-0">
               <AlertCircle size={24} />
             </div>
-            <p className="font-bold">{error}</p>
+            <p className="font-bold text-[14px]">{error}</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-6">
           {/* Seção 1: Identificação */}
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
-            <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap size={20} />
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+            <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+              <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
+                <Zap size={20} strokeWidth={2} />
               </div>
-              Identificação do Item
-            </h3>
+              <h3 className="text-lg font-bold text-gp-text tracking-tight">Identificação do Item</h3>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3 col-span-full">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Título do Pedido</label>
+            <div className="space-y-6">
+              <div>
+                <label className={labelClass}>Título do Pedido</label>
                 <input
                   required
                   type="text"
                   placeholder="Ex: Novo Notebook para Desenvolvedor Backend"
-                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold text-slate-900 dark:text-white"
+                  className="gp-input px-5 py-3.5"
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
                 />
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria de Ativo</label>
-                <SearchableSelect 
-                  options={categoriaOptions}
-                  value={form.category}
-                  onChange={(val) => setForm({ ...form, category: val })}
-                  placeholder="Selecione..."
-                />
-              </div>
-
-              <div className="space-y-3 font-bold text-slate-400 text-sm flex items-end pb-4">
-                 <p className="leading-tight opacity-70 italic">Certifique-se que a categoria condiz com o item para agilizar a triagem técnica pela equipe de TI.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClass}>Categoria de Ativo</label>
+                  <SearchableSelect 
+                    options={categoriaOptions}
+                    value={form.category}
+                    onChange={(val) => setForm({ ...form, category: val })}
+                    placeholder="Selecione..."
+                  />
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gp-surface2 border border-gp-border rounded-2xl">
+                   <Info size={18} className="text-gp-blue flex-shrink-0" />
+                   <p className="text-[12px] font-medium text-gp-text3 leading-snug">
+                     A categoria correta ajuda na triagem técnica da equipe de TI.
+                   </p>
+                </div>
               </div>
             </div>
           </section>
 
           {/* Seção 2: Prioridade e Custo */}
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
-             <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <BadgeDollarSign size={20} />
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+             <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+              <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center">
+                <BadgeDollarSign size={20} strokeWidth={2} />
               </div>
-              Prioridade e Investimento
-            </h3>
+              <h3 className="text-lg font-bold text-gp-text tracking-tight">Prioridade e Investimento</h3>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Urguência do Pedido</label>
+               <div>
+                <label className={labelClass}>Urgência do Pedido</label>
                 <SearchableSelect 
                   options={prioridadeOptions}
                   value={form.priority}
@@ -258,45 +267,45 @@ export default function NewRequest() {
                 />
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Custo Estimado (R$)</label>
+              <div>
+                <label className={labelClass}>Custo Estimado (R$)</label>
                 <div className="relative">
-                  <div className="absolute left-6 top-4 font-black text-slate-400">R$</div>
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-gp-text3 text-sm">R$</div>
                   <input
                     required={profile?.role === 'ti'}
                     type="number"
                     step="0.01"
                     placeholder="0,00"
                     className={clsx(
-                      "w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-black text-primary-600",
+                      "gp-input pl-12 pr-5 py-3.5 font-bold text-gp-blue-light",
                       profile?.role !== 'ti' && "opacity-80"
                     )}
                     value={form.estimated_cost}
                     onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
                   />
-                  {profile?.role !== 'ti' && (
-                    <p className="mt-2 text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
-                  )}
                 </div>
+                {profile?.role !== 'ti' && (
+                  <p className="mt-2 text-[10px] font-bold text-gp-text3 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
+                )}
               </div>
             </div>
           </section>
 
           {/* Seção 3: Justificativa */}
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
-            <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FileText size={20} />
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+            <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+              <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
+                <FileText size={20} strokeWidth={2} />
               </div>
-              Justificativa Técnica
-            </h3>
-            <div className="space-y-3">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivação da Compra</label>
+              <h3 className="text-lg font-bold text-gp-text tracking-tight">Justificativa Técnica</h3>
+            </div>
+            <div>
+               <label className={labelClass}>Motivação da Compra</label>
                <textarea
                 required
                 rows={5}
-                placeholder="Explique detalhadamente por que este item é necessário. Use dados técnicos se possível para facilitar a aprovação."
-                className="w-full px-8 py-6 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[2rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-medium text-slate-600 dark:text-slate-300 resize-none leading-relaxed"
+                placeholder="Explique por que este item é necessário em sua rotina..."
+                className="gp-input px-6 py-4 min-h-[140px] resize-none"
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
               />
@@ -304,78 +313,81 @@ export default function NewRequest() {
           </section>
 
           {/* Seção 4: Links */}
-          <section className="bg-slate-950 rounded-[2.5rem] p-10 space-y-8 text-white relative overflow-hidden">
-            <LinkIcon size={200} className="absolute -right-20 -bottom-20 text-white/5 -rotate-12" />
-            <h3 className="text-xl font-black flex items-center gap-3 relative z-10">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
-                <LinkIcon size={20} />
+          <section className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2">
+            <div className="p-8 sm:p-10 space-y-8 relative z-10">
+              <div className="flex items-center gap-4 py-2 border-b border-gp-border">
+                <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                  <LinkIcon size={20} strokeWidth={2} />
+                </div>
+                <h3 className="text-lg font-bold text-gp-text tracking-tight">Referências e Orçamentos</h3>
               </div>
-              Referências e Orçamentos
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-              <input
-                type="text"
-                placeholder="Título (Ex: Kabum)"
-                className="px-6 py-4 bg-white/10 border border-white/5 rounded-[1.2rem] outline-none placeholder:text-slate-500 font-bold focus:bg-white/20 transition-all"
-                value={newLink.label}
-                onChange={e => setNewLink({ ...newLink, label: e.target.value })}
-              />
-              <div className="flex gap-2">
+              
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <input
-                  type="url"
-                  placeholder="URL Completa (https://...)"
-                  className="flex-1 px-6 py-4 bg-white/10 border border-white/5 rounded-[1.2rem] outline-none placeholder:text-slate-500 font-bold focus:bg-white/20 transition-all"
-                  value={newLink.url}
-                  onChange={e => setNewLink({ ...newLink, url: e.target.value })}
+                  type="text"
+                  placeholder="Nome do Site (Ex: Kabum)"
+                  className="gp-input md:col-span-4 px-4 py-3"
+                  value={newLink.label}
+                  onChange={e => setNewLink({ ...newLink, label: e.target.value })}
                 />
-                <button 
-                  type="button"
-                  onClick={addLink}
-                  className="btn-premium-primary px-8 rounded-2xl"
-                >
-                  <Plus size={24} strokeWidth={3} />
-                </button>
+                <div className="md:col-span-8 flex gap-3">
+                  <input
+                    type="url"
+                    placeholder="URL completa do produto..."
+                    className="flex-1 gp-input px-4 py-3"
+                    value={newLink.url}
+                    onChange={e => setNewLink({ ...newLink, url: e.target.value })}
+                  />
+                  <button 
+                    type="button"
+                    onClick={addLink}
+                    className="btn-premium-primary px-5 rounded-xl flex-shrink-0"
+                  >
+                    <Plus size={20} strokeWidth={2} />
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            {links.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
-                {links.map((link, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/5 border border-white/5 px-6 py-4 rounded-[1.2rem] group hover:bg-white/10 transition-all">
-                    <div className="flex flex-col">
-                       <span className="font-black text-sm">{link.label}</span>
-                       <span className="text-[10px] text-slate-500 truncate max-w-[200px]">{link.url}</span>
+              
+              {links.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                  {links.map((link, i) => (
+                    <div key={i} className="flex items-center justify-between bg-gp-surface2 border border-gp-border px-5 py-4 rounded-xl group hover:border-gp-blue/40 transition-all">
+                      <div className="flex flex-col min-w-0">
+                         <span className="font-bold text-[13px] text-gp-text truncate">{link.label}</span>
+                         <span className="text-[10px] text-gp-text3 truncate opacity-60">{link.url}</span>
+                      </div>
+                      <button onClick={() => removeLink(i)} className="text-gp-text3 hover:text-gp-error p-2 transition-colors ml-2">
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <button onClick={() => removeLink(i)} className="text-slate-500 hover:text-rose-500 p-2 transition-colors">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* Background decoration */}
+            <LinkIcon size={160} className="absolute -right-16 -bottom-16 text-gp-blue opacity-[0.03] -rotate-12 pointer-events-none" />
           </section>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-10">
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-8">
            <button
              type="button"
              onClick={() => navigate(-1)}
-             className="w-full sm:w-auto btn-premium-secondary px-8 py-4 rounded-2xl order-2 sm:order-1"
+             className="w-full sm:w-auto px-10 py-3.5 btn-premium-secondary rounded-xl text-[12px] font-bold order-2 sm:order-1"
            >
-             DESCARTAR
+             DESCARTAR SOLICITAÇÃO
            </button>
            <button
              type="submit"
              disabled={loading}
-             className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-[2rem] shadow-2xl shadow-primary-500/30 order-1 sm:order-2"
+             className="w-full sm:w-auto px-12 py-3.5 btn-premium-primary rounded-xl text-[12px] font-bold order-1 sm:order-2 shadow-gp-blue/20"
            >
              {loading ? (
-               <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
              ) : (
                <>
-                 <Send size={22} strokeWidth={3} />
-                 PROTOCOLAR SOLICITAÇÃO
+                 <Send size={16} strokeWidth={2} />
+                 PROTOCOLAR PEDIDO
                </>
              )}
            </button>

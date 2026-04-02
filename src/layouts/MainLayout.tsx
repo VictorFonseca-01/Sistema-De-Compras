@@ -22,7 +22,30 @@ export function MainLayout() {
   }, []);
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-950 flex justify-center items-center text-slate-400">Verificando segurança...</div>;
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'var(--gp-bg)' }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ background: 'var(--gp-surface2)' }}
+          >
+            <img src="/logo-branca.png" alt="GP" className="w-7 h-7 object-contain opacity-60" />
+          </div>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full animate-bounce"
+                style={{ background: 'var(--gp-blue)', animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
@@ -30,12 +53,12 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--gp-bg)' }}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto no-scrollbar">
-          <div className="max-w-7xl mx-auto p-8 lg:p-12">
+          <div className="max-w-7xl mx-auto p-6 lg:p-8">
             <Outlet />
           </div>
         </main>

@@ -6,15 +6,15 @@ import { useProfile } from '../hooks/useProfile';
 import { parsePatrimonyValue } from '../utils/assetParser';
 import { 
   ArrowLeft, 
-  FileBox, 
   Upload, 
   CheckCircle2, 
   AlertCircle, 
-  Table as TableIcon,
   ChevronRight,
   Database,
-  Search,
-  PackageCheck
+  PackageCheck,
+  FileSpreadsheet,
+  Settings2,
+  Eye
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -331,22 +331,27 @@ export default function AssetImport() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700 pb-20">
-      <header className="flex flex-col gap-4">
+    <div className="max-w-6xl mx-auto space-y-8 pb-20 animate-fade-up">
+      <header className="flex flex-col gap-5">
         <button 
           onClick={() => step > 1 ? setStep(step - 1) : navigate('/estoque')}
-          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
+          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[12px] uppercase tracking-wider"
         >
-          <ArrowLeft size={14} /> {step > 1 ? 'Voltar Etapa' : 'Voltar ao Estoque'}
+          <ArrowLeft size={16} /> {step > 1 ? 'Voltar Etapa' : 'Voltar ao Estoque'}
         </button>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Importação de Inventário</h1>
-            <p className="text-slate-500 text-lg">Suba planilhas Excel e organize seus ativos dinamicamente.</p>
+            <h1 className="gp-page-title">Importação de Ativos</h1>
+            <p className="gp-page-subtitle">Suba planilhas em massa para organizar seu inventário dinamicamente.</p>
           </div>
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
+          <div className="flex bg-gp-surface2 border border-gp-border p-1.5 rounded-2xl shadow-inner">
              {[1,2,3,4].map(s => (
-                <div key={s} className={clsx("w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs", step === s ? "bg-primary-600 text-white shadow-lg" : "text-slate-400")}>{s}</div>
+                <div key={s} className={clsx(
+                  "w-9 h-9 rounded-[14px] flex items-center justify-center font-bold text-xs transition-all", 
+                  step === s ? "bg-gp-blue text-white shadow-lg shadow-gp-blue/20" : "text-gp-text3 opacity-50"
+                )}>
+                  {s}
+                </div>
              ))}
           </div>
         </div>
@@ -366,29 +371,38 @@ export default function AssetImport() {
             }
           }}
           className={clsx(
-            "rounded-[2.5rem] border-4 border-dashed p-20 text-center space-y-8 transition-all duration-500 relative group overflow-hidden",
+            "gp-card p-16 sm:p-24 text-center space-y-10 transition-all duration-500 relative group overflow-hidden border-2 border-dashed",
             isDragging 
-              ? "bg-primary-50/80 dark:bg-primary-900/20 border-primary-500 dark:border-primary-400 shadow-[0_0_40px_rgba(99,102,241,0.2)] scale-[1.01]" 
+              ? "bg-gp-blue-muted border-gp-blue scale-[1.01] shadow-gp-blue/10" 
               : loading 
-                ? "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 pointer-events-none" 
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-500/50 hover:bg-primary-50/50 dark:hover:bg-primary-900/10"
+                ? "opacity-60 pointer-events-none" 
+                : "border-gp-border hover:border-gp-blue/40"
           )}
         >
             <div className={clsx(
-              "w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto transition-all duration-500",
-              isDragging ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600 scale-125 rotate-[-6deg]" : "bg-slate-50 dark:bg-slate-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40 text-slate-400 group-hover:text-primary-600 group-hover:scale-110"
+              "w-24 h-24 rounded-[32px] flex items-center justify-center mx-auto transition-all duration-500",
+              isDragging ? "bg-gp-blue text-white scale-125 rotate-[-6deg]" : "bg-gp-surface2 text-gp-text3 group-hover:bg-gp-blue group-hover:text-white group-hover:scale-110"
             )}>
-              <FileBox size={48} />
+              <FileSpreadsheet size={48} strokeWidth={1.5} />
             </div>
-            <div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                {isDragging ? 'Solte o arquivo aqui!' : 'Selecione seu arquivo'}
+            <div className="max-w-md mx-auto">
+              <h3 className="text-2xl font-bold text-gp-text">
+                {isDragging ? 'Solte para importar!' : 'Selecione sua Planilha'}
               </h3>
-              <p className="text-slate-500 font-medium mt-1">Formatos suportados: .xlsx, .xls e .csv</p>
+              <p className="text-gp-text3 font-medium mt-3 leading-relaxed">
+                Arraste seu arquivo Excel (.xlsx, .xls) ou CSV para processar os ativos automaticamente.
+              </p>
             </div>
-            <div className="pt-4 flex flex-col items-center gap-4 relative z-10">
-              <label className={clsx("btn-premium-primary px-12 py-5 rounded-[2rem] shadow-xl shadow-primary-500/20 cursor-pointer overflow-hidden", loading ? "bg-primary-400" : "group-hover:scale-105")}>
-                 {loading ? (<><div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>PROCESSANDO...</>) : (<><Upload size={24} strokeWidth={3} />ESCOLHER PLANILHA</>)}
+            <div className="pt-6 relative z-10">
+              <label className={clsx(
+                "btn-premium-primary px-12 py-4 rounded-xl cursor-pointer inline-flex",
+                loading && "opacity-80"
+              )}>
+                 {loading ? (
+                   <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3" /> PROCESSANDO...</>
+                 ) : (
+                   <><Upload size={20} strokeWidth={2} className="mr-3" /> ESCOLHER ARQUIVO</>
+                 )}
                  <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} disabled={loading} />
               </label>
             </div>
@@ -396,41 +410,43 @@ export default function AssetImport() {
       )}
 
       {step === 2 && (
-        <div className="space-y-8 animate-in fade-in duration-500">
-           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-8 rounded-[2.5rem] flex gap-5 items-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shrink-0"><TableIcon size={24} /></div>
+        <div className="space-y-6 animate-fade-up">
+           <div className="bg-gp-blue/10 border border-gp-blue/20 p-6 rounded-2xl flex gap-4 items-center">
+              <div className="w-12 h-12 bg-gp-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-gp-blue/20">
+                <Settings2 size={24} />
+              </div>
               <div>
-                 <h4 className="font-black text-blue-900 dark:text-blue-300 text-lg leading-tight">Mapeamento de Colunas</h4>
-                 <p className="text-blue-700 dark:text-blue-400 font-medium text-sm">Relacione as colunas da sua planilha com os campos do sistema.</p>
+                 <h4 className="font-bold text-gp-text text-[15px] leading-tight">Mapeamento de Colunas</h4>
+                 <p className="text-gp-text3 font-medium text-[13px]">Vincule os campos do sistema com as colunas detectadas em sua planilha.</p>
               </div>
            </div>
 
-           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-10">
+           <div className="gp-card p-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                  {Object.keys(DEFAULT_MAP).map((field) => (
-                    <div key={field} className="space-y-3">
-                       <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+                    <div key={field} className="space-y-2">
+                       <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
                           {fieldLabels[field] || field.replace('_', ' ')}
                        </label>
-                       <div className="relative group/select">
+                       <div className="relative">
                         <select 
                           value={mapping[field]}
                           onChange={(e) => setMapping({ ...mapping, [field]: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500/50 rounded-[1.5rem] px-6 py-4 outline-none font-bold text-slate-700 dark:text-slate-200 transition-all appearance-none hover:bg-slate-100 dark:hover:bg-slate-800/60 shadow-sm"
+                          className="gp-input pr-10 appearance-none py-3"
                         >
-                           <option value="">-- Não Mapear --</option>
+                           <option value="">-- Ignorar Coluna --</option>
                            {columns.map(col => <option key={col} value={col}>{col}</option>)}
                         </select>
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within/select:text-primary-500 transition-colors">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gp-text3 opacity-40">
                           <ChevronRight size={18} className="rotate-90" />
                         </div>
                        </div>
                     </div>
                  ))}
               </div>
-              <div className="mt-12 pt-10 border-t border-slate-50 dark:border-slate-800 flex justify-end">
-                    <button onClick={handleProcessPreview} className="btn-premium-dark px-12 py-5 rounded-[2rem] shadow-xl">
-                      CONTINUAR PARA PREVIEW <ChevronRight size={20} />
+              <div className="mt-12 pt-8 border-t border-gp-border flex justify-end">
+                    <button onClick={handleProcessPreview} className="btn-premium-primary px-10 py-4 rounded-xl shadow-gp-blue/20">
+                      CONFIRMAR MAPEAMENTO <ChevronRight size={20} />
                     </button>
               </div>
            </div>
@@ -438,90 +454,191 @@ export default function AssetImport() {
       )}
 
       {step === 3 && (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-fade-up">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total de Linhas</p>
-                 <p className="text-3xl font-black text-slate-900 dark:text-white">{processedData.length}</p>
+              <div className="gp-card p-8">
+                 <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-1.5 opacity-60">Total de Registros</p>
+                 <p className="text-4xl font-bold text-gp-text">{processedData.length}</p>
               </div>
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm col-span-2 flex items-center gap-4">
-                 <div className="flex-1 space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modo de Importação</p>
-                    <div className="flex gap-2">
-                       {['inserir', 'atualizar', 'ignorar_duplicados'].map(m => (
-                          <button key={m} onClick={() => setImportMode(m as any)} className={clsx("btn-premium px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800", importMode === m ? "bg-slate-950 dark:bg-white dark:text-slate-950 text-white border-transparent shadow-lg" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}>{m.replace('_', ' ')}</button>
+              <div className="gp-card p-8 col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                 <div className="flex-1 space-y-2">
+                    <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">Modo de Importação</p>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                       {[
+                         {id: 'inserir', label: 'INSERIR NOVOS'}, 
+                         {id: 'atualizar', label: 'SOBREPOR DADOS'}, 
+                         {id: 'ignorar_duplicados', label: 'IGNORAR EXISTENTES'}
+                       ].map(m => (
+                          <button 
+                            key={m.id} 
+                            onClick={() => setImportMode(m.id as any)} 
+                            className={clsx(
+                              "px-4 py-2.5 rounded-xl text-[10px] font-bold transition-all border", 
+                              importMode === m.id 
+                                ? "bg-gp-blue text-white border-gp-blue shadow-lg shadow-gp-blue/20" 
+                                : "bg-gp-surface3 border-gp-border text-gp-text3 hover:border-gp-blue/40"
+                            )}
+                          >
+                            {m.label}
+                          </button>
                        ))}
                     </div>
                  </div>
               </div>
            </div>
 
-           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-              <div className="p-8 border-b border-slate-50 dark:border-slate-800">
-                 <h3 className="font-black text-xl flex items-center gap-3"><div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center"><Search size={20} /></div>Preview do Tratamento de Dados</h3>
+           <div className="gp-card overflow-hidden">
+              <div className="p-8 border-b border-gp-border bg-gp-blue/5">
+                 <h3 className="font-bold text-lg text-gp-text flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center">
+                     <Eye size={20} strokeWidth={2} />
+                   </div>
+                   Preview do Tratamento de Ativos
+                 </h3>
               </div>
               <div className="overflow-x-auto">
-                 <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100 dark:border-slate-800">
+                 <table className="gp-table">
+                    <thead>
                        <tr>
-                          <th className="px-8 py-5">Original</th>
-                          <th className="px-8 py-5">Tipo Identificado</th>
-                          <th className="px-8 py-5">Patrimônio / GPS</th>
-                          <th className="px-8 py-5">Marca / Modelo</th>
-                          <th className="px-8 py-5">Categoria Sugerida</th>
-                          <th className="px-8 py-5">Observações</th>
+                          <th>Dado na Planilha</th>
+                          <th>Identificação</th>
+                          <th>Patrimônio / GPS</th>
+                          <th>Equipamento</th>
+                          <th>Categoria</th>
+                          <th>Notas</th>
                        </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                    <tbody>
                        {processedData.slice(0, 10).map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                             <td className="px-8 py-5 font-bold text-slate-400">{item.valor_original}</td>
-                             <td className="px-8 py-5">
-                                <span className={clsx("px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border", item.identificacao_tipo === 'patrimonio' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : item.identificacao_tipo === 'gps' ? "bg-blue-50 text-blue-600 border-blue-100" : item.identificacao_tipo === 'novo' ? "bg-purple-50 text-purple-600 border-purple-100" : "bg-slate-100 text-slate-500 border-slate-200")}>{item.identificacao_tipo}</span>
+                          <tr key={idx}>
+                             <td className="font-bold opacity-50">{item.valor_original}</td>
+                             <td>
+                                <span className={clsx(
+                                  "gp-badge", 
+                                  item.identificacao_tipo === 'patrimonio' ? "gp-badge-success" : 
+                                  item.identificacao_tipo === 'gps' ? "gp-badge-blue" : 
+                                  item.identificacao_tipo === 'novo' ? "gp-badge-purple" : "gp-badge-gray"
+                                )}>
+                                  {item.identificacao_tipo.toUpperCase()}
+                                </span>
                              </td>
-                             <td className="px-8 py-5 font-black text-slate-900 dark:text-white font-mono">{item.numero_patrimonio || item.codigo_gps || '-'}</td>
-                             <td className="px-8 py-5"><div className="flex flex-col"><span className="text-sm font-bold text-slate-700 dark:text-slate-300">{item.marca || '-'}</span><span className="text-[10px] text-slate-400 font-medium uppercase">{item.modelo || '-'}</span></div></td>
-                             <td className="px-8 py-5 text-sm font-bold text-slate-600 dark:text-slate-400">{item.categoria}</td>
-                             <td className="px-8 py-5 text-[10px] text-slate-400 font-bold uppercase truncate max-w-xs transition-all">{item.observacoes}</td>
+                             <td className="font-bold text-gp-blue-light font-mono text-[13px]">{item.numero_patrimonio || item.codigo_gps || '-'}</td>
+                             <td>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-gp-text text-sm">{item.nome_item}</span>
+                                  <span className="text-[10px] font-bold text-gp-text3 opacity-60 uppercase">{item.marca} {item.modelo}</span>
+                                </div>
+                             </td>
+                             <td className="font-bold text-xs">{item.categoria}</td>
+                             <td className="text-[11px] font-medium text-gp-text3 truncate max-w-[150px] italic">
+                                {item.observacoes || 'N/A'}
+                             </td>
                           </tr>
                        ))}
                     </tbody>
                  </table>
-                 {processedData.length > 10 && <div className="p-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">Exibindo as primeiras 10 de {processedData.length} linhas...</div>}
+                 {processedData.length > 10 && (
+                   <div className="p-5 text-center text-[11px] font-bold text-gp-text3 uppercase tracking-widest bg-gp-surface2/50 border-t border-gp-border">
+                     Visualizando as primeiras 10 de {processedData.length} linhas tratadas...
+                   </div>
+                 )}
               </div>
            </div>
 
-           <div className="flex justify-between items-center bg-slate-950 dark:bg-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-              {loading && (<div className="absolute inset-0 bg-slate-950/80 dark:bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center rounded-[2.5rem]"><div className="flex items-center gap-4 text-white dark:text-slate-900"><div className="w-8 h-8 border-3 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin"></div><span className="font-black text-lg tracking-wider">IMPORTANDO DADOS...</span></div></div>)}
-              <div className="text-white dark:text-slate-950"><h4 className="font-black text-lg">Pronto para processar?</h4><p className="text-white/60 dark:text-slate-500 font-bold text-sm">Os dados serão validados quanto a duplicidade final antes de salvar.</p></div>
-              <button onClick={handleExecuteImport} disabled={loading} className="btn-premium-primary px-12 py-5 rounded-[2rem] shadow-xl">{loading ? 'IMPORTANDO...' : (<><Database size={24} strokeWidth={3} /> INICIAR IMPORTAÇÃO</>)}</button>
+           <div className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2 p-8 shadow-2xl">
+              {loading && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-3 border-gp-blue/30 border-t-gp-blue rounded-full animate-spin" />
+                    <span className="font-bold text-lg text-gp-text tracking-widest animate-pulse">IMPORTANDO ATIVOS...</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+                <div className="text-center md:text-left">
+                  <h4 className="font-bold text-xl text-gp-text">Executar Importação Final</h4>
+                  <p className="text-gp-text3 font-medium text-sm mt-1">Os dados serão processados e as movimentações de auditoria geradas.</p>
+                </div>
+                <button 
+                  onClick={handleExecuteImport} 
+                  disabled={loading} 
+                  className="w-full md:w-auto btn-premium-primary px-16 py-4 rounded-xl shadow-gp-blue/30 text-lg"
+                >
+                  {loading ? 'PROCESSANDO...' : (<><Database size={22} strokeWidth={2.5} className="mr-3" /> INICIAR TurboImport</>)}
+                </button>
+              </div>
            </div>
         </div>
       )}
 
       {step === 4 && results && (
-        <div className="space-y-8 animate-in zoom-in duration-500">
-           <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm space-y-8">
-              <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl"><CheckCircle2 size={48} strokeWidth={3} /></div>
-              <div className="space-y-2"><h2 className="text-4xl font-black text-slate-900 dark:text-white">Importação Finalizada</h2><p className="text-slate-500 text-lg font-medium">Relatório completo do lote processado.</p></div>
-              <div className="flex justify-center gap-10 pt-8">
-                 <div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Inseridos</p><p className="text-4xl font-black text-emerald-600 transition-transform group-hover:scale-110">{results.success}</p></div>
-                 <div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Atualizados</p><p className="text-4xl font-black text-blue-600 transition-transform group-hover:scale-110">{results.updated}</p></div>
-                 {results.skipped > 0 && (<div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pulados</p><p className="text-4xl font-black text-slate-400 transition-transform group-hover:scale-110">{results.skipped}</p></div>)}
-                 <div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Erros</p><p className={clsx("text-4xl font-black transition-transform group-hover:scale-110", results.errors.length > 0 ? "text-rose-600" : "text-slate-200")}>{results.errors.length}</p></div>
+        <div className="space-y-8 animate-fade-up">
+           <div className="gp-card p-16 text-center space-y-10">
+              <div className="w-24 h-24 bg-gp-success/10 text-gp-success rounded-[32px] flex items-center justify-center mx-auto shadow-inner shadow-gp-success/5">
+                <CheckCircle2 size={48} strokeWidth={2} />
               </div>
-              <div className="pt-8 flex justify-center gap-4">
-                 <button onClick={() => navigate('/estoque')} className="btn-premium-dark px-10 py-5 rounded-[2rem] shadow-xl"><PackageCheck size={24} /> IR PARA O ESTOQUE</button>
-                 <button onClick={() => setStep(1)} className="btn-premium-secondary px-10 py-5 rounded-[2rem]">NOVA IMPORTAÇÃO</button>
+              <div className="space-y-3">
+                <h2 className="text-3xl font-bold text-gp-text">Importação Finalizada</h2>
+                <p className="text-gp-text3 text-base font-medium max-w-md mx-auto">O processamento do lote TurboImport concluído com sucesso.</p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-12 pt-4">
+                 <div className="flex flex-col items-center">
+                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Inseridos</p>
+                   <p className="text-5xl font-bold text-gp-success">{results.success}</p>
+                 </div>
+                 <div className="flex flex-col items-center">
+                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Atualizados</p>
+                   <p className="text-5xl font-bold text-gp-blue">{results.updated}</p>
+                 </div>
+                 {results.skipped > 0 && (
+                   <div className="flex flex-col items-center">
+                     <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Pulados</p>
+                     <p className="text-5xl font-bold text-gp-text3">{results.skipped}</p>
+                   </div>
+                 )}
+                 <div className="flex flex-col items-center">
+                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Erros</p>
+                   <p className={clsx("text-5xl font-bold", results.errors.length > 0 ? "text-gp-red" : "text-gp-border")}>
+                    {results.errors.length}
+                   </p>
+                 </div>
+              </div>
+              <div className="pt-10 flex flex-col sm:flex-row justify-center gap-4">
+                 <button onClick={() => navigate('/estoque')} className="btn-premium-primary px-12 py-4 rounded-xl shadow-gp-blue/20">
+                   <PackageCheck size={20} strokeWidth={2} className="mr-3" /> VER INVENTÁRIO ATUALIZADO
+                 </button>
+                 <button onClick={() => setStep(1)} className="btn-premium-secondary px-10 py-4 rounded-xl font-bold">
+                   NOVA PLANILHA
+                 </button>
               </div>
            </div>
+
            {results.errors.length > 0 && (
-             <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden overflow-y-auto max-h-96">
-                <div className="p-8 border-b border-rose-50 dark:border-rose-900/20 bg-rose-50/30 dark:bg-rose-900/10"><h3 className="font-black text-rose-600 flex items-center gap-3"><AlertCircle size={20} /> Relatório de Erros por Linha</h3></div>
-                <table className="w-full text-left">
-                   <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase font-black"><tr><th className="px-8 py-4">Linha</th><th className="px-8 py-4">Patrimônio Tentado</th><th className="px-8 py-4">Mensagem de Erro</th></tr></thead>
-                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">{results.errors.map((err, i) => (<tr key={i}><td className="px-8 py-4 font-black text-slate-400">{err.row}</td><td className="px-8 py-4 font-black text-slate-900 dark:text-white">{err.patrimonio || 'N/A'}</td><td className="px-8 py-4 text-xs font-bold text-rose-500 italic">{err.message}</td></tr>))}</tbody>
-                </table>
+             <div className="gp-card overflow-hidden">
+                <div className="p-8 border-b border-gp-red/20 bg-gp-red/5 flex items-center gap-4 text-gp-red">
+                  <AlertCircle size={24} />
+                  <h3 className="font-bold text-lg">Relatório de Inconsistências</h3>
+                </div>
+                <div className="overflow-x-auto max-h-[500px]">
+                  <table className="gp-table">
+                    <thead>
+                      <tr>
+                        <th>Linha</th>
+                        <th>Identificação Patrimonial</th>
+                        <th>Mensagem de Erro</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.errors.map((err, i) => (
+                        <tr key={i} className="bg-gp-red/5">
+                          <td className="font-bold opacity-50">#{err.row}</td>
+                          <td className="font-mono font-bold text-gp-text">{err.patrimonio || 'N/A'}</td>
+                          <td className="text-gp-red font-bold text-xs italic">{err.message}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
              </div>
            )}
         </div>

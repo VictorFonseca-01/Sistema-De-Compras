@@ -51,14 +51,14 @@ interface Attachment {
   created_at: string;
 }
 
-const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
+const statusMap: Record<string, { label: string; badge: string; icon: any }> = {
+  pending_gestor:    { label: 'Aguardando Gestor',    badge: 'gp-badge-amber',  icon: Clock },
+  pending_ti:        { label: 'Em Análise TI',        badge: 'gp-badge-blue',   icon: FileText },
+  pending_compras:   { label: 'Em Compras',           badge: 'gp-badge-purple', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', badge: 'gp-badge-purple', icon: Clock },
+  approved:          { label: 'Aprovado Final',       badge: 'gp-badge-green',  icon: CheckCircle2 },
+  rejected:          { label: 'Recusado',             badge: 'gp-badge-red',    icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário',    badge: 'gp-badge-amber',  icon: AlertCircle },
 };
 
 export default function RequestDetails() {
@@ -275,110 +275,110 @@ export default function RequestDetails() {
 
   if (loading) return (
     <div className="max-w-6xl mx-auto space-y-8 animate-pulse pb-20">
-      <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded mb-6"></div>
+      <div className="h-4 w-48 bg-gp-surface2 rounded mb-6" />
       <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1 bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 h-[600px] border border-slate-200 dark:border-slate-800"></div>
+        <div className="flex-1 gp-card p-10 h-[600px]" />
         <div className="w-full lg:w-96 space-y-8">
-           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 h-64 border border-slate-200 dark:border-slate-800"></div>
-           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 h-96 border border-slate-200 dark:border-slate-800"></div>
+           <div className="gp-card p-8 h-64" />
+           <div className="gp-card p-8 h-96" />
         </div>
       </div>
     </div>
   );
   if (!request) return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-[2rem] flex items-center justify-center mb-6">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-up">
+      <div className="w-20 h-20 bg-gp-surface2 text-gp-text3 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
         <AlertCircle size={40} />
       </div>
-      <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Solicitação não encontrada</h2>
-      <p className="text-slate-500 font-medium">Você não tem permissão para ver este item ou ele foi removido.</p>
-      <button onClick={() => navigate('/solicitacoes')} className="mt-8 text-primary-600 font-black uppercase text-xs tracking-widest hover:underline">Voltar à Lista</button>
+      <h2 className="text-2xl font-bold text-gp-text mb-2">Solicitação não encontrada</h2>
+      <p className="text-gp-text3 font-medium">Você não tem permissão para acessar este item ou ele foi removido ou arquivado.</p>
+      <button onClick={() => navigate('/solicitacoes')} className="mt-8 btn-premium-secondary px-8 py-3 rounded-xl">Voltar à Lista</button>
     </div>
   );
 
-  const currentStatus = statusMap[request.status] || { label: request.status, color: 'text-slate-700', bg: 'bg-slate-100', icon: Clock };
+  const currentStatus = statusMap[request.status] || { label: request.status, badge: 'gp-badge-gray', icon: Clock };
   const isApprover = profile?.role === request.current_step || profile?.role === 'master_admin';
   const isFinalized = request.status === 'approved' || request.status === 'rejected';
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <nav className="flex items-center gap-2 text-sm font-bold text-slate-400">
-        <button onClick={() => navigate('/solicitacoes')} className="hover:text-primary-600 transition-colors">Solicitações</button>
-        <ChevronRight size={14} />
-        <span className="text-slate-900 dark:text-slate-100 truncate max-w-xs">{request.title}</span>
+    <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
+      <nav className="flex items-center gap-2 text-[12px] font-bold text-gp-text3 uppercase tracking-wider">
+        <button onClick={() => navigate('/solicitacoes')} className="hover:text-gp-blue transition-colors">Solicitações</button>
+        <ChevronRight size={14} className="opacity-40" />
+        <span className="text-gp-text truncate max-w-xs">{request.title}</span>
       </nav>
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* LADO ESQUERDO: Dados Principais */}
-        <div className="flex-1 space-y-8 w-full">
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10">
-             <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
-                <div className="flex-1">
-                   <div className={clsx("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black border mb-6", currentStatus.bg, currentStatus.color, "border-current/10")}>
-                     <currentStatus.icon size={14} strokeWidth={3} />
+        <div className="flex-1 space-y-6 w-full">
+          <div className="gp-card p-8 sm:p-10">
+             <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10 overflow-hidden">
+                <div className="flex-1 space-y-4">
+                   <div className={clsx("gp-badge", currentStatus.badge)}>
+                     <currentStatus.icon size={13} strokeWidth={3} />
                      {currentStatus.label.toUpperCase()}
                    </div>
-                   <h1 className="text-4xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+                   <h1 className="gp-page-title text-3xl leading-tight">
                      {request.title}
                    </h1>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700 flex flex-col items-end shrink-0 shadow-sm">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-70">VALOR ESTIMADO</p>
-                   <p className="text-3xl font-black text-primary-600">
+                <div className="bg-gp-blue/5 border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group">
+                   <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-1 shadow-sm px-2 py-0.5 bg-gp-surface2 rounded-md">VALOR ESTIMADO</p>
+                   <p className="text-3xl font-black text-gp-blue group-hover:scale-105 transition-transform">
                      R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                    </p>
                 </div>
              </div>
 
-             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50 dark:border-slate-800">
+             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-gp-border">
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <User size={12} /> Solicitante
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
+                    <User size={12} strokeWidth={2.5} /> Solicitante
                   </p>
-                  <p className="font-bold text-slate-900 dark:text-slate-100">{request.profiles?.full_name}</p>
+                  <p className="font-bold text-gp-text ml-1 text-sm">{request.profiles?.full_name}</p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <Tag size={12} /> Categoria
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
+                    <Tag size={12} strokeWidth={2.5} /> Categoria
                   </p>
-                  <p className="font-bold text-slate-900 dark:text-slate-100">{request.category}</p>
+                  <p className="font-bold text-gp-text ml-1 text-sm">{request.category}</p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <Calendar size={12} /> Aberto em
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
+                    <Calendar size={12} strokeWidth={2.5} /> Aberto em
                   </p>
-                  <p className="font-bold text-slate-900 dark:text-slate-100">
+                  <p className="font-bold text-gp-text ml-1 text-sm">
                     {new Date(request.created_at).toLocaleDateString('pt-BR')}
                   </p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <Hash size={12} /> Protocolo
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
+                    <Hash size={12} strokeWidth={2.5} /> Protocolo
                   </p>
-                  <p className="font-bold text-slate-400 tracking-tighter">#{request.id.slice(0, 8).toUpperCase()}</p>
+                  <p className="font-bold text-gp-text3 tracking-wider ml-1 text-xs select-all">#{request.id.slice(0, 8).toUpperCase()}</p>
                </div>
              </div>
 
-             <div className="py-10 space-y-6">
-                <h3 className="text-xl font-black flex items-center gap-2 tracking-tight">
-                  <FileText size={22} className="text-primary-500" />
+             <div className="py-10 space-y-4">
+                <h3 className="text-[17px] font-bold flex items-center gap-3 text-gp-text tracking-tight">
+                  <FileText size={20} className="text-gp-blue" strokeWidth={2} />
                   Contexto e Justificativa
                 </h3>
-                <div className="bg-slate-50 dark:bg-slate-950/50 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 leading-relaxed text-slate-600 dark:text-slate-400 font-medium whitespace-pre-wrap">
+                <div className="bg-gp-surface2/50 p-8 rounded-2xl border border-gp-border leading-relaxed text-gp-text2 text-[15px] font-medium whitespace-pre-wrap shadow-inner">
                   {request.description}
                 </div>
              </div>
 
              {links.length > 0 && (
-               <div className="pt-10 border-t border-slate-50 dark:border-slate-800 space-y-6">
-                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <ExternalLink size={18} /> Links de Referência
+               <div className="pt-10 border-t border-gp-border space-y-6">
+                 <h3 className="text-[15px] font-bold uppercase tracking-widest text-gp-text3 flex items-center gap-2.5">
+                    <ExternalLink size={18} strokeWidth={2} /> Links de Referência
                  </h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {links.map((link, i) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary-500 hover:shadow-lg transition-all group">
-                         <span className="font-bold text-sm">{link.label}</span>
-                         <ExternalLink size={16} className="text-slate-300 group-hover:text-primary-500" />
+                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue hover:shadow-lg transition-all group">
+                         <span className="font-bold text-sm text-gp-text">{link.label}</span>
+                         <ExternalLink size={16} className="text-gp-text3 opacity-40 group-hover:text-gp-blue group-hover:opacity-100 transition-all" />
                       </a>
                     ))}
                  </div>
@@ -386,21 +386,21 @@ export default function RequestDetails() {
              )}
 
              {/* MÓDULO DE ANEXOS */}
-             <div className="pt-10 border-t border-slate-50 dark:border-slate-800 space-y-6">
+             <div className="pt-10 border-t border-gp-border space-y-6">
                <div className="flex items-center justify-between">
-                 <h3 className="text-xl font-black flex items-center gap-2 tracking-tight">
-                   <Paperclip size={22} className="text-primary-500" />
+                 <h3 className="text-[17px] font-bold flex items-center gap-3 text-gp-text tracking-tight">
+                   <Paperclip size={20} className="text-gp-blue" strokeWidth={2} />
                    Documentos e Evidências
                  </h3>
                  {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
                    <label className={clsx(
-                     "btn-premium-primary px-4 py-2 rounded-xl h-9 cursor-pointer",
+                     "btn-premium-primary px-5 py-2.5 rounded-xl h-10 cursor-pointer text-[10px]",
                      uploading && "opacity-50 cursor-not-allowed"
                    )}>
                      {uploading ? (
-                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                      ) : (
-                       <Plus size={14} strokeWidth={3} />
+                       <Plus size={14} strokeWidth={3} className="mr-2" />
                      )}
                      ANEXAR ARQUIVO
                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
@@ -413,31 +413,31 @@ export default function RequestDetails() {
                    {attachments.map((file) => {
                      const isImage = file.file_type?.startsWith('image/');
                      return (
-                       <div key={file.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl group hover:border-primary-500 transition-all">
+                       <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
                          <div className="flex items-center gap-3 overflow-hidden">
-                           <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-700 text-slate-400">
+                           <div className="w-10 h-10 rounded-xl bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-text3">
                              {isImage ? <ImageIcon size={20} /> : <FileIcon size={20} />}
                            </div>
                            <div className="truncate">
-                             <p className="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">{file.file_name}</p>
-                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                             <p className="font-bold text-[13px] text-gp-text truncate">{file.file_name}</p>
+                             <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">
                                {new Date(file.created_at).toLocaleDateString('pt-BR')}
                              </p>
                            </div>
                          </div>
-                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                            <a 
                              href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl}
                              target="_blank"
                              download={file.file_name}
-                             className="p-2 text-slate-400 hover:text-primary-600 transition-colors"
+                             className="p-2 text-gp-text3 hover:text-gp-blue transition-colors"
                            >
                              <Download size={18} />
                            </a>
                            {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
                              <button 
                                onClick={() => handleDeleteAttachment(file)}
-                               className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                               className="p-2 text-gp-text3 hover:text-gp-error transition-colors"
                              >
                                <Trash2 size={18} />
                              </button>
@@ -448,9 +448,9 @@ export default function RequestDetails() {
                    })}
                  </div>
                ) : (
-                 <div className="p-10 text-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
-                   <Paperclip size={40} className="mx-auto text-slate-200 mb-4" />
-                   <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Nenhum anexo enviado</p>
+                 <div className="p-12 text-center border-2 border-dashed border-gp-border rounded-2xl bg-gp-surface2/30">
+                   <Paperclip size={40} className="mx-auto text-gp-text3 opacity-20 mb-4" />
+                   <p className="text-gp-text3 font-bold text-[11px] uppercase tracking-widest">Nenhuma evidência anexada até o momento</p>
                  </div>
                )}
              </div>
@@ -458,49 +458,49 @@ export default function RequestDetails() {
         </div>
 
         {/* LADO DIREITO: Timeline e Ações */}
-        <div className="w-full lg:w-96 space-y-8 sticky top-24">
+        <div className="w-full lg:w-96 space-y-6 lg:sticky lg:top-24">
           
           {/* Central de Enriquecimento (TI e Compras) */}
           {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="gp-card p-8 border-gp-blue/20 shadow-lg space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
-                  <Activity size={20} />
+                <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
+                  <Activity size={20} strokeWidth={2} />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Edição Técnica</h4>
-                  <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Ajuste de Valor e Links</p>
+                  <h4 className="font-bold text-[15px] text-gp-text">Edição Técnica</h4>
+                  <p className="text-[10px] uppercase font-bold text-gp-text3 tracking-widest">Ajuste de Valor e Links</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Atualizar Valor (R$)</label>
+                  <label className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Atualizar Valor (R$)</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <div className="absolute left-4 top-3 font-black text-slate-400 text-sm">R$</div>
+                      <div className="absolute left-4 top-3.5 font-bold text-gp-text3 text-sm">R$</div>
                       <input 
                         type="number" 
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold transition-all"
+                        className="gp-input pl-10 h-11"
                         value={editValue}
                         onChange={e => setEditValue(e.target.value)}
                       />
                     </div>
                     <button 
                       onClick={handleUpdateValue}
-                      className="btn-premium-primary px-4 rounded-xl text-xs"
+                      className="btn-premium-primary px-5 rounded-xl text-[11px] h-11"
                     >
                       OK
                     </button>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-50 dark:border-slate-800 space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Novo Link de Referência</label>
+                <div className="pt-4 border-t border-gp-border space-y-3">
+                  <label className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Novo Link de Referência</label>
                   <input 
                     type="text" 
                     placeholder="Título (ex: Amazon)"
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold text-sm transition-all"
+                    className="gp-input h-11 px-4 py-3"
                     value={newLink.label}
                     onChange={e => setNewLink({ ...newLink, label: e.target.value })}
                   />
@@ -508,13 +508,13 @@ export default function RequestDetails() {
                     <input 
                       type="url" 
                       placeholder="URL do Produto"
-                      className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary-500 rounded-xl outline-none font-bold text-sm transition-all"
+                      className="flex-1 gp-input h-11 px-4 py-3"
                       value={newLink.url}
                       onChange={e => setNewLink({ ...newLink, url: e.target.value })}
                     />
                     <button 
                       onClick={handleAddLink}
-                      className="btn-premium-dark px-4 rounded-xl"
+                      className="btn-premium-dark px-4 rounded-xl h-11"
                     >
                       <Plus size={18} strokeWidth={3} />
                     </button>
@@ -526,21 +526,21 @@ export default function RequestDetails() {
 
           {/* Caixa de Decisão (Apenas p/ Aprovador) */}
           {isApprover && !isFinalized && (
-            <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary-500/10 border border-primary-500/20 space-y-6">
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary-600 flex items-center justify-center">
-                    <ShieldCheck size={20} />
+            <div className="bg-gp-surface text-gp-text rounded-2xl p-8 shadow-2xl border-2 border-gp-blue/40 space-y-6 relative overflow-hidden">
+               <div className="flex items-center gap-3 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                    <ShieldCheck size={20} strokeWidth={2} />
                   </div>
                   <div>
-                    <h4 className="font-black text-lg">Central de Decisão</h4>
-                    <p className="text-[10px] uppercase font-black text-primary-400 tracking-widest">Pendente sua ação</p>
+                    <h4 className="font-bold text-[17px] tracking-tight">Central de Decisão</h4>
+                    <p className="text-[10px] uppercase font-bold text-gp-blue-light tracking-widest">Pendente sua ação</p>
                   </div>
                </div>
                
-               <div className="space-y-3 pt-2">
+               <div className="space-y-3 pt-2 relative z-10">
                   <textarea 
-                    placeholder="Adicionar observação à aprovação/reprovação (opcional)..."
-                    className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-xs text-white placeholder:text-white/40 outline-none focus:border-primary-500 transition-all resize-none font-medium"
+                    placeholder="Adicionar observação (opcional)..."
+                    className="gp-input px-4 py-3 h-20 resize-none text-[13px] font-medium"
                     value={comment}
                     onChange={e => setComment(e.target.value)}
                     rows={2}
@@ -555,57 +555,64 @@ export default function RequestDetails() {
                       else if (request.status === 'pending_diretoria') { nextStatus = 'approved'; nextStep = 'diretoria'; }
                       handleAction(nextStatus, nextStep);
                     }}
-                    className="w-full btn-premium-primary py-4 rounded-2xl shadow-lg"
+                    className="w-full btn-premium-primary py-4 rounded-xl text-[12px] shadow-lg"
                   >
                     {actionLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : ( <CheckCircle2 size={20} strokeWidth={3} /> )} APROVAR ETAPA
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : ( <CheckCircle2 size={18} strokeWidth={3} className="mr-2" /> )} APROVAR ETAPA
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleAction('rejected', request.current_step)}
-                    className="w-full bg-white/10 hover:bg-rose-600 text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 border border-white/10"
+                    className="w-full bg-gp-surface2 hover:bg-gp-error hover:text-white border border-gp-border font-bold text-[12px] py-4 rounded-xl transition-all flex items-center justify-center gap-2"
                   >
                     {actionLoading ? (
-                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : ( <XCircle size={20} /> )} REPROVAR TOTAL
+                       <div className="w-5 h-5 border-2 border-gp-error/30 border-t-gp-error rounded-full animate-spin" />
+                    ) : ( <XCircle size={18} className="mr-2" /> )} REPROVAR TOTAL
                   </button>
                </div>
+               <div className="absolute top-0 right-0 w-32 h-32 bg-gp-blue opacity-[0.03] rounded-full -translate-y-12 translate-x-12" />
             </div>
           )}
 
-
-
           {/* Timeline Vertical do Fluxo */}
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-             <h4 className="font-black text-sm uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
-                <Activity size={18} /> Fluxo de Processo
+          <div className="gp-card p-8 shadow-sm">
+             <h4 className="font-bold text-[11px] uppercase tracking-widest text-gp-text3 mb-8 flex items-center gap-2.5">
+                <Activity size={18} strokeWidth={2} /> Fluxo de Processo
              </h4>
-             <div className="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+             <div className="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gp-border">
                 {[
                   { step: 'gestor', label: 'Gestor Imediato', desc: 'Validação de necessidade' },
                   { step: 'ti', label: 'Análise de TI', desc: 'Viabilidade técnica' },
                   { step: 'compras', label: 'Cotação Compras', desc: 'Melhor custo/benefício' },
                   { step: 'diretoria', label: 'Diretoria Executiva', desc: 'Aprovação orçamentária' },
                 ].map((s, idx) => {
-                  const isActive = request.current_step === s.step;
+                  const isActive = request.current_step === s.step && !isFinalized;
                   const isPast = ['pending_ti', 'pending_compras', 'pending_diretoria', 'approved'].indexOf(request.status) > idx;
+                  const isRejected = request.status === 'rejected' && request.current_step === s.step;
                   
                   return (
                     <div key={idx} className="relative pl-10 group">
                       <div className={clsx(
-                        "absolute left-0 top-1 w-6 h-6 rounded-full border-4 flex items-center justify-center transition-all duration-500",
-                        isPast ? "bg-emerald-500 border-emerald-100 dark:border-emerald-900/30 text-white" : 
-                        isActive ? "bg-primary-600 border-primary-100 dark:border-primary-900/30 text-white scale-125 shadow-lg shadow-primary-500/20" : 
-                        "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-300"
+                        "absolute left-0 top-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500 z-10",
+                        isRejected ? "bg-gp-error border-gp-error shadow-lg shadow-gp-error/20 text-white" :
+                        isPast ? "bg-gp-success border-gp-success text-white shadow-lg shadow-gp-success/10" : 
+                        isActive ? "bg-gp-blue border-gp-blue text-white scale-110 shadow-lg shadow-gp-blue/20" : 
+                        "bg-gp-surface border-gp-border text-gp-text3"
                       )}>
-                        {isPast ? <CheckCircle2 size={12} strokeWidth={3} /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
+                        {isPast ? <CheckCircle2 size={12} strokeWidth={3} /> : 
+                         isRejected ? <XCircle size={12} strokeWidth={3} /> :
+                         <div className="w-1.5 h-1.5 rounded-full bg-current" />}
                       </div>
                       <div className="flex flex-col">
-                        <span className={clsx("font-black text-sm", isActive ? "text-primary-600" : isPast ? "text-slate-900 dark:text-slate-100" : "text-slate-400")}>
+                        <span className={clsx("font-bold text-[13px]", 
+                          isActive ? "text-gp-blue" : 
+                          isPast ? "text-gp-text" : 
+                          isRejected ? "text-gp-error" : "text-gp-text3"
+                        )}>
                           {s.label}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{s.desc}</span>
+                        <span className="text-[10px] font-bold text-gp-text3 opacity-60 uppercase tracking-tighter">{s.desc}</span>
                       </div>
                     </div>
                   );
@@ -615,27 +622,32 @@ export default function RequestDetails() {
 
           {/* Histórico de Auditoria Real */}
           {history.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-               <h4 className="font-black text-sm uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
-                  <Clock size={18} /> Auditoria Real
+            <div className="gp-card p-8 shadow-sm">
+               <h4 className="font-bold text-[11px] uppercase tracking-widest text-gp-text3 mb-8 flex items-center gap-2.5">
+                  <Clock size={18} strokeWidth={2} /> Auditoria do Sistema
                </h4>
-               <div className="space-y-8">
+               <div className="space-y-6">
                   {history.map((h, i) => (
-                    <div key={i} className="flex gap-4 items-start border-l-2 border-slate-100 dark:border-slate-800 pl-6 relative">
-                       <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-                       <div className="space-y-1">
-                          <p className="text-xs font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tighter">
-                            Ref: {statusLabels[h.new_status] || h.new_status}
+                    <div key={i} className="flex gap-4 items-start border-l-2 border-gp-border pl-6 relative">
+                       <div className="absolute left-[-5px] top-1.5 w-2 h-2 rounded-full bg-gp-border"></div>
+                       <div className="space-y-1.5 w-full">
+                          <p className="text-[11px] font-bold text-gp-text leading-tight uppercase tracking-tight">
+                            {statusLabels[h.new_status] || h.new_status}
                           </p>
-                          <p className="text-[10px] font-medium text-slate-500 italic leading-snug">
+                          <p className="text-[12px] font-medium text-gp-text2 italic leading-relaxed bg-gp-surface2/50 p-3 rounded-lg border border-gp-border">
                             "{h.comment || 'Sem observação registrada.'}"
                           </p>
-                          <div className="flex items-center gap-2 mt-2">
-                             <span className="text-[9px] font-black bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase">
-                                {h.profiles?.full_name?.split(' ')[0] || 'Sistema'}
-                             </span>
-                             <span className="text-[9px] font-bold text-slate-300">
-                                {new Date(h.created_at).toLocaleDateString('pt-BR')}
+                          <div className="flex items-center justify-between mt-2">
+                             <div className="flex items-center gap-1.5">
+                               <div className="w-4 h-4 bg-gp-blue/10 rounded-full flex items-center justify-center">
+                                 <User size={8} className="text-gp-blue" />
+                               </div>
+                               <span className="text-[9px] font-bold text-gp-text3 uppercase">
+                                  {h.profiles?.full_name?.split(' ')[0] || 'Sistema'}
+                               </span>
+                             </div>
+                             <span className="text-[9px] font-bold text-gp-text3 opacity-40">
+                                {new Date(h.created_at).toLocaleDateString('pt-BR')} {new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                              </span>
                           </div>
                        </div>

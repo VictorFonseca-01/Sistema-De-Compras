@@ -2,81 +2,65 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useProfile } from '../hooks/useProfile';
 import { 
-  User, 
-  Mail, 
-  Shield, 
-  Building2, 
-  Moon, 
-  Sun, 
-  Save, 
-  LogOut,
-  CheckCircle2,
-  AlertCircle
+  User, Mail, Shield, Building2, Moon, Sun, Save, LogOut, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 
 const departmentOptions = [
-  { value: "Administrativo", label: "Administrativo" },
-  { value: "Comercial", label: "Comercial" },
-  { value: "Compras", label: "Compras" },
-  { value: "Diretoria", label: "Diretoria" },
-  { value: "Engenharia", label: "Engenharia" },
-  { value: "Estoque", label: "Estoque" },
-  { value: "Financeiro", label: "Financeiro" },
-  { value: "Logística", label: "Logística" },
-  { value: "Operacional", label: "Operacional" },
-  { value: "Recursos Humanos", label: "Recursos Humanos (RH)" },
-  { value: "TI", label: "Tecnologia (TI)" },
-  { value: "Outro", label: "Outro" }
+  { value: 'Administrativo', label: 'Administrativo' },
+  { value: 'Comercial', label: 'Comercial' },
+  { value: 'Compras', label: 'Compras' },
+  { value: 'Diretoria', label: 'Diretoria' },
+  { value: 'Engenharia', label: 'Engenharia' },
+  { value: 'Estoque', label: 'Estoque' },
+  { value: 'Financeiro', label: 'Financeiro' },
+  { value: 'Logística', label: 'Logística' },
+  { value: 'Operacional', label: 'Operacional' },
+  { value: 'Recursos Humanos', label: 'Recursos Humanos (RH)' },
+  { value: 'TI', label: 'Tecnologia (TI)' },
+  { value: 'Outro', label: 'Outro' },
 ];
+
+const roleLabels: Record<string, string> = {
+  master_admin: 'Admin Master',
+  diretoria: 'Diretoria',
+  gestor: 'Gestor',
+  ti: 'TI / Tecnologia',
+  compras: 'Compras',
+  usuario: 'Funcionário',
+};
+
+const labelClass = 'block text-[11px] font-bold uppercase tracking-widest mb-2 opacity-70';
 
 export default function Settings() {
   const { profile, loading: profileLoading } = useProfile();
   const { theme, toggleTheme } = useTheme();
   const darkMode = theme === 'dark';
-  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [form, setForm] = useState({
-    full_name: '',
-    department: ''
-  });
+  const [form, setForm] = useState({ full_name: '', department: '' });
 
   useEffect(() => {
-    if (profile) {
-      setForm({
-        full_name: profile.full_name || '',
-        department: profile.department || ''
-      });
-    }
+    if (profile) setForm({ full_name: profile.full_name || '', department: profile.department || '' });
   }, [profile]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
-    
     setLoading(true);
     setError(null);
     setSuccess(false);
-
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({
-        full_name: form.full_name,
-        department: form.department,
-        updated_at: new Date().toISOString()
-      })
+      .update({ full_name: form.full_name, department: form.department, updated_at: new Date().toISOString() })
       .eq('id', profile.id);
-
     if (updateError) {
       setError('Erro ao atualizar perfil: ' + updateError.message);
     } else {
       setSuccess(true);
-      // Auto-hide success message
       setTimeout(() => setSuccess(false), 3000);
     }
     setLoading(false);
@@ -90,157 +74,157 @@ export default function Settings() {
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-primary-600/30 border-t-primary-600 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-gp-border2 border-t-gp-blue rounded-full animate-spin" />
       </div>
     );
   }
 
-  const roleLabels: Record<string, string> = {
-    master_admin: 'Admin Master',
-    diretoria: 'Diretoria',
-    gestor: 'Gestor',
-    ti: 'TI / Tecnologia',
-    compras: 'Compras',
-    usuario: 'Funcionário'
-  };
-
   return (
-    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20">
+    <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-fade-up">
       <header>
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Minha Conta</h1>
-        <p className="text-slate-500 text-lg">Configure suas preferências e dados corporativos.</p>
+        <h1 className="gp-page-title">Minha Conta</h1>
+        <p className="gp-page-subtitle">Configure suas preferências e dados corporativos.</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Sidebar de Configurações */}
-        <div className="space-y-6">
-          <div className="glass rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary-500 to-primary-700 mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-primary-500/20 mb-6 animate-float">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile sidebar */}
+        <div className="space-y-4">
+          <div className="gp-card p-6 text-center">
+            <div className="w-20 h-20 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-bold mb-5 bg-gradient-to-br from-gp-blue to-gp-blue-dim shadow-gp-blue/20 shadow-lg">
               {profile?.full_name?.charAt(0).toUpperCase()}
             </div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{profile?.full_name}</h2>
-            <p className="text-xs font-bold text-primary-600 uppercase tracking-widest mt-1 mb-6">
+            <h2 className="text-[15px] font-bold text-gp-text">{profile?.full_name}</h2>
+            <p className="text-[11px] font-bold mt-1 mb-4 uppercase tracking-wider text-gp-blue-light">
               {roleLabels[profile?.role || 'usuario']}
             </p>
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <Mail size={16} className="text-slate-300" />
-                  {profile?.email}
-               </div>
-               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <Building2 size={16} className="text-slate-300" />
-                  {profile?.department || 'GLOBAL'}
-               </div>
+            <div className="space-y-2.5 pt-4 border-t border-gp-border">
+              <div className="flex items-center gap-2.5 text-[13px] text-gp-text2">
+                <Mail size={15} strokeWidth={2} className="text-gp-text3" />
+                <span className="truncate">{profile?.email}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-[13px] text-gp-text2">
+                <Building2 size={15} strokeWidth={2} className="text-gp-text3" />
+                {profile?.department || 'Global Parts'}
+              </div>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleSignOut}
-            className="btn-premium-danger w-full py-5 rounded-[2rem] shadow-sm"
+            className="btn-premium-danger w-full py-3 rounded-xl text-[12px]"
           >
-            <LogOut size={20} />
-            SAIR DO SISTEMA
+            <LogOut size={16} strokeWidth={2} />
+            Sair do Sistema
           </button>
         </div>
 
-        {/* Formulário Principal */}
-        <div className="lg:col-span-2 space-y-8">
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-sm space-y-8">
-            <h3 className="text-xl font-black flex items-center gap-3 border-b border-slate-50 dark:border-slate-800 pb-6">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
-                <User size={20} />
+        {/* Main content */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Profile form */}
+          <div className="gp-card p-6">
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gp-border">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gp-blue-muted text-gp-blue-light">
+                <User size={18} strokeWidth={2} />
               </div>
-              Dados do Perfil
-            </h3>
+              <h3 className="text-[15px] font-bold text-gp-text">Dados do Perfil</h3>
+            </div>
 
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <form onSubmit={handleUpdateProfile} className="space-y-5">
               {error && (
-                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-2xl border border-rose-100 dark:border-rose-800 flex items-center gap-2 font-bold text-sm">
-                  <AlertCircle size={18} /> {error}
+                <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-medium bg-gp-error/10 border border-gp-error/20 text-gp-error">
+                  <AlertCircle size={16} className="flex-shrink-0" />
+                  {error}
                 </div>
               )}
-              
               {success && (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl border border-emerald-100 dark:border-emerald-800 flex items-center gap-2 font-bold text-sm animate-in fade-in slide-in-from-top-1">
-                  <CheckCircle2 size={18} /> Perfil atualizado com sucesso!
+                <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-medium bg-gp-success/10 border border-gp-success/20 text-gp-success">
+                  <CheckCircle2 size={16} className="flex-shrink-0" />
+                  Perfil atualizado com sucesso!
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
-                <input 
+              <div>
+                <label className={labelClass + ' text-gp-text3'}>Nome Completo</label>
+                <input
                   required
-                  type="text" 
-                  value={form.full_name} 
-                  onChange={e => setForm({...form, full_name: e.target.value})}
-                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-[1.5rem] focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 outline-none transition-all font-bold text-slate-900 dark:text-white"
+                  type="text"
+                  value={form.full_name}
+                  onChange={e => setForm({ ...form, full_name: e.target.value })}
+                  className="gp-input px-4 py-3"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Setor / Departamento</label>
-                <SearchableSelect 
-                  options={departmentOptions} 
-                  value={form.department} 
-                  onChange={val => setForm({...form, department: val})} 
-                  placeholder="Selecione seu setor" 
+              <div>
+                <label className={labelClass + ' text-gp-text3'}>Setor / Departamento</label>
+                <SearchableSelect
+                  options={departmentOptions}
+                  value={form.department}
+                  onChange={val => setForm({ ...form, department: val })}
+                  placeholder="Selecione seu setor"
                 />
               </div>
 
-              <div className="pt-6 border-t border-slate-50 dark:border-slate-800 flex justify-end">
-                <button 
-                  type="submit" 
+              <div className="flex justify-end pt-4 border-t border-gp-border">
+                <button
+                  type="submit"
                   disabled={loading}
-                  className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl active:scale-95"
+                  className="btn-premium-primary px-6 py-3 rounded-xl text-[12px]"
                 >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  ) : <Save size={20} />}
-                  SALVAR ALTERAÇÕES
+                  {loading
+                    ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : <Save size={15} strokeWidth={2} />
+                  }
+                  Salvar Alterações
                 </button>
               </div>
             </form>
-          </section>
+          </div>
 
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-sm space-y-8">
-             <h3 className="text-xl font-black flex items-center gap-3 border-b border-slate-50 dark:border-slate-800 pb-6">
-                <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
-                  <Sun size={20} />
+          {/* Appearance */}
+          <div className="gp-card p-6">
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gp-border">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gp-blue-muted text-gp-blue-light">
+                <Sun size={18} strokeWidth={2} />
+              </div>
+              <h3 className="text-[15px] font-bold text-gp-text">Aparência e Sistema</h3>
+            </div>
+
+            <div className="space-y-3">
+              {/* Dark mode toggle */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gp-surface2 border border-gp-border">
+                <div>
+                  <h4 className="text-[14px] font-bold text-gp-text">Modo Escuro</h4>
+                  <p className="text-[12px] mt-0.5 text-gp-text3">Interface visual escura para menor cansaço visual</p>
                 </div>
-                Aparência e Sistema
-              </h3>
-
-              <div className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 group hover:border-primary-500/30 transition-all duration-300">
-                 <div>
-                    <h4 className="font-black text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">Modo Noturno (Dark)</h4>
-                    <p className="text-sm text-slate-500 font-medium">Ativar interface visual escura para ambientes com pouca luz.</p>
-                 </div>
-                 <button 
+                <button
                   onClick={toggleTheme}
-                  className={clsx(
-                    "w-16 h-8 rounded-full transition-all relative flex items-center shadow-inner",
-                    darkMode ? "bg-primary-600" : "bg-slate-300"
-                  )}
-                 >
-                    <div className={clsx(
-                      "w-6 h-6 bg-white rounded-full shadow-lg absolute transition-all flex items-center justify-center",
-                      darkMode ? "translate-x-9" : "translate-x-1"
-                    )}>
-                      {darkMode ? <Moon size={14} className="text-primary-600" /> : <Sun size={14} className="text-slate-400" />}
-                    </div>
-                 </button>
+                  className={clsx('w-12 h-6 rounded-full transition-all relative flex items-center', darkMode ? 'bg-gp-blue' : 'bg-gp-border2')}
+                >
+                  <div
+                    className={clsx('w-5 h-5 bg-white rounded-full shadow-md absolute transition-all flex items-center justify-center', darkMode ? 'left-[26px]' : 'left-[2px]')}
+                  >
+                    {darkMode
+                       ? <Moon size={11} className="text-gp-blue" />
+                       : <Sun size={11} className="text-slate-400" />
+                    }
+                  </div>
+                </button>
               </div>
 
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500">
-                    <Shield size={24} />
-                 </div>
-                 <div>
-                    <h4 className="font-black text-slate-900 dark:text-white italic">Nível de Acesso Corporativo</h4>
-                    <p className="text-sm text-slate-500 font-medium uppercase tracking-widest">{roleLabels[profile?.role || 'usuario']}</p>
-                 </div>
+              {/* Role display */}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-gp-surface2 border border-gp-border">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gp-surface3 text-gp-text3">
+                  <Shield size={17} strokeWidth={2} />
+                </div>
+                <div>
+                  <h4 className="text-[13px] font-bold text-gp-text">Nível de Acesso</h4>
+                  <p className="text-[12px] font-bold uppercase tracking-wide text-gp-blue-light">
+                    {roleLabels[profile?.role || 'usuario']}
+                  </p>
+                </div>
               </div>
-          </section>
+            </div>
+          </div>
         </div>
       </div>
     </div>
