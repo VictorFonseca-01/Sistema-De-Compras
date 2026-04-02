@@ -394,7 +394,7 @@ export default function RequestDetails() {
                  </h3>
                  {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
                    <label className={clsx(
-                     "flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-xs font-black cursor-pointer transition-all active:scale-95",
+                     "btn-premium-primary px-4 py-2 rounded-xl h-9 cursor-pointer",
                      uploading && "opacity-50 cursor-not-allowed"
                    )}>
                      {uploading ? (

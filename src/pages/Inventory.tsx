@@ -178,7 +178,7 @@ export default function Inventory() {
           
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900/50 p-2 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm">
              {[{ id: 'recent', label: 'Recentes' }, { id: 'az', label: 'A-Z' }].map((sort) => (
-               <button key={sort.id} onClick={() => setSortOrder(sort.id as any)} className={clsx("px-6 py-2.5 rounded-[1.5rem] text-[10px] uppercase font-black tracking-widest transition-all", sortOrder === sort.id ? "bg-primary-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200")}>{sort.label}</button>
+               <button key={sort.id} onClick={() => setSortOrder(sort.id as any)} className={clsx("px-6 py-2.5 rounded-[1.5rem] text-[10px] uppercase font-black tracking-widest transition-all", sortOrder === sort.id ? "btn-premium-primary shadow-lg" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200")}>{sort.label}</button>
              ))}
           </div>
 
@@ -255,7 +255,7 @@ export default function Inventory() {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mostrando {Math.min(filteredAssets.length, ((currentPage - 1) * itemsPerPage) + 1)} - {Math.min(filteredAssets.length, currentPage * itemsPerPage)} de {filteredAssets.length} registros</p>
             <div className="flex gap-2">
               <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="btn-premium-secondary px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800">Anterior</button>
-              {getPaginationGroup().map((page, i) => (<button key={i} disabled={page === '...'} onClick={() => typeof page === 'number' && setCurrentPage(page)} className={clsx("w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all", currentPage === page ? "bg-primary-600 text-white shadow-lg pointer-events-none" : page === '...' ? "text-slate-300 cursor-default" : "btn-premium-secondary border border-slate-200 dark:border-slate-800")}>{page}</button>))}
+              {getPaginationGroup().map((page, i) => (<button key={i} disabled={page === '...'} onClick={() => typeof page === 'number' && setCurrentPage(page)} className={clsx("w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all", currentPage === page ? "btn-premium-primary shadow-lg pointer-events-none" : page === '...' ? "text-slate-300 cursor-default" : "btn-premium-secondary border border-slate-200 dark:border-slate-800")}>{page}</button>))}
               <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="btn-premium-secondary px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800">Próxima</button>
             </div>
           </div>
