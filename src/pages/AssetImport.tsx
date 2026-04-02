@@ -133,11 +133,17 @@ export default function AssetImport() {
       // Pega o valor bruto da coluna mapeada como patrimônio
       const rawPatrimonio = row[mapping.numero_patrimonio];
       const parsed = parsePatrimonyValue(rawPatrimonio);
-      
+
+      // Se for uma classificação extra (ex: "Impressora Própria"), "puxar" para o nome do item
+      let finalName = row[mapping.nome_item] || 'Item sem nome';
+      if (parsed.identificacao_tipo === 'classificacao' && parsed.valor_original) {
+        finalName = `${finalName} - ${parsed.valor_original}`;
+      }
+
       return {
         ...parsed,
         row_idx: idx + 1,
-        nome_item: row[mapping.nome_item] || 'Item sem nome',
+        nome_item: finalName,
         marca: row[mapping.marca] || '',
         modelo: row[mapping.modelo] || '',
         numero_serie: row[mapping.numero_serie] || '',
