@@ -11,10 +11,12 @@ import {
   UserCheck
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
+import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
 export function Sidebar() {
   const { profile } = useProfile();
+  const { theme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   const navItems = [

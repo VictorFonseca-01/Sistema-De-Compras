@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
+import { useTheme } from '../context/ThemeContext';
 
 const departmentOptions = [
   { value: "Administrativo", label: "Administrativo" },
@@ -33,10 +34,12 @@ const departmentOptions = [
 
 export default function Settings() {
   const { profile, loading: profileLoading } = useProfile();
+  const { theme, toggleTheme } = useTheme();
+  const darkMode = theme === 'dark';
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(true);
 
   const [form, setForm] = useState({
     full_name: '',
@@ -50,27 +53,7 @@ export default function Settings() {
         department: profile.department || ''
       });
     }
-    
-    // Check initial theme
-    const isDark = document.documentElement.classList.contains('dark');
-    setDarkMode(isDark);
   }, [profile]);
-
-  const toggleTheme = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-    
-    // Forçar atualização visual de componentes que não ouvem a classe dark automaticamente
-    window.dispatchEvent(new Event('storage'));
-  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

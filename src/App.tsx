@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -12,21 +11,6 @@ import AdminPanel from './pages/AdminPanel';
 import Settings from './pages/Settings';
 
 function App() {
-  useEffect(() => {
-    // Inteligência de Tema: Forçar Dark na 1ª visita, persistir escolha depois
-    const savedTheme = localStorage.getItem('theme');
-    const root = window.document.documentElement;
-
-    if (!savedTheme) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else if (savedTheme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, []);
-
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
