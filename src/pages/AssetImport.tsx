@@ -184,9 +184,10 @@ export default function AssetImport() {
     let updatedCount = 0;
     let skippedCount = 0;
     const errors: any[] = [];
+    const allInsertedIds: string[] = [];
 
-    // 2. Processamento em Lotes (Chunking 50 por vez)
-    const chunkSize = 50;
+    // 2. Processamento ULTRA (Chunking 250 por vez)
+    const chunkSize = 250;
     for (let i = 0; i < processedData.length; i += chunkSize) {
       const chunk = processedData.slice(i, i + chunkSize);
       
@@ -216,7 +217,7 @@ export default function AssetImport() {
           const { data: upserted, error } = await supabase
             .from('assets')
             .upsert(assetsToUpsert, { 
-              onConflict: 'numero_patrimonio', // Baseado no patrimônio (único)
+              onConflict: 'numero_patrimonio',
               ignoreDuplicates: false
             })
             .select('id');
@@ -245,19 +246,12 @@ export default function AssetImport() {
           successCount += resultData.length;
         }
 
-        // Registrar Movimentações em Lote para este bloco
+        // Colecionar IDs para log único posterior
         if (resultData.length > 0) {
-          const movements = resultData.map(asset => ({
-            asset_id: asset.id,
-            tipo: 'importacao',
-            user_id: profile.id,
-            observacao: `Importação em lote (${importMode}): ${fileName}`
-          }));
-          await supabase.from('asset_movements').insert(movements);
+          allInsertedIds.push(...resultData.map(a => a.id));
         }
 
       } catch (error: any) {
-        // Se o bloco falhar, tentamos salvar os erros individualmente apenas deste bloco
         chunk.forEach(item => {
           errors.push({ row: item.row_idx, patrimonio: item.numero_patrimonio || 'N/A', message: error.message });
         });
@@ -273,7 +267,20 @@ export default function AssetImport() {
       }
     }
 
-    // 3. Finalizar Lote
+    // 3. Registrar Movimentações em Lote Único (Somente 1 request extra)
+    if (allInsertedIds.length > 0) {
+      const movements = allInsertedIds.map(id => ({
+        asset_id: id,
+        tipo: 'importacao',
+        user_id: profile.id,
+        observacao: `Importação Turbo: ${fileName}`
+      }));
+      
+      // Inserir todos os logs de uma só vez (Muito mais rápido)
+      await supabase.from('asset_movements').insert(movements);
+    }
+
+    // 4. Finalizar Lote
     await supabase.from('asset_import_batches').update({
        success_rows: successCount + updatedCount,
        error_rows: errors.length
