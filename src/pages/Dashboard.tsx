@@ -12,13 +12,24 @@ import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
+import { AlertCircle, XCircle } from 'lucide-react';
+
+const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
+  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
+  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
+  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: TrendingUp },
+  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
+  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle },
+  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
+};
 
 export default function Dashboard() {
   const { profile } = useProfile();
   const [stats, setStats] = useState([
     { label: 'Pendentes Gestor', value: '0', total: '0', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', key: 'pending_gestor' },
     { label: 'Em Análise TI', value: '0', total: '0', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10', key: 'pending_ti' },
-    { label: 'Em Compras', value: '0', total: '0', icon: TrendingUp, color: 'text-indigo-500', bg: 'bg-indigo-500/10', key: 'pending_compras' },
+    { label: 'Em Compras', value: '0', total: '0', icon: TrendingUp, color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', key: 'pending_compras' },
     { label: 'Aprovadas', value: '0', total: '0', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', key: 'approved' },
   ]);
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
@@ -132,15 +143,15 @@ export default function Dashboard() {
                           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{req.profiles?.full_name} • {new Date(req.created_at).toLocaleDateString()}</p>
                         </div>
                      </div>
-                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                        {req.status === 'pending_gestor' ? 'Aguardando Gestor' : 
-                         req.status === 'pending_ti' ? 'Em Análise TI' :
-                         req.status === 'pending_compras' ? 'Em Compras' :
-                         req.status === 'pending_diretoria' ? 'Aguardando Diretoria' :
-                         req.status === 'approved' ? 'Aprovado' : 
-                         req.status === 'rejected' ? 'Recusado' : 
-                         req.status === 'adjustment_needed' ? 'Ajuste Necessário' : req.status}
-                     </span>
+                     {(() => {
+                       const status = statusMap[req.status] || { label: req.status, color: 'text-slate-500', bg: 'bg-slate-100', icon: Activity };
+                       return (
+                         <div className={clsx("inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black border uppercase tracking-widest shadow-sm", status.bg, status.color, "border-current/10")}>
+                           <status.icon size={12} strokeWidth={3} />
+                           {status.label}
+                         </div>
+                       );
+                     })()}
                    </Link>
                  ))}
                </div>

@@ -272,19 +272,38 @@ export default function AssetImport() {
 
       {/* STEP 1: UPLOAD */}
       {step === 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-800 p-20 text-center space-y-6">
-           <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto text-slate-400">
+        <div 
+          className={clsx(
+            "rounded-[2.5rem] border-4 border-dashed p-20 text-center space-y-8 transition-all duration-500 relative group overflow-hidden",
+            loading ? "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 pointer-events-none" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-500/50 hover:bg-primary-50/50 dark:hover:bg-primary-900/10"
+          )}
+        >
+           <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40 rounded-[2rem] flex items-center justify-center mx-auto text-slate-400 group-hover:text-primary-600 transition-colors duration-500 group-hover:scale-110">
               <FileBox size={48} />
            </div>
            <div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white">Selecione seu arquivo</h3>
               <p className="text-slate-500 font-medium mt-1">Formatos suportados: .xlsx, .xls e .csv (Planilhas reias com dados variados)</p>
            </div>
-           <div className="pt-4 flex flex-col items-center gap-4">
-              <label className="bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black shadow-xl shadow-primary-500/20 cursor-pointer transition-all active:scale-95 flex items-center gap-3">
-                 <Upload size={24} strokeWidth={3} />
-                 ESCOLHER PLANILHA
-                 <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} />
+           <div className="pt-4 flex flex-col items-center gap-4 relative z-10">
+              <label 
+                className={clsx(
+                  "text-white px-12 py-5 rounded-[2rem] font-black shadow-xl shadow-primary-500/20 cursor-pointer transition-all flex items-center gap-3",
+                  loading ? "bg-primary-400" : "bg-primary-600 hover:bg-primary-500 active:scale-95 group-hover:scale-105"
+                )}
+              >
+                 {loading ? (
+                   <>
+                     <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                     PROCESSANDO...
+                   </>
+                 ) : (
+                   <>
+                     <Upload size={24} strokeWidth={3} />
+                     ESCOLHER PLANILHA
+                   </>
+                 )}
+                 <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} disabled={loading} />
               </label>
               <button className="text-slate-400 hover:text-primary-600 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-colors">
                  <Download size={14} /> Baixar Modelo Sugerido

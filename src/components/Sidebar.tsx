@@ -82,6 +82,7 @@ export function Sidebar() {
           <div className="px-3 mb-6">
             <NavLink 
               to="/nova-solicitacao"
+              onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
               className="w-full bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[11px] tracking-widest transition-all shadow-lg shadow-primary-500/20 active:scale-95 group/btn relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
@@ -98,11 +99,12 @@ export function Sidebar() {
               <NavLink
                 key={item.label}
                 to={item.path}
+                onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
                 className={({ isActive }) => clsx(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400 font-bold shadow-sm" 
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm" 
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                 )}
               >
                 {({ isActive }) => (
@@ -132,9 +134,10 @@ export function Sidebar() {
                 <NavLink
                   key={item.label}
                   to={item.path}
+                  onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
                    className={({ isActive }) => clsx(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group",
-                    isActive && item.path === '/admin' ? "text-primary-600 dark:text-primary-400" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group",
+                    isActive && item.path === '/admin' ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
                   <item.icon size={20} className={clsx("shrink-0", isCollapsed && "mx-auto")} />
@@ -150,10 +153,11 @@ export function Sidebar() {
       <div className="p-4 border-t border-slate-800 mt-auto">
         <NavLink 
           to="/configuracoes"
+          onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
           className={({ isActive }) => clsx(
-            "flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all",
+            "flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all duration-300",
             isActive 
-              ? "bg-primary-600/10 text-primary-600 dark:text-primary-400 font-bold" 
+              ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold" 
               : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
           )}
         >
