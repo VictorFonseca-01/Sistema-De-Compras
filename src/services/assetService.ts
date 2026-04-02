@@ -12,6 +12,8 @@ export interface Asset {
   modelo?: string;
   numero_serie?: string;
   local?: string;
+  empresa?: string;
+  departamento?: string;
   usuario_nome_importado?: string;
   status: 'em_estoque' | 'em_uso' | 'manutencao' | 'baixado';
   valor?: number;

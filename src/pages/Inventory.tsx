@@ -133,10 +133,17 @@ export default function Inventory() {
             </button>
           )}
           <button 
+            onClick={() => navigate('/novo-ativo')}
+            className="bg-primary-600 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary-500/20"
+          >
+            <Plus size={20} strokeWidth={3} />
+            Novo Ativo
+          </button>
+          <button 
             onClick={() => navigate('/importar-estoque')}
             className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 active:scale-95"
           >
-            <Plus size={20} />
+            <TableIcon size={20} />
             Importar Excel
           </button>
           <button 

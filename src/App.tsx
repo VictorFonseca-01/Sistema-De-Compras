@@ -12,6 +12,8 @@ import Settings from './pages/Settings';
 import Inventory from './pages/Inventory';
 import AssetImport from './pages/AssetImport';
 import AssetDetails from './pages/AssetDetails';
+import NewAsset from './pages/NewAsset';
+import AssetDelivery from './pages/AssetDelivery';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['master_admin', 'ti', 'compras', 'gestor', 'diretoria']} />}>
           <Route path="estoque" element={<Inventory />} />
           <Route path="estoque/:id" element={<AssetDetails />} />
+          <Route path="novo-ativo" element={<NewAsset />} />
+          <Route path="entrega-ativo" element={<AssetDelivery />} />
           <Route path="importar-estoque" element={<AssetImport />} />
         </Route>
 
