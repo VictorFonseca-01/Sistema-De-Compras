@@ -3,7 +3,6 @@ import {
   FileText, 
   Clock, 
   CheckCircle, 
-  AlertCircle,
   Plus,
   ArrowRight,
   TrendingUp,
@@ -12,14 +11,15 @@ import {
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
+import { clsx } from 'clsx';
 
 export default function Dashboard() {
   const { profile } = useProfile();
   const [stats, setStats] = useState([
-    { label: 'Pendentes', value: '0', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', key: 'pending' },
-    { label: 'Em Análise TI', value: '0', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10', key: 'pending_ti' },
-    { label: 'Aprovadas', value: '0', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', key: 'approved' },
-    { label: 'Recusadas', value: '0', icon: AlertCircle, color: 'text-rose-500', bg: 'bg-rose-500/10', key: 'rejected' },
+    { label: 'Pendentes Gestor', value: '0', total: '0', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', key: 'pending_gestor' },
+    { label: 'Em Análise TI', value: '0', total: '0', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10', key: 'pending_ti' },
+    { label: 'Em Compras', value: '0', total: '0', icon: TrendingUp, color: 'text-indigo-500', bg: 'bg-indigo-500/10', key: 'pending_compras' },
+    { label: 'Aprovadas', value: '0', total: '0', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', key: 'approved' },
   ]);
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,15 +30,23 @@ export default function Dashboard() {
       
       if (requests) {
         const counts = {
-          pending: requests.filter(r => r.status.startsWith('pending_') && r.status !== 'pending_ti').length,
+          pending_gestor: requests.filter(r => r.status === 'pending_gestor').length,
           pending_ti: requests.filter(r => r.status === 'pending_ti').length,
+          pending_compras: requests.filter(r => r.status === 'pending_compras').length,
           approved: requests.filter(r => r.status === 'approved').length,
-          rejected: requests.filter(r => r.status === 'rejected').length,
+        };
+
+        const totals = {
+          pending_gestor: requests.filter(r => r.status === 'pending_gestor').reduce((acc, r) => acc + (r.estimated_cost || 0), 0),
+          pending_ti: requests.filter(r => r.status === 'pending_ti').reduce((acc, r) => acc + (r.estimated_cost || 0), 0),
+          pending_compras: requests.filter(r => r.status === 'pending_compras').reduce((acc, r) => acc + (r.estimated_cost || 0), 0),
+          approved: requests.filter(r => r.status === 'approved').reduce((acc, r) => acc + (r.estimated_cost || 0), 0),
         };
 
         setStats(prev => prev.map(s => ({ 
           ...s, 
-          value: counts[s.key as keyof typeof counts].toString() 
+          value: counts[s.key as keyof typeof counts].toString(),
+          total: totals[s.key as keyof typeof totals].toLocaleString('pt-BR', { minimumFractionDigits: 2 })
         })));
 
         setRecentRequests(requests.slice(0, 5).sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
@@ -80,9 +88,18 @@ export default function Dashboard() {
                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">
                   {stat.label}
                 </p>
-                <p className="text-4xl font-black text-slate-900 dark:text-white">
-                  {loading ? '...' : stat.value}
-                </p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-slate-900 dark:text-white">
+                    {loading ? '...' : stat.value}
+                  </p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1.5 whitespace-nowrap">
+                    Solicitações
+                  </p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-50 dark:border-white/5">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-70">Total Acumulado (R$)</p>
+                   <p className={clsx("text-lg font-black", stat.color)}>R$ {loading ? '...' : stat.total}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -115,8 +132,14 @@ export default function Dashboard() {
                           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{req.profiles?.full_name} • {new Date(req.created_at).toLocaleDateString()}</p>
                         </div>
                      </div>
-                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md">
-                        {req.status.replace('pending_', '')}
+                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                        {req.status === 'pending_gestor' ? 'Aguardando Gestor' : 
+                         req.status === 'pending_ti' ? 'Em Análise TI' :
+                         req.status === 'pending_compras' ? 'Em Compras' :
+                         req.status === 'pending_diretoria' ? 'Aguardando Diretoria' :
+                         req.status === 'approved' ? 'Aprovado' : 
+                         req.status === 'rejected' ? 'Recusado' : 
+                         req.status === 'adjustment_needed' ? 'Ajuste Necessário' : req.status}
                      </span>
                    </Link>
                  ))}

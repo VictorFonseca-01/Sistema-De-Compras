@@ -30,13 +30,13 @@ interface Request {
 }
 
 const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-700', bg: 'bg-amber-100', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-700', bg: 'bg-blue-100', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-indigo-700', bg: 'bg-indigo-100', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-700', bg: 'bg-purple-100', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', color: 'text-rose-700', bg: 'bg-rose-100', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-700', bg: 'bg-orange-100', icon: AlertCircle },
+  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Clock },
+  pending_ti: { label: 'Em Análise TI', color: 'text-blue-600', bg: 'bg-blue-500/10', icon: FileText },
+  pending_compras: { label: 'Em Compras', color: 'text-indigo-600', bg: 'bg-indigo-500/10', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-600', bg: 'bg-purple-500/10', icon: Clock },
+  approved: { label: 'Aprovado Final', color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
+  rejected: { label: 'Recusado', color: 'text-rose-600', bg: 'bg-rose-500/10', icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-600', bg: 'bg-orange-500/10', icon: AlertCircle },
 };
 
 export default function MyRequests() {
@@ -105,13 +105,13 @@ export default function MyRequests() {
       <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-6 items-center animate-in slide-in-from-top-4 duration-700">
         <div className="relative flex-1 w-full group">
           <Search size={20} className="absolute left-6 top-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Pesquisar por título, ID ou nome do solicitante..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-2xl outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-black text-slate-900 dark:text-white"
-          />
+                <input 
+                  type="text" 
+                  placeholder="Pesquisar por título, ID ou nome do solicitante..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-16 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent rounded-2xl outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
         </div>
         <div className="w-full md:w-72">
           <SearchableSelect 

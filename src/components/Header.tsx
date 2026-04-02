@@ -97,10 +97,16 @@ export function Header() {
       <div className="flex items-center gap-2">
         <button 
           onClick={toggleTheme}
-          className="p-2.5 text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-95"
+          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-500 active:scale-90 group"
           title={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          <div className="relative w-5 h-5 transition-transform duration-700 group-hover:rotate-[360deg]">
+            {theme === 'dark' ? (
+              <Sun size={20} className="absolute inset-0 animate-in zoom-in spin-in-90 duration-500" />
+            ) : (
+              <Moon size={20} className="absolute inset-0 animate-in zoom-in spin-in-90 duration-500" />
+            )}
+          </div>
         </button>
 
         <div className="relative">

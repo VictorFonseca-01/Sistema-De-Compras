@@ -12,17 +12,14 @@ import {
   Warehouse
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
-import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
 export function Sidebar() {
   const { profile } = useProfile();
-  const { theme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: PlusCircle, label: 'Nova Solicitação', path: '/nova-solicitacao' },
     { icon: ListOrdered, label: 'Minhas Solicitações', path: '/solicitacoes' },
   ];
 
@@ -61,7 +58,7 @@ export function Sidebar() {
       <div className="p-6 flex items-center justify-between overflow-hidden">
         <div className={clsx("flex items-center gap-3 transition-opacity duration-500", isCollapsed ? "opacity-0 invisible" : "opacity-100 visible")}>
           <div className="flex items-center justify-center shrink-0">
-             <img src="/logo-branca.png" alt="Logo" className="h-9 object-contain dark:brightness-100 brightness-0 transition-all duration-300" />
+             <img src="/logo-branca.png" alt="Logo" className="h-9 object-contain dark:brightness-100 brightness-0 contrast-125 transition-all duration-300" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-[17px] font-black text-slate-900 dark:text-white leading-none tracking-tight">Sistema de Compras</h1>
@@ -80,7 +77,20 @@ export function Sidebar() {
       </div>
 
       {/* Nav Section */}
-      <div className="flex-1 px-3 py-4 space-y-8 overflow-y-auto no-scrollbar">
+      <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto no-scrollbar">
+        {!isCollapsed && (
+          <div className="px-3 mb-6">
+            <NavLink 
+              to="/nova-solicitacao"
+              className="w-full bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[11px] tracking-widest transition-all shadow-lg shadow-primary-500/20 active:scale-95 group/btn relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+              <PlusCircle size={18} strokeWidth={3} className="relative z-10" />
+              <span className="relative z-10 uppercase">Nova Solicitação</span>
+            </NavLink>
+          </div>
+        )}
+
         <div>
           {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500/60">Menu Principal</p>}
           <nav className="space-y-1">
