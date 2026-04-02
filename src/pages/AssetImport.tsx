@@ -36,6 +36,8 @@ const DEFAULT_MAP: Mapping = {
   categoria: '',
   local: '',
   usuario_nome: '',
+  empresa: '',
+  departamento: '',
   valor: '',
   fornecedor: '',
   data_compra: '',
@@ -48,6 +50,7 @@ export default function AssetImport() {
   
   const [step, setStep] = useState(1); // 1: Upload, 2: Mapping, 3: Preview, 4: Results
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState('');
   const [rawData, setRawData] = useState<ImportRow[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
@@ -87,6 +90,8 @@ export default function AssetImport() {
           if (c.includes('modelo')) newMap.modelo = col;
           if (c.includes('serie') || c.includes('série') || c === 'sn') newMap.numero_serie = col;
           if (c.includes('categoria')) newMap.categoria = col;
+          if (c.includes('empresa')) newMap.empresa = col;
+          if (c.includes('departamento') || c.includes('depto')) newMap.departamento = col;
           if (c.includes('valor') || c.includes('preço')) newMap.valor = col;
           if (c.includes('local') || c.includes('unidade')) newMap.local = col;
           if (c.includes('usuario') || c.includes('usuário') || c.includes('dono')) newMap.usuario_nome = col;
@@ -113,8 +118,10 @@ export default function AssetImport() {
         marca: row[mapping.marca] || '',
         modelo: row[mapping.modelo] || '',
         numero_serie: row[mapping.numero_serie] || '',
-        local: row[mapping.local] || '',
-        usuario_nome: row[mapping.usuario_nome] || '',
+        local: row[mapping.local] || null,
+        usuario_nome: row[mapping.usuario_nome] || null,
+        empresa: row[mapping.empresa] || null,
+        departamento: row[mapping.departamento] || null,
         categoria: parsed.categoria || row[mapping.categoria] || 'Outros',
         valor: parseFloat(String(row[mapping.valor] || '0').replace(',', '.')),
         fornecedor: row[mapping.fornecedor] || '',
@@ -170,6 +177,8 @@ export default function AssetImport() {
           numero_serie: item.numero_serie,
           local: item.local,
           usuario_nome_importado: item.usuario_nome,
+          empresa: item.empresa,
+          departamento: item.departamento,
           valor: item.valor,
           fornecedor: item.fornecedor,
           status: 'em_estoque'
@@ -273,17 +282,40 @@ export default function AssetImport() {
       {/* STEP 1: UPLOAD */}
       {step === 1 && (
         <div 
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            const file = e.dataTransfer.files?.[0];
+            if (file) {
+              // Trigger the same logic as file input
+              const fakeEvent = { target: { files: [file] } } as any;
+              handleFileUpload(fakeEvent);
+            }
+          }}
           className={clsx(
             "rounded-[2.5rem] border-4 border-dashed p-20 text-center space-y-8 transition-all duration-500 relative group overflow-hidden",
-            loading ? "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 pointer-events-none" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-500/50 hover:bg-primary-50/50 dark:hover:bg-primary-900/10"
+            isDragging 
+              ? "bg-primary-50/80 dark:bg-primary-900/20 border-primary-500 dark:border-primary-400 shadow-[0_0_40px_rgba(99,102,241,0.2)] scale-[1.01]" 
+              : loading 
+                ? "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 pointer-events-none" 
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-500/50 hover:bg-primary-50/50 dark:hover:bg-primary-900/10"
           )}
         >
-           <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40 rounded-[2rem] flex items-center justify-center mx-auto text-slate-400 group-hover:text-primary-600 transition-colors duration-500 group-hover:scale-110">
+           <div className={clsx(
+             "w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto transition-all duration-500",
+             isDragging 
+               ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600 scale-125 rotate-[-6deg]" 
+               : "bg-slate-50 dark:bg-slate-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40 text-slate-400 group-hover:text-primary-600 group-hover:scale-110"
+           )}>
               <FileBox size={48} />
            </div>
            <div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Selecione seu arquivo</h3>
-              <p className="text-slate-500 font-medium mt-1">Formatos suportados: .xlsx, .xls e .csv (Planilhas reias com dados variados)</p>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                {isDragging ? 'Solte o arquivo aqui!' : 'Selecione seu arquivo'}
+              </h3>
+              <p className="text-slate-500 font-medium mt-1">Formatos suportados: .xlsx, .xls e .csv (Planilhas reais com dados variados)</p>
            </div>
            <div className="pt-4 flex flex-col items-center gap-4 relative z-10">
               <label 
@@ -443,7 +475,15 @@ export default function AssetImport() {
               </div>
            </div>
 
-           <div className="flex justify-between items-center bg-slate-950 dark:bg-white p-8 rounded-[2.5rem] shadow-2xl">
+           <div className="flex justify-between items-center bg-slate-950 dark:bg-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+              {loading && (
+                <div className="absolute inset-0 bg-slate-950/80 dark:bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center rounded-[2.5rem]">
+                  <div className="flex items-center gap-4 text-white dark:text-slate-900">
+                    <div className="w-8 h-8 border-3 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin"></div>
+                    <span className="font-black text-lg tracking-wider">IMPORTANDO DADOS...</span>
+                  </div>
+                </div>
+              )}
               <div className="text-white dark:text-slate-950">
                  <h4 className="font-black text-lg">Pronto para processar?</h4>
                  <p className="text-white/60 dark:text-slate-500 font-bold text-sm">Os dados serão validados quanto a duplicidade final antes de salvar.</p>
@@ -451,7 +491,7 @@ export default function AssetImport() {
               <button 
                 onClick={handleExecuteImport}
                 disabled={loading}
-                className="bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 disabled:opacity-50"
+                className="bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {loading ? 'IMPORTANDO...' : (
                    <>

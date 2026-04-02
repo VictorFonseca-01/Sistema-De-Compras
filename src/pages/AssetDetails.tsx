@@ -57,10 +57,10 @@ export default function AssetDetails() {
   }
 
   const statusColors: any = {
-    em_estoque: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    em_uso: 'bg-blue-100 text-blue-700 border-blue-200',
-    manutencao: 'bg-amber-100 text-amber-700 border-amber-200',
-    baixado: 'bg-rose-100 text-rose-700 border-rose-200',
+    em_estoque: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-sm shadow-emerald-500/5',
+    em_uso: 'bg-blue-500/10 text-blue-600 border-blue-500/20 shadow-sm shadow-blue-500/5',
+    manutencao: 'bg-amber-500/10 text-amber-600 border-amber-500/20 shadow-sm shadow-amber-500/5',
+    baixado: 'bg-rose-500/10 text-rose-600 border-rose-500/20 shadow-sm shadow-rose-500/5',
   };
 
   const statusLabels: any = {
@@ -70,8 +70,36 @@ export default function AssetDetails() {
     baixado: 'Ativo Baixado / Descarte',
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse">Carregando detalhes do ativo...</div>;
-  if (!asset) return <div className="p-20 text-center">Ativo não encontrado.</div>;
+  if (loading) return (
+    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+      <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded mb-4"></div>
+      <div className="flex justify-between items-end">
+        <div className="space-y-4">
+          <div className="h-6 w-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
+          <div className="h-12 w-96 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl"></div>
+          <div className="h-6 w-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
+        </div>
+        <div className="flex gap-3">
+          <div className="h-14 w-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
+          <div className="h-14 w-14 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 h-[600px] bg-slate-50 dark:bg-slate-900/50 animate-pulse rounded-[2.5rem]"></div>
+        <div className="h-[400px] bg-slate-50 dark:bg-slate-900/50 animate-pulse rounded-[2.5rem]"></div>
+      </div>
+    </div>
+  );
+  if (!asset) return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-[2rem] flex items-center justify-center mb-6">
+        <Package size={40} />
+      </div>
+      <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Ativo não encontrado</h2>
+      <p className="text-slate-500 font-medium">Verifique o link ou se o item ainda existe no inventário.</p>
+      <button onClick={() => navigate('/estoque')} className="mt-8 text-primary-600 font-black uppercase text-xs tracking-widest hover:underline">Voltar ao Estoque</button>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700 pb-20">
@@ -95,13 +123,14 @@ export default function AssetDetails() {
              </p>
           </div>
           <div className="flex gap-3">
-             <button 
-               onClick={() => navigate('/entregar', { state: { assetId: asset.id } })}
-               className="bg-slate-950 dark:bg-white dark:text-slate-950 text-white px-8 py-3.5 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl active:scale-95"
-             >
-               <Truck size={20} strokeWidth={3} />
-               ENTREGAR P/ USUÁRIO
-             </button>
+              <button 
+                onClick={() => navigate('/entregar', { state: { assetId: asset.id } })}
+                disabled={asset.status !== 'em_estoque'}
+                className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-3.5 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95 disabled:opacity-50 disabled:grayscale"
+              >
+                <Truck size={20} strokeWidth={3} />
+                ENTREGAR P/ USUÁRIO
+              </button>
              <button className="p-3.5 bg-white dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 rounded-2xl hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
                <MoreVertical size={20} />
              </button>
@@ -201,12 +230,12 @@ export default function AssetDetails() {
                    {/* Linha vertical */}
                    {i !== movements.length - 1 && <div className="absolute left-[19px] top-8 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800"></div>}
                    
-                   {/* Circle */}
+                   {/* Circle with glow */}
                    <div className={clsx(
-                     "absolute left-0 top-1 w-10 h-10 rounded-2xl border-4 border-white dark:border-slate-950 flex items-center justify-center z-10 transition-all",
-                     move.tipo === 'entrada' ? 'bg-emerald-500 text-white' : 
-                     move.tipo === 'entrega' ? 'bg-blue-500 text-white' :
-                     'bg-slate-400 text-white'
+                     "absolute left-0 top-1 w-10 h-10 rounded-2xl border-4 border-white dark:border-slate-950 flex items-center justify-center z-10 transition-all shadow-sm",
+                     move.tipo === 'entrada' ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 
+                     move.tipo === 'entrega' ? 'bg-blue-500 text-white shadow-blue-500/20' :
+                     'bg-slate-400 text-white shadow-slate-400/20'
                    )}>
                       {move.tipo === 'entrada' ? <Package size={14} /> : 
                        move.tipo === 'entrega' ? <User size={14} /> :

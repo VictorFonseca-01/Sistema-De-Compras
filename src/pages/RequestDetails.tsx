@@ -231,6 +231,40 @@ export default function RequestDetails() {
         comment: actionComment || comment || 'Status atualizado pela central de decisão.'
       }]);
 
+      // 3. Notificações Inteligentes
+      const notifications = [];
+
+      // A. Notificar o Solicitante sempre
+      notifications.push({
+        user_id: request.user_id,
+        title: `Pedido ${nextStatus === 'rejected' ? 'Recusado' : 'Atualizado'}`,
+        message: `Sua solicitação "${request.title}" avançou para: ${statusLabels[nextStatus] || nextStatus}.`,
+        link: `/solicitacoes/${request.id}`
+      });
+
+      // B. Notificar o próximo Time de Aprovação
+      if (['pending_ti', 'pending_compras', 'pending_diretoria'].includes(nextStatus)) {
+        const targetRole = nextStep; // 'ti', 'compras', ou 'diretoria'
+        const { data: team } = await supabase.from('profiles').select('id').eq('role', targetRole);
+        
+        if (team) {
+          team.forEach(member => {
+            if (member.id !== profile.id) { // Não notificar quem acabou de aprovar
+              notifications.push({
+                user_id: member.id,
+                title: 'Ação Necessária: Pendência',
+                message: `Há uma solicitação de "${request.title}" aguardando sua análise técnica/financeira.`,
+                link: `/solicitacoes/${request.id}`
+              });
+            }
+          });
+        }
+      }
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+
       setComment('');
       fetchRequest();
     } else {
@@ -239,8 +273,28 @@ export default function RequestDetails() {
     setActionLoading(false);
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse font-black text-slate-300 uppercase tracking-widest">Carregando Auditoria...</div>;
-  if (!request) return <div className="p-20 text-center font-bold">Solicitação não encontrada ou acesso negado.</div>;
+  if (loading) return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-pulse pb-20">
+      <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded mb-6"></div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 h-[600px] border border-slate-200 dark:border-slate-800"></div>
+        <div className="w-full lg:w-96 space-y-8">
+           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 h-64 border border-slate-200 dark:border-slate-800"></div>
+           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 h-96 border border-slate-200 dark:border-slate-800"></div>
+        </div>
+      </div>
+    </div>
+  );
+  if (!request) return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-[2rem] flex items-center justify-center mb-6">
+        <AlertCircle size={40} />
+      </div>
+      <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Solicitação não encontrada</h2>
+      <p className="text-slate-500 font-medium">Você não tem permissão para ver este item ou ele foi removido.</p>
+      <button onClick={() => navigate('/solicitacoes')} className="mt-8 text-primary-600 font-black uppercase text-xs tracking-widest hover:underline">Voltar à Lista</button>
+    </div>
+  );
 
   const currentStatus = statusMap[request.status] || { label: request.status, color: 'text-slate-700', bg: 'bg-slate-100', icon: Clock };
   const isApprover = profile?.role === request.current_step || profile?.role === 'master_admin';

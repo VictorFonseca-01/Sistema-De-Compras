@@ -145,9 +145,9 @@ export default function AssetDelivery() {
         )}
 
         <div className="grid grid-cols-1 gap-8">
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
+          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8 hover:border-primary-500/30 transition-all duration-500 group">
              <h3 className="text-xl font-black flex items-center gap-3">
-               <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
+               <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                  <Package size={20} />
                </div>
                Equipamento Selecionado
@@ -155,17 +155,22 @@ export default function AssetDelivery() {
              <div className="flex gap-4 items-end">
                <div className="flex-1 space-y-3">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ativo disponível</label>
-                 <SearchableSelect 
-                   options={assetOptions}
-                   value={selectedAssetId}
-                   onChange={setSelectedAssetId}
-                   placeholder="Selecione o patrimônio..."
-                 />
+                 {loading ? (
+                   <div className="h-[60px] w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
+                 ) : (
+                   <SearchableSelect 
+                     options={assetOptions}
+                     value={selectedAssetId}
+                     onChange={setSelectedAssetId}
+                     placeholder="Selecione o patrimônio..."
+                   />
+                 )}
                </div>
                <button 
                  type="button"
                  onClick={() => setShowScanner(true)}
-                 className="h-[60px] px-6 bg-slate-900 text-white rounded-2xl flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg"
+                 disabled={loading}
+                 className="h-[60px] px-6 bg-slate-900 text-white dark:bg-white dark:text-slate-950 rounded-2xl flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50"
                >
                  <Barcode size={20} />
                  Scan
@@ -181,21 +186,25 @@ export default function AssetDelivery() {
              )}
           </section>
 
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
+          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8 hover:border-blue-500/30 transition-all duration-500 group">
              <h3 className="text-xl font-black flex items-center gap-3">
-               <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center">
+               <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                  <User size={20} />
                </div>
                Colaborador de Destino
              </h3>
              <div className="space-y-3">
                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Funcionário Recebedor</label>
-               <SearchableSelect 
-                 options={userOptions}
-                 value={selectedUserId}
-                 onChange={setSelectedUserId}
-                 placeholder="Buscar colaborador por nome..."
-               />
+               {loading ? (
+                 <div className="h-[60px] w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
+               ) : (
+                 <SearchableSelect 
+                   options={userOptions}
+                   value={selectedUserId}
+                   onChange={setSelectedUserId}
+                   placeholder="Buscar colaborador por nome..."
+                 />
+               )}
              </div>
           </section>
 

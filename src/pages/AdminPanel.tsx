@@ -202,9 +202,10 @@ export default function AdminPanel() {
               className="flex-1 px-4 py-2.5 bg-transparent border-none outline-none font-bold text-slate-900 dark:text-white" 
             />
         </div>
-        <div className="bg-primary-600 text-white p-6 rounded-3xl shadow-lg shadow-primary-600/20 flex flex-col justify-center">
-           <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Total de Contas</p>
-           <p className="text-2xl font-black">{users.length}</p>
+        <div className="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 flex flex-col justify-center relative overflow-hidden group hover:scale-[1.02] transition-all duration-500">
+           <Shield className="absolute -right-6 -bottom-6 text-white/10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700" size={120} />
+           <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1 relative z-10">Total de Contas</p>
+           <p className="text-4xl font-black relative z-10">{users.length}</p>
         </div>
       </div>
 
@@ -223,9 +224,32 @@ export default function AdminPanel() {
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="px-8 py-10 h-20 bg-slate-50/10"></td>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+                        <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="h-6 w-24 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="h-4 w-28 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded animate-pulse ml-auto"></div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex justify-center gap-1">
+                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
+                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : filteredUsers.length === 0 ? (
@@ -234,7 +258,7 @@ export default function AdminPanel() {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group">
+                  <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all group hover:-translate-y-0.5 duration-300">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 border border-slate-200 dark:border-slate-700 group-hover:bg-primary-600 group-hover:text-white group-hover:border-primary-600 transition-all">

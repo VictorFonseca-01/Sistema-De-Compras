@@ -24,6 +24,44 @@ const statusMap: Record<string, { label: string; color: string; bg: string; icon
   adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
 };
 
+// --- Skeleton Components ---
+function MetricSkeleton() {
+  return (
+    <div className="bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 animate-pulse">
+      <div className="flex flex-col gap-5">
+        <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
+        <div>
+          <div className="w-24 h-3 bg-slate-100 dark:bg-slate-800 rounded-full mb-3"></div>
+          <div className="w-16 h-9 bg-slate-100 dark:bg-slate-800 rounded-xl mb-1"></div>
+        </div>
+        <div className="pt-4 border-t border-slate-50 dark:border-white/5">
+          <div className="w-28 h-2 bg-slate-100 dark:bg-slate-800 rounded-full mb-2"></div>
+          <div className="w-20 h-5 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="divide-y divide-slate-50 dark:divide-slate-800">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex items-center justify-between p-6 animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800"></div>
+            <div>
+              <div className="w-48 h-4 bg-slate-100 dark:bg-slate-800 rounded-lg mb-2"></div>
+              <div className="w-32 h-3 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+            </div>
+          </div>
+          <div className="w-28 h-7 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { profile } = useProfile();
   const [stats, setStats] = useState([
@@ -86,39 +124,48 @@ export default function Dashboard() {
         </Link>
       </header>
 
-      {/* Grid de Métricas SaaS */}
+      {/* Grid de Métricas SaaS — com Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.label} className="group bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none transition-all duration-300 relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} rounded-bl-[100px] opacity-20 -mr-8 -mt-8 group-hover:scale-110 transition-transform`}></div>
-            <div className="flex flex-col gap-4 relative z-10">
-              <div className={`${stat.color} ${stat.bg} p-3 rounded-2xl w-fit`}>
-                <stat.icon size={28} />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">
-                  {stat.label}
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-black text-slate-900 dark:text-white">
-                    {loading ? '...' : stat.value}
-                  </p>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1.5 whitespace-nowrap">
-                    Solicitações
-                  </p>
+        {loading ? (
+          <>
+            <MetricSkeleton />
+            <MetricSkeleton />
+            <MetricSkeleton />
+            <MetricSkeleton />
+          </>
+        ) : (
+          stats.map((stat) => (
+            <div key={stat.label} className="group bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+              <div className={`absolute top-0 right-0 w-28 h-28 ${stat.bg} rounded-bl-[100px] opacity-20 -mr-10 -mt-10 group-hover:scale-125 transition-transform duration-500`}></div>
+              <div className="flex flex-col gap-5 relative z-10">
+                <div className={`${stat.color} ${stat.bg} p-3.5 rounded-2xl w-fit transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-3deg]`}>
+                  <stat.icon size={28} />
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-50 dark:border-white/5">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-70">Total Acumulado (R$)</p>
-                   <p className={clsx("text-lg font-black", stat.color)}>R$ {loading ? '...' : stat.total}</p>
+                <div>
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">
+                    {stat.label}
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-black text-slate-900 dark:text-white">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-tighter mb-1.5 whitespace-nowrap">
+                      Solicitações
+                    </p>
+                  </div>
+                  <div className="mt-5 pt-5 border-t border-slate-50 dark:border-white/5">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-70">Total Acumulado (R$)</p>
+                     <p className={clsx("text-lg font-black", stat.color)}>R$ {stat.total}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Atividade Recente */}
+        {/* Atividade Recente — com Skeleton */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <h3 className="text-xl font-bold flex items-center gap-2">
@@ -130,7 +177,9 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="flex-1">
-             {recentRequests.length > 0 ? (
+             {loading ? (
+               <ActivitySkeleton />
+             ) : recentRequests.length > 0 ? (
                <div className="divide-y divide-slate-50 dark:divide-slate-800">
                  {recentRequests.map((req) => (
                    <Link key={req.id} to={`/solicitacao/${req.id}`} className="flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">

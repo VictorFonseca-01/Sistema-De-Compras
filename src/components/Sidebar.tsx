@@ -103,20 +103,21 @@ export function Sidebar() {
                 className={({ isActive }) => clsx(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm" 
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm shadow-primary-500/5" 
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white hover:shadow-sm"
                 )}
               >
                 {({ isActive }) => (
                   <>
-                    <item.icon size={20} className={clsx("shrink-0 transition-transform group-hover:scale-110", isCollapsed && "mx-auto", isActive && "text-primary-600 dark:text-primary-500")} />
-                    {!isCollapsed && <span>{item.label}</span>}
+                    <item.icon size={20} className={clsx("shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-3deg]", isCollapsed && "mx-auto", isActive && "text-primary-600 dark:text-primary-500 drop-shadow-[0_0_6px_rgba(99,102,241,0.4)]")} />
+                    {!isCollapsed && <span className="transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>}
                     {isActive && !isCollapsed && (
-                      <span className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-500 animate-in fade-in zoom-in duration-300"></span>
+                      <span className="absolute right-3 w-2 h-2 rounded-full bg-primary-600 dark:bg-primary-500 shadow-lg shadow-primary-500/50 animate-pulse"></span>
                     )}
                     {isCollapsed && (
-                      <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                      <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-xl translate-x-1 group-hover:translate-x-0">
                         {item.label}
+                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-700 rotate-45"></div>
                       </div>
                     )}
                   </>
@@ -137,11 +138,11 @@ export function Sidebar() {
                   onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
                    className={({ isActive }) => clsx(
                     "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group",
-                    isActive && item.path === '/admin' ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    isActive && item.path === '/admin' ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm shadow-primary-500/5" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white hover:shadow-sm"
                   )}
                 >
-                  <item.icon size={20} className={clsx("shrink-0", isCollapsed && "mx-auto")} />
-                  {!isCollapsed && <span>{item.label}</span>}
+                  <item.icon size={20} className={clsx("shrink-0 transition-all duration-300 group-hover:scale-110", isCollapsed && "mx-auto")} />
+                  {!isCollapsed && <span className="transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>}
                 </NavLink>
               ))}
             </nav>
@@ -150,7 +151,7 @@ export function Sidebar() {
       </div>
 
       {/* Footer Area */}
-      <div className="p-4 border-t border-slate-800 mt-auto">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 mt-auto">
         <NavLink 
           to="/configuracoes"
           onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}

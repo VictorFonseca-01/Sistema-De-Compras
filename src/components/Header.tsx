@@ -115,11 +115,16 @@ export function Header() {
               if (!showNotifications) fetchNotifications();
               setShowNotifications(!showNotifications);
             }}
-            className="p-2.5 text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl relative transition-all active:scale-95"
+            className="p-2.5 text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl relative transition-all active:scale-95 group/bell"
           >
-            <Bell size={20} />
+            <Bell size={20} className="transition-transform duration-300 group-hover/bell:rotate-12" />
             {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"></span>
+              <>
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-[9px] font-black text-white shadow-lg shadow-rose-500/40">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-rose-500 rounded-full animate-ping opacity-30"></span>
+              </>
             )}
           </button>
 

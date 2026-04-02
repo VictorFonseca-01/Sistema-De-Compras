@@ -16,7 +16,7 @@
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Outfit', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -25,11 +25,30 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbar Premium Style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full transition-all hover:bg-primary-500/50;
+}
+
+::selection {
+  @apply bg-primary-500/20 text-primary-700 dark:text-primary-300;
+}
+
 body {
   margin: 0;
   display: flex;
   min-width: 320px;
   min-height: 100vh;
+  @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-primary-500/30 overflow-x-hidden;
 }
 
 #root {
@@ -37,7 +56,43 @@ body {
 }
 
 @layer base {
-  body {
-    @apply bg-slate-50 text-slate-900;
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
   }
+  
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover, 
+  .dark input:-webkit-autofill:focus, 
+  .dark input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #020617 inset !important;
+    -webkit-text-fill-color: white !important;
+  }
+}
+
+/* Premium SaaS Utilities */
+@layer components {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-white/5;
+  }
+  
+  .premium-card {
+    @apply bg-white dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-primary-500/50 transition-all duration-300;
+  }
+
+  .premium-glow {
+    @apply relative after:absolute after:inset-0 after:bg-primary-500/20 after:blur-2xl after:opacity-0 hover:after:opacity-100 transition-opacity;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }

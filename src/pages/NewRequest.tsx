@@ -117,6 +117,26 @@ export default function NewRequest() {
 
       if (requestError) throw requestError;
 
+      // 1.5. Notificar Gestores do Departamento
+      if (request && profile?.department) {
+        // Buscar gestores do mesmo departamento
+        const { data: gestores } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'gestor')
+          .eq('department', profile.department);
+
+        if (gestores && gestores.length > 0) {
+          const notificationsToInsert = gestores.map(g => ({
+            user_id: g.id,
+            title: 'Nova Solicitação Pendente',
+            message: `O colaborador ${profile.full_name} criou uma nova solicitação: "${form.title}".`,
+            link: `/solicitacoes/${request.id}`
+          }));
+          await supabase.from('notifications').insert(notificationsToInsert);
+        }
+      }
+
       if (links.length > 0 && request) {
         const linksToInsert = links.map(l => ({
           request_id: request.id,
@@ -183,7 +203,7 @@ export default function NewRequest() {
           {/* Seção 1: Identificação */}
           <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
             <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Zap size={20} />
               </div>
               Identificação do Item
@@ -221,7 +241,7 @@ export default function NewRequest() {
           {/* Seção 2: Prioridade e Custo */}
           <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
              <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <BadgeDollarSign size={20} />
               </div>
               Prioridade e Investimento
@@ -265,7 +285,7 @@ export default function NewRequest() {
           {/* Seção 3: Justificativa */}
           <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10 space-y-8">
             <h3 className="text-xl font-black flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <FileText size={20} />
               </div>
               Justificativa Técnica

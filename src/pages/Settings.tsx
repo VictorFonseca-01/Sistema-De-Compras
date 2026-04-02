@@ -114,8 +114,8 @@ export default function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sidebar de Configurações */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary-500 to-primary-700 mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-primary-500/20 mb-6">
+          <div className="glass rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary-500 to-primary-700 mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-primary-500/20 mb-6 animate-float">
               {profile?.full_name?.charAt(0).toUpperCase()}
             </div>
             <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{profile?.full_name}</h2>
@@ -123,11 +123,11 @@ export default function Settings() {
               {roleLabels[profile?.role || 'usuario']}
             </p>
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
+               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Mail size={16} className="text-slate-300" />
                   {profile?.email}
                </div>
-               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
+               <div className="flex items-center gap-3 text-sm text-slate-500 font-medium hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Building2 size={16} className="text-slate-300" />
                   {profile?.department || 'GLOBAL'}
                </div>
@@ -210,20 +210,20 @@ export default function Settings() {
                 Aparência e Sistema
               </h3>
 
-              <div className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 group hover:border-primary-500/30 transition-all duration-300">
                  <div>
-                    <h4 className="font-black text-slate-900 dark:text-white">Modo Noturno (Dark)</h4>
+                    <h4 className="font-black text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">Modo Noturno (Dark)</h4>
                     <p className="text-sm text-slate-500 font-medium">Ativar interface visual escura para ambientes com pouca luz.</p>
                  </div>
                  <button 
                   onClick={toggleTheme}
                   className={clsx(
-                    "w-16 h-8 rounded-full transition-all relative flex items-center",
+                    "w-16 h-8 rounded-full transition-all relative flex items-center shadow-inner",
                     darkMode ? "bg-primary-600" : "bg-slate-300"
                   )}
                  >
                     <div className={clsx(
-                      "w-6 h-6 bg-white rounded-full shadow-md absolute transition-all flex items-center justify-center",
+                      "w-6 h-6 bg-white rounded-full shadow-lg absolute transition-all flex items-center justify-center",
                       darkMode ? "translate-x-9" : "translate-x-1"
                     )}>
                       {darkMode ? <Moon size={14} className="text-primary-600" /> : <Sun size={14} className="text-slate-400" />}

@@ -139,9 +139,26 @@ export default function MyRequests() {
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan={4} className="px-8 py-10 h-20 bg-slate-50/10"></td>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col gap-2">
+                        <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
+                        <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 animate-pulse rounded opacity-50"></div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col gap-2">
+                        <div className="h-4 w-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
+                        <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800 animate-pulse rounded opacity-50"></div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="h-7 w-28 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl"></div>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl ml-auto"></div>
+                    </td>
                   </tr>
                 ))
               ) : filteredRequests.length === 0 ? (
@@ -154,7 +171,7 @@ export default function MyRequests() {
                 filteredRequests.map((req) => {
                   const status = statusMap[req.status] || { label: req.status, color: 'text-slate-700', bg: 'bg-slate-100', icon: Clock };
                   return (
-                    <tr key={req.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all cursor-pointer group" onClick={() => navigate(`/solicitacao/${req.id}`)}>
+                    <tr key={req.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all cursor-pointer group hover:-translate-y-0.5 duration-300" onClick={() => navigate(`/solicitacao/${req.id}`)}>
                       <td className="px-8 py-6">
                         <div className="flex flex-col">
                           <span className="font-black text-slate-900 dark:text-white text-sm">
