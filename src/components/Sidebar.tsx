@@ -96,7 +96,7 @@ export function Sidebar() {
           <nav className="space-y-1">
             {navItems.map((item) => (
               <NavLink
-                key={item.path}
+                key={item.label}
                 to={item.path}
                 className={({ isActive }) => clsx(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
