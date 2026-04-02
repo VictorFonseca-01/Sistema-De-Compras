@@ -10,7 +10,10 @@ import {
   Table as TableIcon,
   CheckCircle,
   Filter,
-  Package
+  Package,
+  ChevronUp,
+  ChevronDown,
+  ArrowUpDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
@@ -32,20 +35,40 @@ export default function Inventory() {
   const [showScanner, setShowScanner] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'recent' | 'az'>('recent');
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAssets();
-  }, [statusFilter, sortOrder]);
+  }, [statusFilter, sortOrder, sortConfig]);
+
+  const toggleSort = (key: string) => {
+    setSortConfig(current => {
+      if (current?.key === key) {
+        return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const getSortIcon = (key: string) => {
+    if (sortConfig?.key !== key) return <ArrowUpDown size={12} className="opacity-20 group-hover/th:opacity-50 transition-opacity" />;
+    return sortConfig.direction === 'asc' ? <ChevronUp size={12} className="text-gp-blue" /> : <ChevronDown size={12} className="text-gp-blue" />;
+  };
 
   async function fetchAssets() {
     setLoading(true);
     let query = supabase
       .from('assets')
-      .select('*')
-      .order(sortOrder === 'az' ? 'nome_item' : 'created_at', { 
+      .select('*');
+
+    if (sortConfig) {
+      query = query.order(sortConfig.key, { ascending: sortConfig.direction === 'asc' });
+    } else {
+      query = query.order(sortOrder === 'az' ? 'nome_item' : 'created_at', { 
         ascending: sortOrder === 'az' 
       });
+    }
 
     if (statusFilter !== 'todos') {
       query = query.eq('status', statusFilter);
@@ -175,14 +198,19 @@ export default function Inventory() {
             />
           </div>
           
-          <div className="flex items-center gap-1 bg-gp-surface2 p-1 rounded-xl border border-gp-border">
-             {[{ id: 'recent', label: 'Recentes' }, { id: 'az', label: 'A-Z' }].map((sort) => (
+          <div className="flex items-center bg-gp-navy2 p-1 rounded-full border border-gp-border w-fit shadow-inner">
+             {[
+               { id: 'recent', label: 'Recentes' }, 
+               { id: 'az', label: 'A-Z' }
+             ].map((sort) => (
                 <button 
                   key={sort.id} 
-                  onClick={() => setSortOrder(sort.id as any)} 
+                  onClick={() => { setSortOrder(sort.id as any); setSortConfig(null); }} 
                   className={clsx(
-                    "px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", 
-                    sortOrder === sort.id ? "bg-gp-blue text-white shadow-md shadow-gp-blue/20" : "text-gp-text3 hover:text-gp-text"
+                    "px-7 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-widest transition-all duration-300 relative", 
+                    sortOrder === sort.id && !sortConfig
+                      ? "bg-gp-blue text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]" 
+                      : "text-gp-text3 hover:text-gp-text"
                   )}
                 >
                   {sort.label}
@@ -237,12 +265,37 @@ export default function Inventory() {
         <table className="gp-table">
           <thead>
             <tr>
-              <th>Ativo / Identificação</th>
-              <th>Especificações</th>
-              <th>Localidade & Empresa</th>
-              <th>Responsável (Import.)</th>
-              <th>Status</th>
-              <th className="text-right">Ação</th>
+              <th onClick={() => toggleSort('numero_patrimonio')} className="cursor-pointer group/th">
+                <div className="flex items-center gap-2">
+                  PATRIMÔNIO
+                  {getSortIcon('numero_patrimonio')}
+                </div>
+              </th>
+              <th onClick={() => toggleSort('nome_item')} className="cursor-pointer group/th">
+                <div className="flex items-center gap-2">
+                  MARCA / MODELO
+                  {getSortIcon('nome_item')}
+                </div>
+              </th>
+              <th onClick={() => toggleSort('local')} className="cursor-pointer group/th">
+                <div className="flex items-center gap-2">
+                  LOCAL
+                  {getSortIcon('local')}
+                </div>
+              </th>
+              <th onClick={() => toggleSort('usuario_nome_importado')} className="cursor-pointer group/th">
+                <div className="flex items-center gap-2">
+                  USUÁRIO (IMPORT.)
+                  {getSortIcon('usuario_nome_importado')}
+                </div>
+              </th>
+              <th onClick={() => toggleSort('status')} className="cursor-pointer group/th">
+                <div className="flex items-center gap-2">
+                  SITUAÇÃO
+                  {getSortIcon('status')}
+                </div>
+              </th>
+              <th className="text-right">AÇÕES</th>
             </tr>
           </thead>
           <tbody>
