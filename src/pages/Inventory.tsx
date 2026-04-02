@@ -9,8 +9,6 @@ import {
   Trash2,
   AlertTriangle,
   Table as TableIcon,
-  ChevronLeft,
-  ChevronRight,
   X,
   CheckCircle
 } from 'lucide-react';
