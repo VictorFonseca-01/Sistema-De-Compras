@@ -5,16 +5,20 @@ import {
   Barcode, 
   Plus, 
   ExternalLink,
-  Warehouse
+  Warehouse,
+  Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { BarcodeScanner } from '../components/BarcodeScanner';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Inventory() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [categoryFilter, setCategoryFilter] = useState('todos');
@@ -48,6 +52,35 @@ export default function Inventory() {
   // Extrair categorias e locais únicos para os filtros
   const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
   const uniqueLocals = Array.from(new Set(assets.map(a => a.local).filter(Boolean)));
+
+  async function handleEmptyInventory() {
+    if (!profile || profile.role !== 'master_admin') return;
+
+    if (!confirm('⚠️ ATENÇÃO: Você está prestes a apagar TODOS os itens do estoque permanentemente. Esta ação não pode ser desfeita. Deseja continuar?')) {
+      return;
+    }
+
+    if (!confirm('Última chance: Todos os registros patrimoniais serão deletados. Tem certeza absoluta?')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('assets')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Deleta tudo que não tem esse ID impossível
+
+      if (error) throw error;
+      
+      alert('Estoque esvaziado com sucesso!');
+      fetchAssets();
+    } catch (err: any) {
+      alert('Erro ao esvaziar estoque: ' + err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   const filteredAssets = assets.filter(a => {
     const matchesSearch = 
@@ -93,6 +126,17 @@ export default function Inventory() {
           <p className="text-slate-500 text-lg">Inventário centralizado de ativos e hardware.</p>
         </div>
         <div className="flex gap-3">
+          {profile?.role === 'master_admin' && assets.length > 0 && (
+            <button 
+              onClick={handleEmptyInventory}
+              disabled={isDeleting}
+              className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+              title="Apagar todo o estoque"
+            >
+              <Trash2 size={20} />
+              {isDeleting ? 'Esvaziando...' : 'Esvaziar Estoque'}
+            </button>
+          )}
           <button 
             onClick={() => navigate('/importar-estoque')}
             className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 active:scale-95"
