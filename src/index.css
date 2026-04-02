@@ -717,3 +717,67 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-up { animation: fade-up 0.3s ease forwards; }
+
+/* ================================================================
+   PRINT SYSTEM
+   ================================================================ */
+@media print {
+  /* Hide UI elements */
+  aside, 
+  header, 
+  .print\:hidden,
+  button:not(.print-visible),
+  nav {
+    display: none !important;
+  }
+
+  /* Reset layout for print */
+  body, 
+  html, 
+  #root,
+  .flex.h-screen {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Expand main container */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Remove max-width and padding from the layout wrapper */
+  .max-w-7xl {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .gp-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    width: 100% !important;
+  }
+
+  /* Ensure colors are printed */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+}
