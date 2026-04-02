@@ -68,7 +68,7 @@ export function Sidebar() {
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={clsx(
-            "p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white",
+            "p-2 btn-premium-ghost rounded-lg",
             isCollapsed && "mx-auto"
           )}
         >
@@ -83,9 +83,9 @@ export function Sidebar() {
             <NavLink 
               to="/nova-solicitacao"
               onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
-              className="w-full bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[11px] tracking-widest transition-all shadow-lg shadow-primary-500/20 active:scale-95 group/btn relative overflow-hidden"
+              className="w-full btn-premium-primary py-3.5 rounded-2xl text-[11px] tracking-widest relative overflow-hidden group/link"
             >
-              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/link:translate-y-0 transition-transform duration-300"></div>
               <PlusCircle size={18} strokeWidth={3} className="relative z-10" />
               <span className="relative z-10 uppercase">Nova Solicitação</span>
             </NavLink>

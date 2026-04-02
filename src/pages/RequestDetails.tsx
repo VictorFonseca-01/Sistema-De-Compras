@@ -488,7 +488,7 @@ export default function RequestDetails() {
                     </div>
                     <button 
                       onClick={handleUpdateValue}
-                      className="px-4 bg-primary-600 text-white rounded-xl font-black text-xs hover:bg-primary-500 transition-all"
+                      className="btn-premium-primary px-4 rounded-xl text-xs"
                     >
                       OK
                     </button>
@@ -514,7 +514,7 @@ export default function RequestDetails() {
                     />
                     <button 
                       onClick={handleAddLink}
-                      className="px-4 bg-slate-900 text-white rounded-xl font-black transition-all active:scale-95"
+                      className="btn-premium-dark px-4 rounded-xl"
                     >
                       <Plus size={18} strokeWidth={3} />
                     </button>
@@ -555,7 +555,7 @@ export default function RequestDetails() {
                       else if (request.status === 'pending_diretoria') { nextStatus = 'approved'; nextStep = 'diretoria'; }
                       handleAction(nextStatus, nextStep);
                     }}
-                    className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full btn-premium-primary py-4 rounded-2xl shadow-lg"
                   >
                     {actionLoading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

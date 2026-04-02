@@ -136,7 +136,7 @@ export default function Settings() {
 
           <button 
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-3 py-5 bg-rose-50 dark:bg-rose-900/10 text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/20 rounded-[2rem] font-black transition-all active:scale-95 border border-rose-100 dark:border-rose-900/20"
+            className="btn-premium-danger w-full py-5 rounded-[2rem] shadow-sm"
           >
             <LogOut size={20} />
             SAIR DO SISTEMA
@@ -191,7 +191,7 @@ export default function Settings() {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="bg-primary-600 hover:bg-primary-500 text-white px-10 py-4 rounded-2xl font-black shadow-xl active:scale-95 disabled:opacity-50 flex items-center gap-2 transition-all"
+                  className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl active:scale-95"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

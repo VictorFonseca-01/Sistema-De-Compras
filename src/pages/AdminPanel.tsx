@@ -183,7 +183,7 @@ export default function AdminPanel() {
         </div>
         <button 
           onClick={() => setIsAddingUser(true)}
-          className="bg-slate-950 dark:bg-white dark:text-slate-950 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl active:scale-95"
+          className="btn-premium-primary px-6 py-3 rounded-2xl"
         >
           <UserPlus size={20} strokeWidth={3} />
           Novo Usuário
@@ -365,7 +365,7 @@ export default function AdminPanel() {
                        </div>
                     </div>
                     <div className="pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end gap-3">
-                       <button type="submit" disabled={actionLoading} className="bg-primary-600 hover:bg-primary-500 text-white px-10 py-4 rounded-2xl font-black shadow-xl active:scale-95 disabled:opacity-50">
+                       <button type="submit" disabled={actionLoading} className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl">
                          {actionLoading ? 'Processando...' : 'CRIAR CONTA'}
                        </button>
                     </div>
@@ -388,7 +388,7 @@ export default function AdminPanel() {
                       </div>
                    </div>
                    <div className="pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end gap-3">
-                       <button onClick={handeSaveUser} disabled={actionLoading} className="bg-primary-600 hover:bg-primary-500 text-white px-10 py-4 rounded-2xl font-black shadow-xl active:scale-95 disabled:opacity-50">
+                       <button onClick={handeSaveUser} disabled={actionLoading} className="btn-premium-primary px-10 py-4 rounded-2xl shadow-xl">
                          {actionLoading ? 'Salvando...' : 'SALVAR ALTERAÇÕES'}
                        </button>
                     </div>

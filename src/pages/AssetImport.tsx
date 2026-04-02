@@ -335,7 +335,7 @@ export default function AssetImport() {
       <header className="flex flex-col gap-4">
         <button 
           onClick={() => step > 1 ? setStep(step - 1) : navigate('/estoque')}
-          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 transition-colors"
+          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
         >
           <ArrowLeft size={14} /> {step > 1 ? 'Voltar Etapa' : 'Voltar ao Estoque'}
         </button>
@@ -387,7 +387,7 @@ export default function AssetImport() {
               <p className="text-slate-500 font-medium mt-1">Formatos suportados: .xlsx, .xls e .csv</p>
             </div>
             <div className="pt-4 flex flex-col items-center gap-4 relative z-10">
-              <label className={clsx("text-white px-12 py-5 rounded-[2rem] font-black shadow-xl shadow-primary-500/20 cursor-pointer transition-all flex items-center gap-3", loading ? "bg-primary-400" : "bg-primary-600 hover:bg-primary-500 active:scale-95 group-hover:scale-105")}>
+              <label className={clsx("btn-premium-primary px-12 py-5 rounded-[2rem] shadow-xl shadow-primary-500/20 cursor-pointer overflow-hidden", loading ? "bg-primary-400" : "group-hover:scale-105")}>
                  {loading ? (<><div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>PROCESSANDO...</>) : (<><Upload size={24} strokeWidth={3} />ESCOLHER PLANILHA</>)}
                  <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} disabled={loading} />
               </label>
@@ -429,9 +429,9 @@ export default function AssetImport() {
                  ))}
               </div>
               <div className="mt-12 pt-10 border-t border-slate-50 dark:border-slate-800 flex justify-end">
-                   <button onClick={handleProcessPreview} className="bg-slate-950 dark:bg-white dark:text-slate-950 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95">
-                     CONTINUAR PARA PREVIEW <ChevronRight size={20} />
-                   </button>
+                    <button onClick={handleProcessPreview} className="btn-premium-dark px-12 py-5 rounded-[2rem] shadow-xl">
+                      CONTINUAR PARA PREVIEW <ChevronRight size={20} />
+                    </button>
               </div>
            </div>
         </div>
@@ -449,7 +449,7 @@ export default function AssetImport() {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modo de Importação</p>
                     <div className="flex gap-2">
                        {['inserir', 'atualizar', 'ignorar_duplicados'].map(m => (
-                          <button key={m} onClick={() => setImportMode(m as any)} className={clsx("px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", importMode === m ? "bg-slate-950 dark:bg-white dark:text-slate-950 text-white border-transparent shadow-lg" : "text-slate-400 border-slate-200 dark:border-slate-800")}>{m.replace('_', ' ')}</button>
+                          <button key={m} onClick={() => setImportMode(m as any)} className={clsx("btn-premium px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800", importMode === m ? "bg-slate-950 dark:bg-white dark:text-slate-950 text-white border-transparent shadow-lg" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}>{m.replace('_', ' ')}</button>
                        ))}
                     </div>
                  </div>
@@ -494,7 +494,7 @@ export default function AssetImport() {
            <div className="flex justify-between items-center bg-slate-950 dark:bg-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
               {loading && (<div className="absolute inset-0 bg-slate-950/80 dark:bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center rounded-[2.5rem]"><div className="flex items-center gap-4 text-white dark:text-slate-900"><div className="w-8 h-8 border-3 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin"></div><span className="font-black text-lg tracking-wider">IMPORTANDO DADOS...</span></div></div>)}
               <div className="text-white dark:text-slate-950"><h4 className="font-black text-lg">Pronto para processar?</h4><p className="text-white/60 dark:text-slate-500 font-bold text-sm">Os dados serão validados quanto a duplicidade final antes de salvar.</p></div>
-              <button onClick={handleExecuteImport} disabled={loading} className="bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none">{loading ? 'IMPORTANDO...' : (<><Database size={24} strokeWidth={3} /> INICIAR IMPORTAÇÃO</>)}</button>
+              <button onClick={handleExecuteImport} disabled={loading} className="btn-premium-primary px-12 py-5 rounded-[2rem] shadow-xl">{loading ? 'IMPORTANDO...' : (<><Database size={24} strokeWidth={3} /> INICIAR IMPORTAÇÃO</>)}</button>
            </div>
         </div>
       )}
@@ -511,8 +511,8 @@ export default function AssetImport() {
                  <div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Erros</p><p className={clsx("text-4xl font-black transition-transform group-hover:scale-110", results.errors.length > 0 ? "text-rose-600" : "text-slate-200")}>{results.errors.length}</p></div>
               </div>
               <div className="pt-8 flex justify-center gap-4">
-                 <button onClick={() => navigate('/estoque')} className="px-10 py-5 bg-slate-950 dark:bg-white dark:text-slate-950 text-white rounded-[2rem] font-black shadow-xl active:scale-95 transition-all flex items-center gap-3"><PackageCheck size={24} /> IR PARA O ESTOQUE</button>
-                 <button onClick={() => setStep(1)} className="px-10 py-5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-[2rem] font-black active:scale-95 transition-all">NOVA IMPORTAÇÃO</button>
+                 <button onClick={() => navigate('/estoque')} className="btn-premium-dark px-10 py-5 rounded-[2rem] shadow-xl"><PackageCheck size={24} /> IR PARA O ESTOQUE</button>
+                 <button onClick={() => setStep(1)} className="btn-premium-secondary px-10 py-5 rounded-[2rem]">NOVA IMPORTAÇÃO</button>
               </div>
            </div>
            {results.errors.length > 0 && (

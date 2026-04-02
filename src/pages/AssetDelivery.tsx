@@ -128,7 +128,7 @@ export default function AssetDelivery() {
       <header className="flex flex-col gap-4">
         <button 
           onClick={() => navigate('/estoque')}
-          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 transition-colors"
+          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
         >
           <ArrowLeft size={14} /> Descartar
         </button>
@@ -229,7 +229,7 @@ export default function AssetDelivery() {
            <button
              type="submit"
              disabled={loading || !selectedAssetId || !selectedUserId}
-             className="w-full sm:w-auto bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-2xl shadow-primary-500/30 active:scale-95 disabled:opacity-50"
+             className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-[2rem] shadow-2xl shadow-primary-500/30"
            >
              {loading ? 'PROCESSANDO...' : (
                <>

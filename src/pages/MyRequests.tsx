@@ -95,7 +95,7 @@ export default function MyRequests() {
         </div>
         <Link 
           to="/nova-solicitacao"
-          className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95"
+          className="btn-premium-primary px-8 py-4 rounded-2xl shadow-xl shadow-primary-600/20"
         >
           <Plus size={22} strokeWidth={3} />
           NOVA SOLICITAÇÃO

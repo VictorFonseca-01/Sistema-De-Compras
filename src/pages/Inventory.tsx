@@ -143,19 +143,19 @@ export default function Inventory() {
           {profile?.role === 'master_admin' && assets.length > 0 && (
             <button 
               onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
-              className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95"
+              className="btn-premium-danger px-6 py-3 rounded-2xl"
             >
               <Trash2 size={20} />
               {isDeleting ? 'Esvaziando...' : 'Esvaziar Estoque'}
             </button>
           )}
-          <button onClick={() => navigate('/novo-ativo')} className="bg-primary-600 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary-500/20">
+          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary px-6 py-3 rounded-2xl">
             <Plus size={20} strokeWidth={3} /> Novo Ativo
           </button>
-          <button onClick={() => navigate('/importar-estoque')} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 active:scale-95">
+          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary px-6 py-3 rounded-2xl">
             <TableIcon size={20} /> Importar Excel
           </button>
-          <button onClick={() => setShowScanner(true)} className="bg-slate-950 dark:bg-white dark:text-slate-950 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl active:scale-95">
+          <button onClick={() => setShowScanner(true)} className="btn-premium-dark px-6 py-3 rounded-2xl">
             <Barcode size={20} strokeWidth={3} /> Escanear
           </button>
         </div>
@@ -213,7 +213,7 @@ export default function Inventory() {
            </div>
 
            {(categoryFilter !== 'todos' || localFilter !== 'todos') && (
-             <button onClick={() => { setCategoryFilter('todos'); setLocalFilter('todos'); }} className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline ml-2">Limpar Filtros</button>
+             <button onClick={() => { setCategoryFilter('todos'); setLocalFilter('todos'); }} className="btn-premium-ghost px-4 py-2 rounded-xl text-[9px] uppercase tracking-widest text-rose-500 hover:text-rose-600 border border-rose-100 dark:border-rose-900/30">Limpar Filtros</button>
            )}
         </div>
       </div>
@@ -254,9 +254,9 @@ export default function Inventory() {
           <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mostrando {Math.min(filteredAssets.length, ((currentPage - 1) * itemsPerPage) + 1)} - {Math.min(filteredAssets.length, currentPage * itemsPerPage)} de {filteredAssets.length} registros</p>
             <div className="flex gap-2">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all">Anterior</button>
-              {getPaginationGroup().map((page, i) => (<button key={i} disabled={page === '...'} onClick={() => typeof page === 'number' && setCurrentPage(page)} className={clsx("w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all", currentPage === page ? "bg-primary-600 text-white shadow-lg" : page === '...' ? "text-slate-300 cursor-default" : "text-slate-400 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800")}>{page}</button>))}
-              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all">Próxima</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="btn-premium-secondary px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800">Anterior</button>
+              {getPaginationGroup().map((page, i) => (<button key={i} disabled={page === '...'} onClick={() => typeof page === 'number' && setCurrentPage(page)} className={clsx("w-10 h-10 rounded-xl text-[10px] font-black flex items-center justify-center transition-all", currentPage === page ? "bg-primary-600 text-white shadow-lg pointer-events-none" : page === '...' ? "text-slate-300 cursor-default" : "btn-premium-secondary border border-slate-200 dark:border-slate-800")}>{page}</button>))}
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="btn-premium-secondary px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest border border-slate-200 dark:border-slate-800">Próxima</button>
             </div>
           </div>
         )}
@@ -270,9 +270,9 @@ export default function Inventory() {
                  <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">{emptyConfirmStep === 3 ? <CheckCircle size={28} /> : <AlertTriangle size={28} />}</div>
                  <button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50"><X size={24} /></button>
               </div>
-              {emptyConfirmStep === 1 && (<div className="space-y-4"><h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Esvaziar Estoque?</h3><p className="text-slate-500 font-medium leading-relaxed">Você está prestes a apagar permanentemente <strong className="text-slate-900 dark:text-white">{assets.length} registros</strong>. Tem certeza?</p><div className="pt-6 flex gap-3"><button onClick={() => setShowEmptyConfirm(false)} className="flex-1 px-4 py-3 rounded-2xl font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">CANCELAR</button><button onClick={() => setEmptyConfirmStep(2)} className="flex-1 px-4 py-3 rounded-2xl font-black bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-95 transition-all">SIM, CONTINUAR</button></div></div>)}
-              {emptyConfirmStep === 2 && (<div className="space-y-4"><h3 className="text-2xl font-black text-rose-600 tracking-tight">Última Chance</h3><p className="text-slate-500 font-medium leading-relaxed">Todos os dados patrimoniais vão desaparecer.</p><div className="pt-6 flex gap-3"><button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="flex-1 px-4 py-3 rounded-2xl font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all disabled:opacity-50">CANCELAR</button><button onClick={executeEmptyInventory} disabled={isDeleting} className="flex-1 px-4 py-3 rounded-2xl font-black bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center justify-center disabled:opacity-70">{isDeleting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'DELETAR TUDO'}</button></div></div>)}
-              {emptyConfirmStep === 3 && (<div className="space-y-4 text-center"><h3 className="text-2xl font-black text-emerald-600 tracking-tight mt-2">Sucesso!</h3><p className="text-slate-500 font-medium leading-relaxed">O estoque foi esvaziado com segurança.</p><div className="pt-6"><button onClick={() => setShowEmptyConfirm(false)} className="w-full px-4 py-3 rounded-2xl font-black bg-slate-900 dark:bg-white dark:text-slate-900 text-white shadow-lg active:scale-95 transition-all">FECHAR</button></div></div>)}
+              {emptyConfirmStep === 1 && (<div className="space-y-4"><h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Esvaziar Estoque?</h3><p className="text-slate-500 font-medium leading-relaxed">Você está prestes a apagar permanentemente <strong className="text-slate-900 dark:text-white">{assets.length} registros</strong>. Tem certeza?</p><div className="pt-6 flex gap-3"><button onClick={() => setShowEmptyConfirm(false)} className="flex-1 btn-premium-secondary px-4 py-3 rounded-2xl">CANCELAR</button><button onClick={() => setEmptyConfirmStep(2)} className="flex-1 btn-premium-danger px-4 py-3 rounded-2xl shadow-lg shadow-rose-500/20">SIM, CONTINUAR</button></div></div>)}
+              {emptyConfirmStep === 2 && (<div className="space-y-4"><h3 className="text-2xl font-black text-rose-600 tracking-tight">Última Chance</h3><p className="text-slate-500 font-medium leading-relaxed">Todos os dados patrimoniais vão desaparecer.</p><div className="pt-6 flex gap-3"><button onClick={() => setShowEmptyConfirm(false)} disabled={isDeleting} className="flex-1 btn-premium-secondary px-4 py-3 rounded-2xl disabled:opacity-50">CANCELAR</button><button onClick={executeEmptyInventory} disabled={isDeleting} className="flex-1 btn-premium-danger px-4 py-3 rounded-2xl shadow-lg shadow-rose-600/30 flex items-center justify-center disabled:opacity-70">{isDeleting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'DELETAR TUDO'}</button></div></div>)}
+              {emptyConfirmStep === 3 && (<div className="space-y-4 text-center"><h3 className="text-2xl font-black text-emerald-600 tracking-tight mt-2">Sucesso!</h3><p className="text-slate-500 font-medium leading-relaxed">O estoque foi esvaziado com segurança.</p><div className="pt-6"><button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-dark px-4 py-3 rounded-2xl shadow-lg">FECHAR</button></div></div>)}
             </div>
           </div>
         </div>

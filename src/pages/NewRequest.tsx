@@ -180,7 +180,7 @@ export default function NewRequest() {
         <div>
            <button 
              onClick={() => navigate(-1)}
-             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 mb-2 transition-colors"
+             className="btn-premium-ghost px-3 py-1 rounded-lg text-xs uppercase tracking-widest mb-2"
            >
              <ArrowLeft size={14} /> Voltar
            </button>
@@ -332,7 +332,7 @@ export default function NewRequest() {
                 <button 
                   type="button"
                   onClick={addLink}
-                  className="bg-primary-600 hover:bg-primary-500 text-white px-8 rounded-2xl font-black transition-all active:scale-95"
+                  className="btn-premium-primary px-8 rounded-2xl"
                 >
                   <Plus size={24} strokeWidth={3} />
                 </button>
@@ -361,14 +361,14 @@ export default function NewRequest() {
            <button
              type="button"
              onClick={() => navigate(-1)}
-             className="w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all order-2 sm:order-1"
+             className="w-full sm:w-auto btn-premium-secondary px-8 py-4 rounded-2xl order-2 sm:order-1"
            >
              DESCARTAR
            </button>
            <button
              type="submit"
              disabled={loading}
-             className="w-full sm:w-auto bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-2xl shadow-primary-500/30 active:scale-95 disabled:opacity-50 order-1 sm:order-2"
+             className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-[2rem] shadow-2xl shadow-primary-500/30 order-1 sm:order-2"
            >
              {loading ? (
                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>

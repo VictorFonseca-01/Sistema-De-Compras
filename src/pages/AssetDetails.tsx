@@ -106,7 +106,7 @@ export default function AssetDetails() {
       <header className="flex flex-col gap-4">
         <button 
           onClick={() => navigate('/estoque')}
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 transition-colors"
+          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
         >
           <ArrowLeft size={14} /> Voltar ao Estoque
         </button>
@@ -126,12 +126,12 @@ export default function AssetDetails() {
               <button 
                 onClick={() => navigate('/entregar', { state: { assetId: asset.id } })}
                 disabled={asset.status !== 'em_estoque'}
-                className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-3.5 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95 disabled:opacity-50 disabled:grayscale"
+                className="btn-premium-primary px-8 py-3.5 rounded-2xl shadow-xl shadow-primary-600/20"
               >
                 <Truck size={20} strokeWidth={3} />
                 ENTREGAR P/ USUÁRIO
               </button>
-             <button className="p-3.5 bg-white dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 rounded-2xl hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
+             <button className="btn-premium-secondary p-3.5 rounded-2xl shadow-sm">
                <MoreVertical size={20} />
              </button>
           </div>

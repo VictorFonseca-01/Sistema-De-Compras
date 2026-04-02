@@ -117,7 +117,7 @@ export default function Dashboard() {
         </div>
         <Link 
           to="/nova-solicitacao"
-          className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95"
+          className="btn-premium-primary px-8 py-4 rounded-2xl"
         >
           <Plus size={22} strokeWidth={3} />
           NOVA SOLICITAÇÃO
@@ -221,7 +221,7 @@ export default function Dashboard() {
               </p>
               <Link 
                 to="/nova-solicitacao" 
-                className="inline-flex items-center gap-2 bg-white text-primary-700 px-6 py-3 rounded-2xl font-black hover:bg-indigo-50 transition-all shadow-xl active:scale-95"
+                className="btn-premium px-6 py-3 rounded-2xl bg-white text-primary-700 hover:bg-indigo-50 shadow-xl"
               >
                 Nova Compra <Plus size={18} />
               </Link>

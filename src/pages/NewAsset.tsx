@@ -109,7 +109,7 @@ export default function NewAsset() {
       <header className="flex flex-col gap-4">
         <button 
           onClick={() => navigate('/estoque')}
-          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 transition-colors"
+          className="btn-premium-ghost px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest"
         >
           <ArrowLeft size={14} /> Voltar ao Inventário
         </button>
@@ -167,7 +167,7 @@ export default function NewAsset() {
                   <button 
                     type="button" 
                     onClick={() => setShowScanner(true)}
-                    className="w-14 h-14 bg-slate-900 text-white dark:bg-white dark:text-slate-950 rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-lg"
+                    className="btn-premium-dark w-14 h-14 rounded-2xl shadow-lg"
                   >
                     <Barcode size={24} />
                   </button>
@@ -300,14 +300,14 @@ export default function NewAsset() {
            <button
              type="button"
              onClick={() => navigate('/estoque')}
-             className="px-10 py-5 rounded-2xl font-black text-slate-400 hover:text-slate-900 transition-all"
+             className="btn-premium-ghost px-10 py-5 rounded-2xl text-slate-400 hover:text-rose-500"
            >
              DESCARTAR
            </button>
            <button
              type="submit"
              disabled={loading || !form.nome_item || !form.numero_patrimonio}
-             className="w-full sm:w-auto bg-primary-600 hover:bg-primary-500 text-white px-12 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 transition-all shadow-2xl shadow-primary-500/30 active:scale-95 disabled:opacity-50"
+             className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-[2rem] shadow-2xl shadow-primary-500/30"
            >
              {loading ? 'SALVANDO...' : (
                <>
