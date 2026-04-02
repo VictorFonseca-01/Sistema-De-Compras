@@ -86,9 +86,9 @@ export function Sidebar() {
             'w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200',
             isCollapsed && 'hidden'
           )}
-          style={{ color: 'var(--gp-text3)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-text2)'; (e.currentTarget as HTMLElement).style.background = 'var(--gp-hover)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-text3)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+          style={{ color: 'var(--gp-sidebar-text)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--gp-sidebar-hover)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
           <ChevronLeft size={14} />
         </button>
@@ -131,7 +131,7 @@ export function Sidebar() {
         {/* Main Menu */}
         <div>
           {!isCollapsed && (
-            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-text3)' }}>
+            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-sidebar-text)' }}>
               Menu Principal
             </p>
           )}
@@ -152,20 +152,21 @@ export function Sidebar() {
                 )}
                 style={({ isActive }) => ({
                   background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-                  color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+                  color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
                   borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
                 })}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement;
-                  if (!el.querySelector('.active-indicator')) {
-                    el.style.background = 'rgba(255,255,255,0.04)';
-                    el.style.color = 'var(--gp-text2)';
+                  if (!el.className.includes('active')) {
+                    el.style.background = 'var(--gp-sidebar-hover)';
+                    el.style.color = 'var(--gp-sidebar-text-active)';
                   }
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLElement;
-                  if (!el.className.includes('active-indicator')) {
-                    // let NavLink handle active state restoration through className
+                  if (!el.className.includes('active')) {
+                     el.style.background = 'transparent';
+                     el.style.color = 'var(--gp-sidebar-text)';
                   }
                 }}
               >
@@ -196,7 +197,7 @@ export function Sidebar() {
         {adminItems.length > 0 && (
           <div>
             {!isCollapsed && (
-              <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-text3)' }}>
+              <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-sidebar-text)' }}>
                 Administração
               </p>
             )}
@@ -214,9 +215,23 @@ export function Sidebar() {
                   )}
                   style={({ isActive }) => ({
                     background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-                    color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+                    color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
                     borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
                   })}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    if (!el.className.includes('active')) {
+                      el.style.background = 'var(--gp-sidebar-hover)';
+                      el.style.color = 'var(--gp-sidebar-text-active)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    if (!el.className.includes('active')) {
+                       el.style.background = 'transparent';
+                       el.style.color = 'var(--gp-sidebar-text)';
+                    }
+                  }}
                 >
                   {({ isActive }) => (
                     <>
@@ -238,9 +253,9 @@ export function Sidebar() {
           <button
             onClick={() => setIsCollapsed(false)}
             className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 mb-1"
-            style={{ color: 'var(--gp-text3)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text2)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text3)'; }}
+            style={{ color: 'var(--gp-sidebar-text)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-sidebar-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text-active)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text)'; }}
           >
             <ChevronRight size={14} />
           </button>
@@ -257,8 +272,22 @@ export function Sidebar() {
           )}
           style={({ isActive }) => ({
             background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-            color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-text3)',
+            color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
           })}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement;
+            if (!el.className.includes('active')) {
+              el.style.background = 'var(--gp-sidebar-hover)';
+              el.style.color = 'var(--gp-sidebar-text-active)';
+            }
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement;
+            if (!el.className.includes('active')) {
+               el.style.background = 'transparent';
+               el.style.color = 'var(--gp-sidebar-text)';
+            }
+          }}
         >
           {({ isActive }) => (
             <>

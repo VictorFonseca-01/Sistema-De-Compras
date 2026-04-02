@@ -94,7 +94,7 @@ export default function Dashboard() {
           };
         }, { count: 0, sum: 0 });
 
-        const totalInvestment = requests.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0);
+        const totalInvestment = stats_approved.sum;
 
         setRequestStats([
           // Linha 1: Visão Geral Financeira
@@ -336,7 +336,7 @@ export default function Dashboard() {
                 <p className="text-3xl font-black text-gp-text">
                   {chartData.reduce((acc, d) => acc + d.count, 0)}
                 </p>
-                <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-1">Ativos</p>
+                <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-1 opacity-70">Ativos</p>
               </div>
             </div>
 
@@ -385,7 +385,7 @@ export default function Dashboard() {
                 ? (
                   <div className="gp-empty py-16">
                     <div className="gp-empty-icon"><FileText size={24} /></div>
-                    <p className="text-[13px] font-bold uppercase tracking-widest opacity-50">Nenhuma solicitação ativa</p>
+                    <p className="text-[13px] font-bold uppercase tracking-widest text-gp-text3">Nenhuma solicitação ativa</p>
                   </div>
                 )
                 : recentRequests.map(req => {
@@ -442,7 +442,7 @@ export default function Dashboard() {
                 ? (
                   <div className="gp-empty py-16">
                     <div className="gp-empty-icon"><Activity size={24} /></div>
-                    <p className="text-[13px] font-bold uppercase tracking-widest opacity-50">Sem movimentações pendentes</p>
+                    <p className="text-[13px] font-bold uppercase tracking-widest text-gp-text3">Sem movimentações pendentes</p>
                   </div>
                 )
                 : recentMovements.map(move => (

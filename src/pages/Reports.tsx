@@ -10,6 +10,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
 export default function Reports() {
@@ -66,6 +67,8 @@ export default function Reports() {
     );
   }
 
+  const { theme } = useTheme();
+
   return (
     <div className="space-y-8 animate-fade-up pb-16 print:space-y-0 print:pb-0">
       {/* Header — Oculto na Impressão */}
@@ -96,16 +99,22 @@ export default function Reports() {
         
         {/* Report Brand Header */}
         <div className="flex justify-between items-start border-b border-gp-border pb-10 mb-10">
-           <div className="flex items-center gap-5">
-              <div 
-                className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl font-bold"
-                style={{ background: 'linear-gradient(135deg, var(--gp-blue) 0%, var(--gp-blue-dim) 100%)' }}
-              >G</div>
-              <div>
-                 <h2 className="text-xl font-bold text-gp-text leading-none tracking-tight">GLOBAL PARTNER</h2>
-                 <p className="text-gp-text3 font-bold uppercase tracking-widest text-[9px] mt-1.5">Inventory Management System • Executive Report</p>
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 flex items-center justify-center">
+                <img 
+                  src="/logo-branca.png" 
+                  alt="Global Parts" 
+                  className={clsx(
+                    "w-full h-full object-contain transition-all duration-300",
+                    theme === 'light' && "invert brightness-0"
+                  )} 
+                />
               </div>
-           </div>
+              <div>
+                <h2 className="text-xl font-black text-gp-text leading-none tracking-tight">GLOBAL PARTS</h2>
+                <p className="text-gp-text3 font-bold uppercase tracking-widest text-[9px] mt-1.5">Inventory Management System • Executive Report</p>
+              </div>
+            </div>
            <div className="text-right">
               <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-1.5 flex items-center justify-end gap-1.5">
                 <Calendar size={12} /> DATA DE EMISSÃO
@@ -195,7 +204,7 @@ export default function Reports() {
         {/* Footer Audit Information */}
         <div className="mt-16 pt-10 border-t border-gp-border">
            <p className="text-gp-text3 text-[11px] font-medium max-w-2xl mx-auto text-center leading-relaxed opacity-60">
-             Documento gerado automaticamente pelo Sistema de Inventário Global Partner. 
+             Documento gerado automaticamente pelo Sistema de Inventário Global Parts. 
              Informações baseadas nos registros ativos em tempo real do banco de dados corporativo.
            </p>
            <div className="mt-12 flex flex-col sm:flex-row justify-center gap-10 sm:gap-24">
