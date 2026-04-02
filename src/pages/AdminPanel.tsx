@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Shield, Building2, Clock, Edit2, Trash2, X, UserPlus, Search, Mail, ShieldAlert } from 'lucide-react';
-import type { Profile } from '../hooks/useProfile';
+import { useProfile, type Profile } from '../hooks/useProfile';
 import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -38,6 +38,7 @@ const supabaseAdminAuth = createClient(
 );
 
 export default function AdminPanel() {
+  const { profile: currentUser } = useProfile();
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,12 +276,14 @@ export default function AdminPanel() {
                         >
                           <Edit2 size={18} />
                         </button>
-                        <button 
-                          onClick={() => setUserToDelete(u)}
-                          className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 rounded-xl transition-all"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {u.id !== currentUser?.id && (
+                          <button 
+                            onClick={() => setUserToDelete(u)}
+                            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 rounded-xl transition-all"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

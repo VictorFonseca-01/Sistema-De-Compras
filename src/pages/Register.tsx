@@ -78,9 +78,9 @@ export default function Register() {
         <div className="bg-slate-950 p-12 text-white text-center border-b border-white/5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-transparent pointer-events-none opacity-50"></div>
           <div className="relative z-10 space-y-2">
-             <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary-600/20">
-                <User size={32} className="text-white" />
-             </div>
+              <div className="w-20 h-20 bg-slate-900/50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-white/5 p-4">
+                 <img src="/logo-branca.png" alt="Global Parts Logo" className="w-full h-full object-contain" />
+              </div>
              <h2 className="text-4xl font-black tracking-tighter uppercase">Criar Nova Conta</h2>
              <p className="text-primary-400 font-black text-[10px] uppercase tracking-[0.3em]">Sistema de Compras • Registro Corporativo</p>
           </div>

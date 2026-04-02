@@ -259,21 +259,21 @@ export default function RequestDetails() {
         <div className="flex-1 space-y-8 w-full">
           <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm p-10">
              <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
-               <div>
-                  <div className={clsx("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black border mb-6", currentStatus.bg, currentStatus.color, "border-current/10")}>
-                    <currentStatus.icon size={16} strokeWidth={3} />
-                    {currentStatus.label.toUpperCase()}
-                  </div>
-                  <h1 className="text-4xl font-black text-slate-900 dark:text-white leading-tight">
-                    {request.title}
-                  </h1>
-               </div>
-               <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 flex flex-col items-end shrink-0">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Custo Estimado</p>
-                  <p className="text-2xl font-black text-primary-600">
-                    R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-               </div>
+                <div className="flex-1">
+                   <div className={clsx("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black border mb-6", currentStatus.bg, currentStatus.color, "border-current/10")}>
+                     <currentStatus.icon size={14} strokeWidth={3} />
+                     {currentStatus.label.toUpperCase()}
+                   </div>
+                   <h1 className="text-4xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+                     {request.title}
+                   </h1>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700 flex flex-col items-end shrink-0 shadow-sm">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-70">VALOR ESTIMADO</p>
+                   <p className="text-3xl font-black text-primary-600">
+                     R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                   </p>
+                </div>
              </div>
 
              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50 dark:border-slate-800">

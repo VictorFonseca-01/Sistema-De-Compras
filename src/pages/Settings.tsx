@@ -59,6 +59,7 @@ export default function Settings() {
   const toggleTheme = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
+    
     if (newMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -66,6 +67,9 @@ export default function Settings() {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+    
+    // Forçar atualização visual de componentes que não ouvem a classe dark automaticamente
+    window.dispatchEvent(new Event('storage'));
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {

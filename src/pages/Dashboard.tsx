@@ -11,8 +11,10 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
+import { useProfile } from '../hooks/useProfile';
 
 export default function Dashboard() {
+  const { profile } = useProfile();
   const [stats, setStats] = useState([
     { label: 'Pendentes', value: '0', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', key: 'pending' },
     { label: 'Em Análise TI', value: '0', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10', key: 'pending_ti' },
@@ -51,17 +53,17 @@ export default function Dashboard() {
     <div className="space-y-10 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Bem-vindo, Colaborador
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            Bem-vindo, {profile?.full_name?.split(' ')[0] || 'Colaborador'}
           </h1>
-          <p className="text-slate-500 text-lg">Aqui está o que está acontecendo no sistema hoje.</p>
+          <p className="text-slate-500 text-lg font-medium">Aqui está o que está acontecendo no sistema hoje.</p>
         </div>
         <Link 
           to="/nova-solicitacao"
-          className="bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95"
+          className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all shadow-xl shadow-primary-600/20 active:scale-95"
         >
           <Plus size={22} strokeWidth={3} />
-          Nova Solicitação
+          NOVA SOLICITAÇÃO
         </Link>
       </header>
 

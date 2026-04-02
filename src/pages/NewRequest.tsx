@@ -355,7 +355,7 @@ export default function NewRequest() {
              ) : (
                <>
                  <Send size={22} strokeWidth={3} />
-                 PROTOCOLOAR SOLICITAÇÃO
+                 PROTOCOLAR SOLICITAÇÃO
                </>
              )}
            </button>
