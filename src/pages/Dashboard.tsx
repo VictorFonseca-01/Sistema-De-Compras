@@ -74,10 +74,18 @@ export default function Dashboard() {
         const counts = {
           pending: requests.filter(r => r.status.startsWith('pending')).length,
           approved: requests.filter(r => r.status === 'approved').length,
+          totalCost: requests.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
         };
         setRequestStats([
           { label: 'Pendentes', value: counts.pending, icon: Clock, colorClass: 'text-gp-warning', bgClass: 'bg-gp-warning/10' },
           { label: 'Aprovadas', value: counts.approved, icon: CheckCircle, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
+          { 
+            label: 'Investimento Total', 
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(counts.totalCost), 
+            icon: BarChart3, 
+            colorClass: 'text-gp-blue', 
+            bgClass: 'bg-gp-blue/10' 
+          },
         ]);
         setRecentRequests(
           [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
@@ -123,7 +131,7 @@ export default function Dashboard() {
             Dashboard
           </h1>
           <p className="gp-page-subtitle">
-            Bem-vindo, {profile?.full_name?.split(' ')[0] || 'usuário'}. Sistema operacional.
+            Olá, {profile?.full_name || 'usuário'}. O sistema está operacional e atualizado.
           </p>
         </div>
         <div className="flex gap-3 flex-shrink-0">
@@ -257,7 +265,7 @@ export default function Dashboard() {
                     return (
                       <Link
                         key={req.id}
-                        to={`/solicitacoes/${req.id}`}
+                        to={`/solicitacao/${req.id}`}
                         className="flex items-center gap-4 px-6 py-4 transition-all hover:bg-gp-surface2 border-b border-gp-border last:border-0 group"
                       >
                         <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">

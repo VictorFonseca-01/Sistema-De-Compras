@@ -15,7 +15,7 @@ import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
 export function Sidebar() {
-  const { profile } = useProfile();
+  const { profile, loading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   const navItems = [
@@ -34,6 +34,24 @@ export function Sidebar() {
   const adminItems: { icon: any; label: string; path: string }[] = [];
   if (profile?.role === 'master_admin') {
     adminItems.push({ icon: Users, label: 'Usuários', path: '/admin' });
+  }
+
+  if (loading) {
+     return (
+       <aside 
+         style={{ background: 'var(--gp-sidebar)', borderRight: '1px solid var(--gp-border)' }}
+         className={clsx('flex flex-col h-screen sticky top-0 animate-pulse', isCollapsed ? 'w-[68px]' : 'w-60')}
+       >
+         <div className="h-14 border-b border-gp-border flex items-center px-4">
+           <div className="w-8 h-8 rounded bg-white/5" />
+         </div>
+         <div className="p-4 space-y-4">
+           <div className="h-8 rounded bg-white/5" />
+           <div className="h-8 rounded bg-white/5 w-2/3" />
+           <div className="h-8 rounded bg-white/5" />
+         </div>
+       </aside>
+     );
   }
 
   return (

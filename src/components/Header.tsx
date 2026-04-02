@@ -181,10 +181,10 @@ export function Header() {
           {/* User info */}
           <div className="text-right hidden sm:block">
             <p className="text-[13px] font-semibold leading-none" style={{ color: 'var(--gp-text)' }}>
-              {profile?.full_name || '—'}
+              {profile?.full_name || 'Usuário'}
             </p>
             <p className="text-[10px] font-semibold mt-0.5 uppercase tracking-wide" style={{ color: 'var(--gp-blue-light)' }}>
-              {profile ? roleLabels[profile.role] : '…'}
+              {profile ? roleLabels[profile.role] : 'Acesso Geral'}
             </p>
           </div>
 

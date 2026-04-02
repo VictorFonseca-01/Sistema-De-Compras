@@ -59,6 +59,7 @@ export default function Inventory() {
   }
 
   const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
+  const uniqueLocals = Array.from(new Set(assets.map(a => a.local).filter(Boolean)));
 
   async function executeEmptyInventory() {
     setIsDeleting(true);
@@ -211,6 +212,15 @@ export default function Inventory() {
              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-transparent border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px]">
                <option value="todos">Todas</option>
                {uniqueCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+             </select>
+           </div>
+
+           <div className="flex items-center gap-2.5 px-4 py-2 bg-gp-surface2 border border-gp-border rounded-xl">
+             <Filter size={14} className="text-gp-text3" />
+             <span className="text-[10px] font-bold uppercase text-gp-text3 tracking-widest">Unidade/Local</span>
+             <select value={localFilter} onChange={(e) => setLocalFilter(e.target.value)} className="bg-transparent border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px]">
+               <option value="todos">Todos</option>
+               {uniqueLocals.map(loc => <option key={loc} value={loc}>{loc}</option>)}
              </select>
            </div>
 
