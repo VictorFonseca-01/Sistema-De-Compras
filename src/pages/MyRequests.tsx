@@ -30,13 +30,13 @@ interface Request {
 }
 
 const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-600', bg: 'bg-blue-500/10', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-indigo-600', bg: 'bg-indigo-500/10', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-600', bg: 'bg-purple-500/10', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', color: 'text-rose-600', bg: 'bg-rose-500/10', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-600', bg: 'bg-orange-500/10', icon: AlertCircle },
+  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
+  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
+  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
+  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
+  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
 };
 
 export default function MyRequests() {

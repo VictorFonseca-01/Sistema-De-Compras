@@ -6,7 +6,10 @@ import {
   Plus, 
   ExternalLink,
   Warehouse,
-  Trash2
+  Trash2,
+  AlertTriangle,
+  X,
+  CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
@@ -19,6 +22,8 @@ export default function Inventory() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showEmptyConfirm, setShowEmptyConfirm] = useState(false);
+  const [emptyConfirmStep, setEmptyConfirmStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [categoryFilter, setCategoryFilter] = useState('todos');
@@ -53,30 +58,21 @@ export default function Inventory() {
   const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
   const uniqueLocals = Array.from(new Set(assets.map(a => a.local).filter(Boolean)));
 
-  async function handleEmptyInventory() {
-    if (!profile || profile.role !== 'master_admin') return;
-
-    if (!confirm('⚠️ ATENÇÃO: Você está prestes a apagar TODOS os itens do estoque permanentemente. Esta ação não pode ser desfeita. Deseja continuar?')) {
-      return;
-    }
-
-    if (!confirm('Última chance: Todos os registros patrimoniais serão deletados. Tem certeza absoluta?')) {
-      return;
-    }
-
+  async function executeEmptyInventory() {
     setIsDeleting(true);
     try {
       const { error } = await supabase
         .from('assets')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Deleta tudo que não tem esse ID impossível
+        .neq('id', '00000000-0000-0000-0000-000000000000'); 
 
       if (error) throw error;
       
-      alert('Estoque esvaziado com sucesso!');
+      setEmptyConfirmStep(3); // Success step
       fetchAssets();
     } catch (err: any) {
       alert('Erro ao esvaziar estoque: ' + err.message);
+      setShowEmptyConfirm(false);
     } finally {
       setIsDeleting(false);
     }
@@ -128,9 +124,8 @@ export default function Inventory() {
         <div className="flex gap-3">
           {profile?.role === 'master_admin' && assets.length > 0 && (
             <button 
-              onClick={handleEmptyInventory}
-              disabled={isDeleting}
-              className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+              onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
+              className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-6 py-3 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95"
               title="Apagar todo o estoque"
             >
               <Trash2 size={20} />
@@ -369,6 +364,96 @@ export default function Inventory() {
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmação de Exclusão SaaS */}
+      {showEmptyConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 border border-slate-200 dark:border-slate-800">
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                 <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center shrink-0">
+                    {emptyConfirmStep === 3 ? <CheckCircle size={28} /> : <AlertTriangle size={28} />}
+                 </div>
+                 <button 
+                   onClick={() => setShowEmptyConfirm(false)}
+                   disabled={isDeleting}
+                   className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50"
+                 >
+                   <X size={24} />
+                 </button>
+              </div>
+
+              {emptyConfirmStep === 1 && (
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Esvaziar Estoque?</h3>
+                  <p className="text-slate-500 font-medium leading-relaxed">
+                    Você está prestes a apagar permanentemente <strong className="text-slate-900 dark:text-white">{assets.length} registros</strong> de ativos. Esta ação não pode ser desfeita. Tem certeza?
+                  </p>
+                  <div className="pt-6 flex gap-3">
+                    <button 
+                      onClick={() => setShowEmptyConfirm(false)}
+                      className="flex-1 px-4 py-3 rounded-2xl font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    >
+                      CANCELAR
+                    </button>
+                    <button 
+                      onClick={() => setEmptyConfirmStep(2)}
+                      className="flex-1 px-4 py-3 rounded-2xl font-black bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
+                    >
+                      SIM, CONTINUAR
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {emptyConfirmStep === 2 && (
+                 <div className="space-y-4">
+                  <h3 className="text-2xl font-black text-rose-600 tracking-tight">Última Chance</h3>
+                  <p className="text-slate-500 font-medium leading-relaxed">
+                    Para garantir que não foi um clique acidental, confirme novamente. Todos os dados patrimoniais vão desaparecer.
+                  </p>
+                  <div className="pt-6 flex gap-3">
+                    <button 
+                      onClick={() => setShowEmptyConfirm(false)}
+                      disabled={isDeleting}
+                      className="flex-1 px-4 py-3 rounded-2xl font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all disabled:opacity-50"
+                    >
+                      CANCELAR
+                    </button>
+                    <button 
+                      onClick={executeEmptyInventory}
+                      disabled={isDeleting}
+                      className="flex-1 px-4 py-3 rounded-2xl font-black bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center justify-center disabled:opacity-70"
+                    >
+                      {isDeleting ? (
+                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : 'DELETAR TUDO'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {emptyConfirmStep === 3 && (
+                 <div className="space-y-4 text-center">
+                  <h3 className="text-2xl font-black text-emerald-600 tracking-tight mt-2">Sucesso!</h3>
+                  <p className="text-slate-500 font-medium leading-relaxed">
+                    O estoque foi esvaziado com segurança.
+                  </p>
+                  <div className="pt-6">
+                    <button 
+                      onClick={() => setShowEmptyConfirm(false)}
+                      className="w-full px-4 py-3 rounded-2xl font-black bg-slate-900 dark:bg-white dark:text-slate-900 text-white shadow-lg active:scale-95 transition-all"
+                    >
+                      FECHAR
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

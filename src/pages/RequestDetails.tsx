@@ -52,13 +52,13 @@ interface Attachment {
 }
 
 const statusMap: Record<string, { label: string; color: string; bg: string; icon: any }> = {
-  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', color: 'text-blue-600', bg: 'bg-blue-500/10', icon: FileText },
-  pending_compras: { label: 'Em Compras', color: 'text-indigo-600', bg: 'bg-indigo-500/10', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-600', bg: 'bg-purple-500/10', icon: Clock },
-  approved: { label: 'Aprovado Final', color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', color: 'text-rose-600', bg: 'bg-rose-500/10', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-600', bg: 'bg-orange-500/10', icon: AlertCircle },
+  pending_gestor: { label: 'Aguardando Gestor', color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Clock },
+  pending_ti: { label: 'Em Análise TI', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: FileText },
+  pending_compras: { label: 'Em Compras', color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', color: 'text-purple-500', bg: 'bg-purple-500/10', icon: Clock },
+  approved: { label: 'Aprovado Final', color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
+  rejected: { label: 'Recusado', color: 'text-rose-500', bg: 'bg-rose-500/10', icon: XCircle },
+  adjustment_needed: { label: 'Ajuste Necessário', color: 'text-orange-500', bg: 'bg-orange-500/10', icon: AlertCircle },
 };
 
 export default function RequestDetails() {
@@ -503,14 +503,18 @@ export default function RequestDetails() {
                     }}
                     className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    <CheckCircle2 size={20} strokeWidth={3} /> APROVAR ETAPA
+                    {actionLoading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : ( <CheckCircle2 size={20} strokeWidth={3} /> )} APROVAR ETAPA
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleAction('rejected', request.current_step)}
                     className="w-full bg-white/10 hover:bg-rose-600 text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 border border-white/10"
                   >
-                    <XCircle size={20} /> REPROVAR TOTAL
+                    {actionLoading ? (
+                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : ( <XCircle size={20} /> )} REPROVAR TOTAL
                   </button>
                </div>
             </div>
