@@ -15,16 +15,32 @@ import {
   Activity,
   Calendar,
   Building2,
-  Cpu
+  Cpu,
+  X,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useProfile } from '../hooks/useProfile';
+import { assetService } from '../services/assetService';
+import { toast } from 'react-hot-toast';
 
 export default function AssetDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const [asset, setAsset] = useState<any>(null);
   const [movements, setMovements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Estados para Controle de Ação v5.0
+  const [actionModal, setActionModal] = useState<{ open: boolean; type: 'devolucao' | 'manutencao' | 'baixa' | 'movimentacao' | null }>({
+    open: false,
+    type: null
+  });
+  const [actionNotes, setActionNotes] = useState('');
+  const [newLocal, setNewLocal] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -57,6 +73,41 @@ export default function AssetDetails() {
     }
 
     setLoading(false);
+  }
+
+  async function handleActionConfirm() {
+    if (!profile || !actionModal.type) return;
+    
+    setIsProcessing(true);
+    let error: any = null;
+
+    try {
+      if (actionModal.type === 'devolucao') {
+        const result = await assetService.returnAsset(id!, profile.id, actionNotes);
+        error = result.error;
+      } else if (actionModal.type === 'movimentacao') {
+        const result = await assetService.updateAssetLocation(id!, newLocal, profile.id, actionNotes);
+        error = result.error;
+      } else {
+        const status = actionModal.type === 'manutencao' ? 'manutencao' : 'baixado';
+        const result = await assetService.updateAssetStatus(id!, status, profile.id, actionNotes);
+        error = result.error;
+      }
+
+      if (error) {
+        toast.error('Erro ao processar ação: ' + error.message);
+      } else {
+        toast.success(`Ação de ${actionModal.type} realizada com sucesso!`);
+        setActionModal({ open: false, type: null });
+        setActionNotes('');
+        setNewLocal('');
+        fetchAssetDetails(); // Atualiza a tela e o histórico
+      }
+    } catch (err: any) {
+      toast.error('Erro inesperado: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+    }
   }
 
   const statusMap: any = {
@@ -127,7 +178,7 @@ export default function AssetDetails() {
           </div>
           <div className="flex gap-3">
               <button 
-                onClick={() => navigate('/entregar', { state: { assetId: asset.id } })}
+                onClick={() => navigate('/entrega-ativo', { state: { assetId: asset.id } })}
                 disabled={asset.status !== 'em_estoque'}
                 className="btn-premium-primary px-6 py-3 rounded-xl shadow-gp-blue/20"
               >
@@ -220,7 +271,14 @@ export default function AssetDetails() {
                { icon: Ban, label: 'Baixa', color: 'text-gp-error', bg: 'bg-gp-error/10', hover: 'hover:border-gp-error' },
                { icon: Package, label: 'Mover Local', color: 'text-gp-text3', bg: 'bg-gp-surface3', hover: 'hover:border-gp-blue' }
              ].map((action, i) => (
-                <button key={i} className={clsx("flex flex-col items-center justify-center p-6 gp-card transition-all group", action.hover)}>
+                <button 
+                  key={i} 
+                  onClick={() => {
+                    const type = action.label.toLowerCase().replace('mover local', 'movimentacao') as any;
+                    setActionModal({ open: true, type });
+                  }}
+                  className={clsx("flex flex-col items-center justify-center p-6 gp-card transition-all group", action.hover)}
+                >
                    <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110", action.bg, action.color)}>
                       <action.icon size={22} />
                    </div>
@@ -290,6 +348,100 @@ export default function AssetDetails() {
            </div>
         </div>
       </div>
+
+      {/* Modal de Ação v5.0 */}
+      {actionModal.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gp-bg/80 backdrop-blur-sm animate-fade-in">
+          <div className="gp-card w-full max-w-lg shadow-2xl border-gp-blue/20 overflow-hidden animate-zoom-in">
+            <div className="p-8 space-y-6">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-4">
+                  <div className={clsx(
+                    "w-12 h-12 rounded-2xl flex items-center justify-center",
+                    actionModal.type === 'devolucao' ? 'bg-gp-blue/10 text-gp-blue' :
+                    actionModal.type === 'manutencao' ? 'bg-gp-warning/10 text-gp-warning' :
+                    actionModal.type === 'baixa' ? 'bg-gp-error/10 text-gp-error' :
+                    'bg-gp-surface3 text-gp-text'
+                  )}>
+                    {actionModal.type === 'devolucao' && <RotateCcw size={24} />}
+                    {actionModal.type === 'manutencao' && <Wrench size={24} />}
+                    {actionModal.type === 'baixa' && <Ban size={24} />}
+                    {actionModal.type === 'movimentacao' && <Package size={24} />}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gp-text capitalize">Confirmar {actionModal.type}</h3>
+                    <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest">Ação de Gestão de Ativos</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setActionModal({ open: false, type: null })}
+                  className="p-2 hover:bg-gp-surface2 rounded-xl transition-colors text-gp-text3"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {actionModal.type === 'movimentacao' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Nova Localização</label>
+                    <input 
+                      type="text"
+                      placeholder="Ex: Hangar 4, Setor Técnico B..."
+                      className="gp-input h-12"
+                      value={newLocal}
+                      onChange={e => setNewLocal(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Observações / Motivo</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Descreva o motivo desta ação..."
+                    className="gp-input p-4 resize-none min-h-[100px]"
+                    value={actionNotes}
+                    onChange={e => setActionNotes(e.target.value)}
+                  />
+                </div>
+
+                {actionModal.type === 'baixa' && (
+                  <div className="flex items-start gap-3 p-4 bg-gp-error/5 border border-gp-error/20 rounded-xl">
+                    <AlertTriangle size={20} className="text-gp-error shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-gp-error font-bold leading-relaxed">
+                      ATENÇÃO: A baixa de ativo é uma ação irreversível. O item será marcado como descartado ou fora de uso definitivo.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => setActionModal({ open: false, type: null })}
+                  disabled={isProcessing}
+                  className="flex-1 h-12 btn-premium-secondary rounded-xl text-[11px] font-bold"
+                >
+                  CANCELAR
+                </button>
+                <button 
+                  onClick={handleActionConfirm}
+                  disabled={isProcessing || (actionModal.type === 'movimentacao' && !newLocal)}
+                  className="flex-1 h-12 btn-premium-primary rounded-xl text-[11px] font-bold shadow-lg shadow-gp-blue/10"
+                >
+                  {isProcessing ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} /> CONFIRMAR
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

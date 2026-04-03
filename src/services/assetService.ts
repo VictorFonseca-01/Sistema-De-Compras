@@ -113,5 +113,83 @@ export const assetService = {
       }]);
 
     return { error: moveError };
+  },
+
+  /**
+   * Registra a devolução de um ativo (volta para o estoque).
+   */
+  async returnAsset(assetId: string, performByUserId: string, notes?: string) {
+    // 1. Marcar atribuições anteriores como encerradas
+    await supabase
+      .from('asset_assignments')
+      .update({ status: 'encerrado', returned_at: new Date().toISOString() })
+      .eq('asset_id', assetId)
+      .eq('status', 'ativo');
+
+    // 2. Voltar ativo para o estoque
+    const { error: assetError } = await supabase
+      .from('assets')
+      .update({ status: 'em_estoque' })
+      .eq('id', assetId);
+
+    if (assetError) return { error: assetError };
+
+    // 3. Registrar movimentação de devolução
+    const { error: moveError } = await supabase
+      .from('asset_movements')
+      .insert([{
+        asset_id: assetId,
+        tipo: 'devolucao',
+        user_id: performByUserId,
+        observacao: notes || 'Retorno de equipamento ao estoque.'
+      }]);
+
+    return { error: moveError };
+  },
+
+  /**
+   * Atualiza o status técnico (Manutenção, Baixa, etc)
+   */
+  async updateAssetStatus(assetId: string, newStatus: Asset['status'], performByUserId: string, notes?: string) {
+    const { error: assetError } = await supabase
+      .from('assets')
+      .update({ status: newStatus })
+      .eq('id', assetId);
+
+    if (assetError) return { error: assetError };
+
+    const { error: moveError } = await supabase
+      .from('asset_movements')
+      .insert([{
+        asset_id: assetId,
+        tipo: newStatus === 'manutencao' ? 'manutencao' : 'baixa',
+        user_id: performByUserId,
+        observacao: notes || `Alteração de status para ${newStatus}.`
+      }]);
+
+    return { error: moveError };
+  },
+
+  /**
+   * Move o ativo para uma nova localização física.
+   */
+  async updateAssetLocation(assetId: string, newLocal: string, performByUserId: string, notes?: string) {
+    const { error: assetError } = await supabase
+      .from('assets')
+      .update({ local: newLocal })
+      .eq('id', assetId);
+
+    if (assetError) return { error: assetError };
+
+    const { error: moveError } = await supabase
+      .from('asset_movements')
+      .insert([{
+        asset_id: assetId,
+        tipo: 'movimentacao',
+        user_id: performByUserId,
+        observacao: notes || `Mover para localização: ${newLocal}.`
+      }]);
+
+    return { error: moveError };
   }
 };

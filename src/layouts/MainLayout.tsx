@@ -5,6 +5,7 @@ import { Header } from '../components/Header';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { clsx } from 'clsx';
+import { Toaster } from 'react-hot-toast';
 
 export function MainLayout() {
   const [session, setSession] = useState<any>(null);
@@ -57,6 +58,17 @@ export function MainLayout() {
 
   return (
     <div className={clsx("flex h-screen overflow-hidden print:h-auto print:overflow-visible", theme)} style={{ background: 'var(--gp-bg)' }}>
+      <Toaster position="top-right" toastOptions={{
+        className: 'gp-toast',
+        style: {
+          background: 'var(--gp-surface2)',
+          color: 'var(--gp-text)',
+          border: '1px solid var(--gp-border)',
+          borderRadius: '1rem',
+          fontSize: '13px',
+          fontWeight: '600'
+        }
+      }} />
       <div className="print:hidden">
         <Sidebar theme={theme} />
       </div>
