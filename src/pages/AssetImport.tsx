@@ -240,12 +240,30 @@ export default function AssetImport() {
         status: 'em_estoque'
       }));
 
+      // --- Deduplicação de Planilha v4.5 (Filtro de Limpeza) ---
+      const seenPatsInBatch = new Set<string>();
+      const finalAssetsToProcess: typeof assetsToUpsertRaw = [];
+      
+      // Processamos de trás para frente para garantir que a ÚLTIMA informação da planilha prevaleça
+      for (let j = assetsToUpsertRaw.length - 1; j >= 0; j--) {
+        const asset = assetsToUpsertRaw[j];
+        const pat = asset.numero_patrimonio;
+        
+        if (pat && seenPatsInBatch.has(pat)) {
+          skippedCount++; // Contabilizamos como linha de planilha repetida
+          continue;
+        }
+        
+        if (pat) seenPatsInBatch.add(pat);
+        finalAssetsToProcess.unshift(asset);
+      }
+
       try {
         let resultData: any[] = [];
         
         if (importMode === 'ignorar_duplicados') {
-          const pats = assetsToUpsertRaw.map(a => a.numero_patrimonio).filter(Boolean) as string[];
-          const gpss = assetsToUpsertRaw.map(a => a.codigo_gps).filter(Boolean) as string[];
+          const pats = finalAssetsToProcess.map(a => a.numero_patrimonio).filter(Boolean) as string[];
+          const gpss = finalAssetsToProcess.map(a => a.codigo_gps).filter(Boolean) as string[];
           
           if (pats.length > 0 || gpss.length > 0) {
             let query = supabase.from('assets').select('numero_patrimonio, codigo_gps');
@@ -256,7 +274,7 @@ export default function AssetImport() {
             const { data: matched } = await query.or(conditions.join(','));
             const allExistingKeys = [...(matched || []).map(m => m.numero_patrimonio), ...(matched || []).map(m => m.codigo_gps)].filter(Boolean);
             
-            const filteredAssets = assetsToUpsertRaw.filter(a => {
+            const filteredAssets = finalAssetsToProcess.filter(a => {
               const isDupe = (a.numero_patrimonio && allExistingKeys.includes(a.numero_patrimonio)) || 
                              (a.codigo_gps && allExistingKeys.includes(a.codigo_gps));
               if (isDupe) skippedCount++;
@@ -270,7 +288,7 @@ export default function AssetImport() {
               successCount += resultData.length;
             }
           } else {
-             const { data: inserted, error } = await supabase.from('assets').insert(assetsToUpsertRaw).select('id');
+             const { data: inserted, error } = await supabase.from('assets').insert(finalAssetsToProcess).select('id');
               if (error) throw error;
               resultData = inserted || [];
               successCount += resultData.length;
@@ -279,13 +297,13 @@ export default function AssetImport() {
         } else if (importMode === 'atualizar') {
           const { data: upserted, error } = await supabase
             .from('assets')
-            .upsert(assetsToUpsertRaw, { onConflict: 'numero_patrimonio', ignoreDuplicates: false })
+            .upsert(finalAssetsToProcess, { onConflict: 'numero_patrimonio', ignoreDuplicates: false })
             .select('id');
           if (error) throw error;
           resultData = upserted || [];
           updatedCount += resultData.length;
         } else {
-          const { data: inserted, error } = await supabase.from('assets').insert(assetsToUpsertRaw).select('id');
+          const { data: inserted, error } = await supabase.from('assets').insert(finalAssetsToProcess).select('id');
           if (error) throw error;
           resultData = inserted || [];
           successCount += resultData.length;
