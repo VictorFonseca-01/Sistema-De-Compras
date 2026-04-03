@@ -94,7 +94,7 @@ BEGIN
     RAISE EXCEPTION 'Acesso negado. Apenas o Administrador Master pode zerar o estoque.';
   END IF;
 
-  DELETE FROM public.assets;
+  DELETE FROM public.assets WHERE id IS NOT NULL;
 END;
 $$;
 
