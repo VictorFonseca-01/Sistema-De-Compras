@@ -75,7 +75,7 @@ export default function AssetImport() {
   const [mapping, setMapping] = useState<Mapping>(DEFAULT_MAP);
   
   const [processedData, setProcessedData] = useState<any[]>([]);
-  const [importMode, setImportMode] = useState<'inserir' | 'atualizar' | 'ignorar_duplicados'>('inserir');
+  const [importMode, setImportMode] = useState<'inserir' | 'atualizar' | 'ignorar_duplicados'>('atualizar');
   const [results, setResults] = useState<{ success: number; updated: number; skipped: number; errors: any[] } | null>(null);
 
   // --- STEP 1: UPLOAD & READ ---
@@ -462,12 +462,12 @@ export default function AssetImport() {
               </div>
               <div className="gp-card p-8 col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-6">
                  <div className="flex-1 space-y-2">
-                    <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">Modo de Importação</p>
+                    <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">Configuração de Inteligência (v4.4)</p>
                     <div className="flex flex-wrap gap-2 pt-1">
                        {[
-                         {id: 'inserir', label: 'INSERIR NOVOS'}, 
-                         {id: 'atualizar', label: 'SOBREPOR DADOS'}, 
-                         {id: 'ignorar_duplicados', label: 'IGNORAR EXISTENTES'}
+                         {id: 'atualizar', label: '🚀 SINCRONIZAR TUDO (Recomendado)'}, 
+                         {id: 'inserir', label: 'SOMENTE NOVOS (Dá erro se existir)'}, 
+                         {id: 'ignorar_duplicados', label: 'PULAR EXISTENTES'}
                        ].map(m => (
                           <button 
                             key={m.id} 
@@ -486,6 +486,15 @@ export default function AssetImport() {
                  </div>
               </div>
            </div>
+
+           <div className="bg-gp-blue/10 border border-gp-blue/20 p-5 rounded-2xl flex gap-4 items-center animate-fade-up">
+              <div className="w-10 h-10 bg-gp-blue/20 text-gp-blue rounded-xl flex items-center justify-center shrink-0 border border-gp-blue/30 shadow-sm shadow-gp-blue/10">
+                <Database size={20} />
+              </div>
+              <p className="text-gp-text font-medium text-[13px] leading-snug">
+                <strong className="text-gp-blue">Dica Profissional:</strong> O modo <strong className="font-bold">Sincronizar Tudo</strong> identifica itens existentes pelo número do patrimônio e atualiza local, usuário e status automaticamente.
+              </p>
+            </div>
 
            <div className="gp-card overflow-hidden">
               <div className="p-8 border-b border-gp-border bg-gp-blue/5">
