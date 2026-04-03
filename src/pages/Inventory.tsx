@@ -279,7 +279,7 @@ export default function Inventory() {
              <select 
                value={statusFilter} 
                onChange={(e) => setStatusFilter(e.target.value)} 
-               className="bg-transparent border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px]"
+               className="bg-gp-surface2 border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px] hover:text-gp-blue transition-colors"
              >
                 {['todos', 'em_estoque', 'em_uso', 'manutencao', 'baixado'].map(st => (
                   <option key={st} value={st}>{st === 'todos' ? 'Todas' : statusLabels[st]}</option>

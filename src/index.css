@@ -189,12 +189,23 @@ body {
   color: var(--gp-text);
   overflow-x: hidden;
   display: flex;
+  color-scheme: light; /* Default light */
+}
+
+.dark body {
+  color-scheme: dark; /* Switch scrollbars and OS pickers to dark */
 }
 
 #root { width: 100%; }
 
 /* Autofill overrides */
 @layer base {
+  select {
+    color-scheme: light;
+  }
+  .dark select {
+    color-scheme: dark;
+  }
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
@@ -291,18 +302,21 @@ body {
     border-radius: 10px;
     color: var(--gp-text);
     font-size: 14px;
+    padding: 0 12px;
     transition: border-color 0.2s, box-shadow 0.2s;
     outline: none;
     cursor: pointer;
-    appearance: none;
   }
   .gp-select:focus {
     border-color: var(--gp-blue);
     box-shadow: 0 0 0 3px var(--gp-focus-ring);
   }
-  .gp-select option {
-    background: var(--gp-surface);
+  
+  /* Dropdown options styling */
+  select option {
+    background-color: var(--gp-surface2);
     color: var(--gp-text);
+    padding: 10px;
   }
 
   /* ── Tables ── */

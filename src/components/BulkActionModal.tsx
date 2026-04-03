@@ -93,7 +93,7 @@ export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isP
                   <select 
                     value={statusValue}
                     onChange={(e) => setStatusValue(e.target.value as any)}
-                    className="gp-input h-12 px-4 font-bold bg-transparent"
+                    className="gp-input h-12 px-4 font-bold bg-gp-surface2"
                   >
                     <option value="em_estoque">EM ESTOQUE (DEVOLVER)</option>
                     <option value="em_uso">EM USO EXTERNO</option>
