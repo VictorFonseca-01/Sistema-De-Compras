@@ -7,6 +7,8 @@ export interface Profile {
   full_name: string;
   role: 'master_admin' | 'usuario' | 'gestor' | 'ti' | 'compras' | 'diretoria';
   department?: string;
+  company_id?: string;
+  department_id?: string;
 }
 
 export function useProfile() {

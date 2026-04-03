@@ -118,15 +118,10 @@ export default function Dashboard() {
       if (!profile) return;
       setLoading(true);
 
-      let query = supabase.from('requests').select('*, profiles!inner(full_name, department)');
+      let query = supabase.from('requests').select('*, profiles!inner(full_name)');
       
-      // Filtros de RBAC (Role-Based Access Control)
-      if (profile.role === 'usuario') {
-        query = query.eq('user_id', profile.id);
-      } else if (profile.role === 'gestor') {
-        query = query.eq('profiles.department', profile.department);
-      }
-      // Outros cargos (ti, compras, diretoria, master_admin) veem tudo
+      // O RLS (Row Level Security) configurado no banco agora cuida da segurança.
+      // O Supabase só retornará os registros que o usuário tem permissão de ver.
 
       const { data: requests } = await query;
       if (requests) {

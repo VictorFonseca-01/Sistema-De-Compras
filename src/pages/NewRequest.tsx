@@ -129,7 +129,9 @@ export default function NewRequest() {
           estimated_cost: form.estimated_cost ? parseFloat(form.estimated_cost) : null,
           priority: form.priority,
           status: 'pending_gestor',
-          current_step: 'gestor'
+          current_step: 'gestor',
+          company_id: profile?.company_id,
+          department_id: profile?.department_id
         }])
         .select()
         .single();

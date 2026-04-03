@@ -7,24 +7,27 @@ import { SearchableSelect } from '../components/SearchableSelect';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { clsx } from 'clsx';
 
-const departmentOptions = [
-  { value: 'Administrativo', label: 'Administrativo' },
-  { value: 'Comercial', label: 'Comercial' },
-  { value: 'Compras', label: 'Compras' },
-  { value: 'Diretoria', label: 'Diretoria' },
-  { value: 'Engenharia', label: 'Engenharia' },
-  { value: 'Estoque', label: 'Estoque' },
-  { value: 'Financeiro', label: 'Financeiro' },
-  { value: 'Logística', label: 'Logística' },
-  { value: 'Operacional', label: 'Operacional' },
-  { value: 'Recursos Humanos', label: 'Recursos Humanos (RH)' },
-  { value: 'TI', label: 'Tecnologia (TI)' },
-  { value: 'Outro', label: 'Outro' },
-];
+interface Company {
+  id: string;
+  name: string;
+  city: string;
+}
+
+interface Department {
+  id: string;
+  name: string;
+}
+
+interface ManagerScope {
+  id?: string;
+  scope_type: 'company' | 'department' | 'custom';
+  company_id: string;
+  department_id?: string;
+}
 
 const roleOptions = [
   { value: 'usuario', label: 'Usuário Comum' },
-  { value: 'gestor', label: 'Gestor de Departamento' },
+  { value: 'gestor', label: 'Gestor (Acesso por Escopo)' },
   { value: 'ti', label: 'Tecnologia da Informação (TI)' },
   { value: 'compras', label: 'Departamento de Compras' },
   { value: 'diretoria', label: 'Diretoria' },
@@ -43,22 +46,54 @@ export default function AdminPanel() {
   const { profile: currentUser } = useProfile();
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
-  const [editForm, setEditForm] = useState({ role: '', department: '' });
+  const [editForm, setEditForm] = useState({ 
+    role: '', 
+    department_id: '', 
+    company_id: '',
+    department: '' 
+  });
   
+  const [userScopes, setUserScopes] = useState<ManagerScope[]>([]);
+  const [isAddingScope, setIsAddingScope] = useState(false);
+  const [newScope, setNewScope] = useState<ManagerScope>({ scope_type: 'company', company_id: '' });
+
   const [isAddingUser, setIsAddingUser] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', password: '', role: 'usuario', department: '' });
+  const [addForm, setAddForm] = useState({ 
+    name: '', 
+    email: '', 
+    password: '', 
+    role: 'usuario', 
+    department_id: '',
+    company_id: ''
+  });
   const [addError, setAddError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetchInitialData();
   }, []);
+
+  const fetchInitialData = async () => {
+    setLoading(true);
+    const [usersRes, companiesRes, deptsRes] = await Promise.all([
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('companies').select('*').eq('active', true),
+      supabase.from('departments').select('*').eq('active', true)
+    ]);
+
+    if (usersRes.data) setUsers(usersRes.data as Profile[]);
+    if (companiesRes.data) setCompanies(companiesRes.data);
+    if (deptsRes.data) setDepartments(deptsRes.data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (searchTerm) {
@@ -88,21 +123,66 @@ export default function AdminPanel() {
     setLoading(false);
   };
 
-  const handleEditClick = (u: Profile) => {
+  const handleEditClick = async (u: Profile) => {
     setEditingUser(u);
-    setEditForm({ role: u.role, department: u.department || '' });
+    setEditForm({ 
+      role: u.role, 
+      department_id: u.department_id || '', 
+      company_id: u.company_id || '',
+      department: u.department || ''
+    });
+
+    if (u.role === 'gestor') {
+      const { data } = await supabase.from('manager_scopes').select('*').eq('user_id', u.id).eq('active', true);
+      setUserScopes(data || []);
+    } else {
+      setUserScopes([]);
+    }
+  };
+
+  const addScope = async () => {
+    if (!editingUser || !newScope.company_id) return;
+    setActionLoading(true);
+    const { data, error } = await supabase.from('manager_scopes').insert([{
+      user_id: editingUser.id,
+      scope_type: newScope.scope_type,
+      company_id: newScope.company_id,
+      department_id: newScope.department_id || null
+    }]).select().single();
+
+    if (!error && data) {
+      setUserScopes([...userScopes, data]);
+      setIsAddingScope(false);
+      setNewScope({ scope_type: 'company', company_id: '' });
+    }
+    setActionLoading(false);
+  };
+
+  const removeScope = async (id: string) => {
+    setActionLoading(true);
+    const { error } = await supabase.from('manager_scopes').delete().eq('id', id);
+    if (!error) {
+      setUserScopes(userScopes.filter(s => s.id !== id));
+    }
+    setActionLoading(false);
   };
 
   const handeSaveUser = async () => {
     if (!editingUser) return;
     setActionLoading(true);
+
     const { error } = await supabase
       .from('profiles')
-      .update({ role: editForm.role as any, department: editForm.department })
+      .update({ 
+        role: editForm.role as any, 
+        department_id: editForm.department_id,
+        company_id: editForm.company_id,
+        department: departments.find(d => d.id === editForm.department_id)?.name // mantendo legado
+      })
       .eq('id', editingUser.id);
     
     if (!error) {
-       await fetchUsers();
+       await fetchInitialData();
        setEditingUser(null);
     } else {
       alert('Erro ao atualizar usuário: ' + error.message);
@@ -139,7 +219,12 @@ export default function AdminPanel() {
     const { data: newUser, error: signUpError } = await supabaseAdminAuth.auth.signUp({
       email: addForm.email,
       password: addForm.password,
-      options: { data: { full_name: addForm.name, department: addForm.department } }
+      options: { data: { 
+        full_name: addForm.name, 
+        department_id: addForm.department_id,
+        company_id: addForm.company_id,
+        department: departments.find(d => d.id === addForm.department_id)?.name // mantendo legado
+      } }
     });
 
     if (signUpError) {
@@ -155,7 +240,14 @@ export default function AdminPanel() {
         }
         await fetchUsers();
         setIsAddingUser(false);
-        setAddForm({ name: '', email: '', password: '', role: 'usuario', department: '' });
+        setAddForm({ 
+          name: '', 
+          email: '', 
+          password: '', 
+          role: 'usuario', 
+          department_id: '',
+          company_id: ''
+        });
       }
       setActionLoading(false);
     }, 2000);
@@ -349,8 +441,12 @@ export default function AdminPanel() {
                           <SearchableSelect options={roleOptions} value={addForm.role} onChange={val => setAddForm({...addForm, role: val})} placeholder="Selecione Role" />
                        </div>
                        <div>
-                          <label className={labelClass}>Departamento</label>
-                          <SearchableSelect options={departmentOptions} value={addForm.department} onChange={val => setAddForm({...addForm, department: val})} placeholder="Selecione Setor" />
+                          <label className={labelClass}>Unidade Principal</label>
+                          <SearchableSelect options={companies.map(c => ({ value: c.id, label: `${c.name} (${c.city})` }))} value={addForm.company_id} onChange={val => setAddForm({...addForm, company_id: val})} placeholder="Selecione Unidade" />
+                       </div>
+                       <div>
+                          <label className={labelClass}>Departamento Principal</label>
+                          <SearchableSelect options={departments.map(d => ({ value: d.id, label: d.name }))} value={addForm.department_id} onChange={val => setAddForm({...addForm, department_id: val})} placeholder="Selecione Setor" />
                        </div>
                     </div>
 
@@ -362,7 +458,7 @@ export default function AdminPanel() {
                     </div>
                   </form>
                 ) : editingUser && (
-                  <div className="space-y-8">
+                  <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-2">
                     <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border flex items-center gap-4">
                        <div className="w-12 h-12 rounded-lg bg-gp-surface3 flex items-center justify-center font-bold text-gp-text3">
                          {editingUser.full_name?.charAt(0).toUpperCase()}
@@ -376,21 +472,121 @@ export default function AdminPanel() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
                           <label className={labelClass}>Redefinir Nível</label>
-                          <SearchableSelect options={roleOptions} value={editForm.role} onChange={val => setEditForm({...editForm, role: val})} placeholder="Role" />
+                          <SearchableSelect options={roleOptions} value={editForm.role} onChange={val => {
+                              setEditForm({...editForm, role: val});
+                              if (val !== 'gestor') setUserScopes([]);
+                          }} placeholder="Role" />
                        </div>
                        <div>
-                          <label className={labelClass}>Remanejar Setor</label>
-                          <SearchableSelect options={departmentOptions} value={editForm.department} onChange={val => setEditForm({...editForm, department: val})} placeholder="Setor" />
+                          <label className={labelClass}>Unidade Principal</label>
+                          <SearchableSelect options={companies.map(c => ({ value: c.id, label: `${c.name} (${c.city})` }))} value={editForm.company_id} onChange={val => setEditForm({...editForm, company_id: val})} placeholder="Unidade" />
+                       </div>
+                       <div className="col-span-full">
+                          <label className={labelClass}>Remanejar Departamento</label>
+                          <SearchableSelect options={departments.map(d => ({ value: d.id, label: d.name }))} value={editForm.department_id} onChange={val => setEditForm({...editForm, department_id: val})} placeholder="Setor" />
                        </div>
                     </div>
 
-                    <div className="pt-6 mt-6 border-t border-gp-border flex justify-end gap-3">
-                       <button type="button" onClick={() => setEditingUser(null)} className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[12px]">CANCELAR</button>
-                       <button onClick={handeSaveUser} disabled={actionLoading} className="btn-premium-primary px-8 py-2.5 rounded-xl text-[12px]">
+                    {editForm.role === 'gestor' && (
+                       <div className="pt-8 space-y-6">
+                          <div className="flex items-center justify-between border-b border-gp-border pb-4">
+                             <div>
+                                <h4 className="font-bold text-gp-text flex items-center gap-2">
+                                   <Building2 size={18} className="text-gp-blue" />
+                                   Escopos de Visualização
+                                </h4>
+                                <p className="text-[11px] text-gp-text3 uppercase font-bold tracking-widest mt-1">Defina quais empresas/setores este gestor pode monitorar.</p>
+                             </div>
+                             <button 
+                                onClick={() => setIsAddingScope(!isAddingScope)}
+                                className="btn-premium-secondary px-4 py-2 rounded-lg text-[10px]"
+                             >
+                                {isAddingScope ? 'FECHAR' : 'NOVO ESCOPO'}
+                             </button>
+                          </div>
+
+                          {isAddingScope && (
+                             <div className="p-6 bg-gp-surface3 rounded-2xl border-2 border-gp-blue/20 space-y-5 animate-fade-up">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                   <div>
+                                      <label className={labelClass}>Tipo de Escopo</label>
+                                      <SearchableSelect 
+                                         options={[
+                                            { value: 'company', label: 'Empresa Inteira' },
+                                            { value: 'department', label: 'Depto Específico' }
+                                         ]} 
+                                         value={newScope.scope_type} 
+                                         onChange={val => setNewScope({...newScope, scope_type: val as any, department_id: undefined})} 
+                                      />
+                                   </div>
+                                   <div>
+                                      <label className={labelClass}>Empresa/Unidade</label>
+                                      <SearchableSelect 
+                                         options={companies.map(c => ({ value: c.id, label: c.name }))} 
+                                         value={newScope.company_id} 
+                                         onChange={val => setNewScope({...newScope, company_id: val})} 
+                                      />
+                                   </div>
+                                   {newScope.scope_type === 'department' && (
+                                      <div className="col-span-full">
+                                         <label className={labelClass}>Departamento</label>
+                                         <SearchableSelect 
+                                            options={departments.map(d => ({ value: d.id, label: d.name }))} 
+                                            value={newScope.department_id || ''} 
+                                            onChange={val => setNewScope({...newScope, department_id: val})} 
+                                         />
+                                      </div>
+                                   )}
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                   <button onClick={addScope} disabled={actionLoading || !newScope.company_id} className="btn-premium-primary px-6 py-2 rounded-xl text-[11px]">ADICIONAR REGRA</button>
+                                </div>
+                             </div>
+                          )}
+
+                          <div className="space-y-3">
+                             {userScopes.length === 0 ? (
+                                <p className="text-[12px] text-gp-text3 italic py-4 text-center border-2 border-dashed border-gp-border rounded-xl">Nenhum escopo configurado. O gestor não verá solicitações de terceiros.</p>
+                             ) : (
+                                userScopes.map((scope) => {
+                                   const company = companies.find(c => c.id === scope.company_id);
+                                   const dept = departments.find(d => d.id === scope.department_id);
+                                   return (
+                                      <div key={scope.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/30 transition-all">
+                                         <div className="flex items-center gap-4">
+                                            <div className={clsx(
+                                               "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                                               scope.scope_type === 'company' ? 'bg-gp-blue/10 text-gp-blue' : 'bg-gp-purple/10 text-gp-purple'
+                                            )}>
+                                               {scope.scope_type === 'company' ? <Building2 size={16} /> : <Users size={16} />}
+                                            </div>
+                                            <div>
+                                               <p className="text-[13px] font-bold text-gp-text">
+                                                  {scope.scope_type === 'company' ? `Toda a Unidade: ${company?.name}` : `Setor ${dept?.name} em ${company?.name}`}
+                                               </p>
+                                               <p className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest mt-0.5">
+                                                  {scope.scope_type === 'company' ? 'Visibilidade Total da Filial' : 'Visibilidade Restrita ao Setor'}
+                                               </p>
+                                            </div>
+                                         </div>
+                                         <button onClick={() => removeScope(scope.id!)} className="p-2 text-gp-text3 hover:text-gp-error transition-colors">
+                                            <Trash2 size={16} />
+                                         </button>
+                                      </div>
+                                   );
+                                })
+                             )}
+                          </div>
+                       </div>
+                    )}
+
+                    <div className="pt-6 mt-8 border-t border-gp-border flex justify-end gap-3 sticky bottom-0 bg-gp-surface py-4">
+                       <button type="button" onClick={() => setEditingUser(null)} className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[12px]">FECHAR</button>
+                       <button onClick={handeSaveUser} disabled={actionLoading} className="btn-premium-primary px-8 py-3 rounded-xl text-[12px] shadow-gp-blue/20">
                          {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (
                             <>
                               <Save size={16} />
-                              SALVAR ALTERAÇÕES
+                              SALVAR CONFIGURAÇÕES
                             </>
                          )}
                        </button>

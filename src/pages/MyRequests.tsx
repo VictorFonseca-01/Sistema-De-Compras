@@ -60,16 +60,10 @@ export default function MyRequests() {
 
     let query = supabase
       .from('requests')
-      .select('*, profiles!inner(full_name, department)')
+      .select('*, profiles!inner(full_name), companies(name), departments(name)')
       .order('created_at', { ascending: false });
 
-    // Filtros de RBAC
-    if (profile.role === 'usuario') {
-      query = query.eq('user_id', user.id);
-    } else if (profile.role === 'gestor') {
-      query = query.eq('profiles.department', profile.department);
-    }
-    // master_admin, ti, compras, diretoria veem tudo
+    // O RLS agora cuida da segurança. Removendo filtros manuais de role para simplificar.
 
     const { data, error } = await query;
 
@@ -198,7 +192,7 @@ export default function MyRequests() {
                             {req.profiles?.full_name || 'Usuário'}
                           </span>
                           <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest mt-1">
-                            {req.profiles?.department || 'Geral'} • {new Date(req.created_at).toLocaleDateString()}
+                            { (req as any).departments?.name || 'Geral' } • { (req as any).companies?.name || 'Matriz' } • {new Date(req.created_at).toLocaleDateString()}
                           </span>
                         </div>
                       </td>

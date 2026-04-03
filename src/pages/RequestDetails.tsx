@@ -108,7 +108,7 @@ export default function RequestDetails() {
     setLoading(true);
     const { data, error } = await supabase
       .from('requests')
-      .select('*, profiles(full_name, email, department)')
+      .select('*, profiles(full_name, email, department, company_id, department_id)')
       .eq('id', id)
       .single();
 
@@ -120,21 +120,11 @@ export default function RequestDetails() {
       return;
     }
 
-    // Verificação de Segurança (RBAC) - Agora usando o 'profile' do hook
-    if (profile) {
-      const canAccess = 
-        profile.role === 'master_admin' || 
-        profile.role === 'ti' || 
-        profile.role === 'compras' || 
-        profile.role === 'diretoria' ||
-        (profile.role === 'gestor' && data.profiles?.department === profile.department) ||
-        (data.user_id === profile.id);
-
-      if (!canAccess) {
-        console.warn("Acesso negado ao pedido:", id);
-        navigate('/', { state: { accessDenied: true } });
-        return;
-      }
+    // O RLS agora cuida da segurança no banco de dados.
+    // Para a UI, apenas validamos se o dado retornou.
+    if (!data) {
+      navigate('/solicitacoes');
+      return;
     }
 
     setRequest(data);
