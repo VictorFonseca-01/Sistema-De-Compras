@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { SearchableSelect } from '../components/SearchableSelect';
+import { useProfile } from '../hooks/useProfile';
 
 interface Request {
   id: string;
@@ -29,7 +30,7 @@ interface Request {
   };
 }
 
-const statusMap: Record<string, { label: string; badgeClass: string; icon: any }> = {
+const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-warning', icon: Clock },
   pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
   pending_compras: { label: 'Em Compras', badgeClass: 'gp-badge-purple', icon: Clock },
@@ -41,15 +42,49 @@ const statusMap: Record<string, { label: string; badgeClass: string; icon: any }
 
 export default function MyRequests() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const [requests, setRequests] = useState<Request[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const fetchRequests = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user || !profile) {
+      setLoading(false);
+      return;
+    }
+
+    let query = supabase
+      .from('requests')
+      .select('*, profiles!inner(full_name, department)')
+      .order('created_at', { ascending: false });
+
+    // Filtros de RBAC
+    if (profile.role === 'usuario') {
+      query = query.eq('user_id', user.id);
+    } else if (profile.role === 'gestor') {
+      query = query.eq('profiles.department', profile.department);
+    }
+    // master_admin, ti, compras, diretoria veem tudo
+
+    const { data, error } = await query;
+
+    if (!error && data) {
+      setRequests(data);
+      setFilteredRequests(data);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    if (profile) {
+      fetchRequests();
+    }
+  }, [profile]);
 
   useEffect(() => {
     let result = requests;
@@ -65,27 +100,6 @@ export default function MyRequests() {
     setFilteredRequests(result);
   }, [searchTerm, statusFilter, requests]);
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('requests')
-      .select('*, profiles(full_name, department)')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setRequests(data);
-      setFilteredRequests(data);
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="space-y-8 animate-fade-up pb-16">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -94,7 +108,7 @@ export default function MyRequests() {
           <p className="gp-page-subtitle">Central de acompanhamento e auditoria de compras corporativas.</p>
         </div>
         <Link 
-          to="/nova-solicitacao"
+          to="/solicitacoes/nova"
           className="btn-premium-primary px-6 py-3 rounded-xl shadow-gp-blue/20"
         >
           <Plus size={18} strokeWidth={2} />
@@ -176,7 +190,7 @@ export default function MyRequests() {
                     <tr 
                       key={req.id} 
                       className="cursor-pointer group hover:bg-gp-hover transition-all" 
-                      onClick={() => navigate(`/solicitacao/${req.id}`)}
+                      onClick={() => navigate(`/solicitacoes/${req.id}`)}
                     >
                       <td>
                         <div className="flex flex-col">

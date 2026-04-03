@@ -119,7 +119,17 @@ export default function Login() {
             )}
           </button>
 
-          <div className="pt-5 border-t border-gp-border text-center">
+          <div className="pt-5 border-t border-gp-border text-center space-y-4">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@globalp.com.br');
+                setPassword('admin123456');
+              }}
+              className="text-[10px] font-bold text-gp-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
+            >
+              [ TESTE: Preencher Admin ]
+            </button>
             <p className="text-[12px] text-gp-text3">
               Não possui acesso?{' '}
               <Link

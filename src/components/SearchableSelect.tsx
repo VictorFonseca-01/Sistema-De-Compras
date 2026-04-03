@@ -87,22 +87,27 @@ export function SearchableSelect({
     <div className={clsx('relative w-full', className)} ref={wrapperRef} onKeyDown={handleKeyDown}>
       {/* Trigger */}
       <div
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls="select-dropdown"
         tabIndex={disabled ? -1 : 0}
         onClick={() => {
           if (disabled) return;
-          setIsOpen(!isOpen);
-          if (!isOpen) {
+          const newOpen = !isOpen;
+          setIsOpen(newOpen);
+          if (newOpen) {
             setSearchTerm('');
             setFocusedIndex(-1);
-            setTimeout(() => inputRef.current?.focus(), 10);
+            setTimeout(() => inputRef.current?.focus(), 50);
           }
         }}
         className={clsx(
           'w-full px-4 py-2.5 rounded-[10px] flex justify-between items-center transition-all outline-none text-[14px]',
           'bg-gp-surface2 border-[1.5px] border-gp-border',
-          isOpen ? 'border-gp-blue ring-3 ring-gp-focus-ring bg-gp-surface' : 'hover:border-gp-border2',
-          value ? 'text-gp-text' : 'text-gp-text3',
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          isOpen ? 'border-gp-blue ring-3 ring-gp-focus-ring bg-gp-surface shadow-lg' : 'hover:border-gp-border2',
+          value ? 'text-gp-text font-medium' : 'text-gp-text3',
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-[0.99] transform'
         )}
       >
         <span className="truncate">
@@ -110,21 +115,23 @@ export function SearchableSelect({
         </span>
         <ChevronDown
           size={16}
-          strokeWidth={2}
-          className={clsx('flex-shrink-0 ml-2 transition-transform duration-200 text-gp-text3', isOpen && 'rotate-180 text-gp-blue')}
+          strokeWidth={2.5}
+          className={clsx('flex-shrink-0 ml-2 transition-transform duration-300 text-gp-text3', isOpen && 'rotate-180 text-gp-blue')}
         />
       </div>
 
       {/* Dropdown */}
       {isOpen && (
         <div
+          id="select-dropdown"
+          role="listbox"
           className={clsx(
-            'absolute z-50 w-full mt-1.5 rounded-xl overflow-hidden animate-fade-up',
-            'bg-gp-surface border-[1.5px] border-gp-border shadow-gp-shadow-lg'
+            'absolute z-[100] w-full mt-1.5 rounded-xl overflow-hidden animate-fade-up',
+            'bg-gp-surface border-[1.5px] border-gp-border shadow-2xl'
           )}
         >
           {/* Search */}
-          <div className="p-2 border-b border-gp-border">
+          <div className="p-2 border-b border-gp-border bg-gp-surface2">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3" />
               <input
@@ -133,13 +140,13 @@ export function SearchableSelect({
                 value={searchTerm}
                 onChange={e => { setSearchTerm(e.target.value); setFocusedIndex(0); }}
                 placeholder="Pesquisar..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg text-[13px] outline-none transition-all bg-gp-surface2 border border-gp-border text-gp-text focus:border-gp-blue"
+                className="w-full pl-9 pr-3 py-2 rounded-lg text-[13px] outline-none transition-all border border-gp-border text-gp-text focus:border-gp-blue focus:bg-gp-surface"
               />
             </div>
           </div>
 
           {/* Options */}
-          <div className="overflow-y-auto max-h-52 p-1">
+          <div className="overflow-y-auto max-h-52 p-1 custom-scrollbar">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, idx) => {
                 const isSelected = option.value === value;
@@ -147,20 +154,28 @@ export function SearchableSelect({
                 return (
                   <div
                     key={option.value}
+                    role="option"
+                    aria-selected={isSelected}
                     onMouseEnter={() => setFocusedIndex(idx)}
-                    onClick={() => { onChange(option.value); setIsOpen(false); setSearchTerm(''); }}
+                    onClick={(e) => { 
+                      e.stopPropagation();
+                      onChange(option.value); 
+                      setIsOpen(false); 
+                      setSearchTerm(''); 
+                    }}
                     className={clsx(
-                      'px-3 py-2.5 rounded-lg cursor-pointer text-[13px] transition-all',
-                      isSelected ? 'bg-gp-selected text-gp-blue-light font-bold' : 
+                      'px-3 py-2.5 rounded-lg cursor-pointer text-[13px] transition-all flex items-center justify-between',
+                      isSelected ? 'bg-gp-blue/10 text-gp-blue font-bold shadow-inner' : 
                       isFocused ? 'bg-gp-hover text-gp-text' : 'text-gp-text2 hover:bg-gp-hover'
                     )}
                   >
-                    {option.label}
+                    <span>{option.label}</span>
+                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-gp-blue shadow-sm animate-pulse" />}
                   </div>
                 );
               })
             ) : (
-              <div className="px-4 py-3 text-center text-[13px] text-gp-text3">
+              <div className="px-4 py-8 text-center text-[12px] text-gp-text3 italic opacity-60">
                 Nenhuma opção encontrada
               </div>
             )}

@@ -314,6 +314,8 @@ export default function Inventory() {
              </button>
            )}
         </div>
+      </div>
+
       <div className="gp-table-wrap">
         <table className="gp-table">
           <thead>
@@ -482,7 +484,7 @@ export default function Inventory() {
           </div>
         </div>
       )}
-      </div>
+
 
       {showEmptyConfirm && (
         <div className="gp-modal-overlay">

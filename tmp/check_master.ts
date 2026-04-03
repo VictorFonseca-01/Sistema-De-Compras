@@ -18,18 +18,17 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkUser() {
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('email', 'suporteti@globalp.com.br')
-    .single();
+async function checkTable() {
+  const { data, error } = await supabase
+    .from('requests')
+    .select('*, profiles(full_name, department)')
+    .limit(1);
 
   if (error) {
-    console.error('Error fetching profile:', error.message);
+    console.error('Error fetching requests sample:', error.message);
   } else {
-    console.log('Profile found:', JSON.stringify(profile, null, 2));
+    console.log('Request sample:', JSON.stringify(data, null, 2));
   }
 }
 
-checkUser();
+checkTable();

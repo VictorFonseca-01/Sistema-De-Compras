@@ -19,7 +19,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
-const statusMap: Record<string, { label: string; color: string; icon: any }> = {
+const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor:    { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
   pending_ti:        { label: 'Em Análise TI', color: 'var(--gp-blue)',    icon: FileText },
   pending_compras:   { label: 'Em Compras',    color: 'var(--gp-purple)',  icon: TrendingUp },
@@ -55,23 +55,80 @@ function RowSkeleton() {
   );
 }
 
+interface StatItem {
+  group: 'financial' | 'pipeline';
+  label: string;
+  value: string | number;
+  secondary?: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  colorClass: string;
+  bgClass: string;
+}
+
+interface InventoryStat {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  colorClass: string;
+  bgClass: string;
+}
+
+interface RecentRequest {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    department: string;
+  };
+}
+
+interface RecentMovement {
+  id: string;
+  created_at: string;
+  tipo: string;
+  assets: {
+    nome_item: string;
+    numero_patrimonio: string;
+  };
+}
+
+interface ChartDataPoint {
+  label: string;
+  count: number;
+  color: string;
+  percent: number;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useProfile();
   const [loading, setLoading] = useState(true);
-  const [requestStats, setRequestStats] = useState<any[]>([]);
-  const [inventoryStats, setInventoryStats] = useState<any[]>([]);
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
-  const [recentMovements, setRecentMovements] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [requestStats, setRequestStats] = useState<StatItem[]>([]);
+  const [inventoryStats, setInventoryStats] = useState<InventoryStat[]>([]);
+  const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
+  const [recentMovements, setRecentMovements] = useState<RecentMovement[]>([]);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [showAccessDenied, setShowAccessDenied] = useState(!!location.state?.accessDenied);
 
   useEffect(() => {
     async function fetchData() {
+      if (!profile) return;
       setLoading(true);
 
-      const { data: requests } = await supabase.from('requests').select('*, profiles(full_name)');
+      let query = supabase.from('requests').select('*, profiles!inner(full_name, department)');
+      
+      // Filtros de RBAC (Role-Based Access Control)
+      if (profile.role === 'usuario') {
+        query = query.eq('user_id', profile.id);
+      } else if (profile.role === 'gestor') {
+        query = query.eq('profiles.department', profile.department);
+      }
+      // Outros cargos (ti, compras, diretoria, master_admin) veem tudo
+
+      const { data: requests } = await query;
       if (requests) {
         const getStats = (statusList: string[]) => {
           const filtered = requests.filter(r => statusList.includes(r.status));
@@ -198,7 +255,7 @@ export default function Dashboard() {
       setLoading(false);
     }
     fetchData();
-  }, []);
+  }, [profile]);
 
   return (
     <div className="space-y-8 pb-16 animate-fade-up">
@@ -232,7 +289,7 @@ export default function Dashboard() {
             Relatório Executivo
           </button>
           <button
-            onClick={() => navigate('/nova-solicitacao')}
+            onClick={() => navigate('/solicitacoes/nova')}
             className="btn-premium-primary px-5 py-2.5 rounded-xl text-[12px]"
           >
             <Plus size={16} strokeWidth={2.5} />
@@ -459,7 +516,7 @@ export default function Dashboard() {
                     return (
                       <Link
                         key={req.id}
-                        to={`/solicitacao/${req.id}`}
+                        to={`/solicitacoes/${req.id}`}
                         className="flex items-center gap-4 px-6 py-4 transition-all hover:bg-gp-surface2 border-b border-gp-border last:border-0 group"
                       >
                         <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">

@@ -117,7 +117,7 @@ export function Sidebar({ theme }: SidebarProps) {
       {!isCollapsed && (
         <div className="px-3 pt-4 pb-2">
           <NavLink
-            to="/nova-solicitacao"
+            to="/solicitacoes/nova"
             onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[11px] font-bold tracking-wide uppercase transition-all duration-200 text-white"
             style={{ background: '#2563eb', boxShadow: '0 4px 14px rgba(37,99,235,0.2)' }}
@@ -133,7 +133,7 @@ export function Sidebar({ theme }: SidebarProps) {
       {isCollapsed && (
         <div className="px-3 pt-4 pb-2">
           <NavLink
-            to="/nova-solicitacao"
+            to="/solicitacoes/nova"
             className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 text-white"
             style={{ background: '#2563eb' }}
             title="Nova Solicitação"

@@ -66,22 +66,26 @@ export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isP
                 type="button"
                 onClick={() => setActionType('status')}
                 className={clsx(
-                  "flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all",
-                  actionType === 'status' ? "bg-gp-blue/5 border-gp-blue text-gp-blue" : "bg-gp-surface2 border-gp-border text-gp-text3 hover:border-gp-text"
+                  "flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 transform active:scale-95",
+                  actionType === 'status' 
+                    ? "bg-gp-blue/10 border-gp-blue text-gp-blue shadow-lg shadow-gp-blue/5" 
+                    : "bg-gp-surface2 border-gp-border text-gp-text3 hover:border-gp-blue/40 hover:bg-gp-surface3"
                 )}
                >
-                 <Activity size={24} />
+                 <Activity size={24} strokeWidth={actionType === 'status' ? 2.5 : 2} />
                  <span className="text-[11px] font-bold uppercase tracking-wider">Alterar Situação</span>
                </button>
                <button 
                 type="button"
                 onClick={() => setActionType('local')}
                 className={clsx(
-                  "flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all",
-                  actionType === 'local' ? "bg-gp-blue/5 border-gp-blue text-gp-blue" : "bg-gp-surface2 border-gp-border text-gp-text3 hover:border-gp-text"
+                  "flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 transform active:scale-95",
+                  actionType === 'local' 
+                    ? "bg-gp-blue/10 border-gp-blue text-gp-blue shadow-lg shadow-gp-blue/5" 
+                    : "bg-gp-surface2 border-gp-border text-gp-text3 hover:border-gp-blue/40 hover:bg-gp-surface3"
                 )}
                >
-                 <Building2 size={24} />
+                 <Building2 size={24} strokeWidth={actionType === 'local' ? 2.5 : 2} />
                  <span className="text-[11px] font-bold uppercase tracking-wider">Mover Local</span>
                </button>
             </div>
@@ -137,22 +141,25 @@ export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isP
               </div>
             )}
 
-            <div className="flex gap-4 pt-2">
+            <div className="flex gap-4 pt-4 border-t border-gp-border">
               <button 
                 type="button"
                 onClick={onClose}
                 disabled={isProcessing}
-                className="flex-1 h-14 btn-premium-secondary rounded-2xl text-[11px] font-bold uppercase tracking-widest"
+                className="flex-1 h-14 btn-premium-secondary rounded-[18px] text-[11px] hover:bg-gp-error/5 hover:text-gp-error hover:border-gp-error/30"
               >
                 CANCELAR
               </button>
               <button 
                 type="submit"
                 disabled={isProcessing || (actionType === 'local' && !localValue) || !notes}
-                className="flex-1 h-14 btn-premium-primary rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-gp-blue/10"
+                className="flex-1 h-14 btn-premium-primary rounded-[18px] text-[11px] shadow-gp-blue/30"
               >
                 {isProcessing ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>PROCESSANDO...</span>
+                  </div>
                 ) : (
                   <>EXECUTAR EM MASSA</>
                 )}

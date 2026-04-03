@@ -12,7 +12,9 @@ import {
   BadgeDollarSign,
   Zap,
   Plus,
-  Info
+  Info,
+  Image as ImageIcon,
+  File as FileIcon
 } from 'lucide-react';
 
 import { clsx } from 'clsx';
@@ -63,6 +65,7 @@ export default function NewRequest() {
 
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [newLink, setNewLink] = useState({ label: '', url: '' });
+  const [tempAttachments, setTempAttachments] = useState<{ file: File; id: string }[]>([]);
 
   const addLink = () => {
     if (newLink.label && newLink.url) {
@@ -73,6 +76,19 @@ export default function NewRequest() {
 
   const removeLink = (index: number) => {
     setLinks(links.filter((_, i) => i !== index));
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachments = files.map(file => ({
+      file,
+      id: Math.random().toString(36).substring(7)
+    }));
+    setTempAttachments([...tempAttachments, ...newAttachments]);
+  };
+
+  const removeAttachment = (id: string) => {
+    setTempAttachments(tempAttachments.filter(a => a.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +164,28 @@ export default function NewRequest() {
         }));
         const { error: linksError } = await supabase.from('request_links').insert(linksToInsert);
         if (linksError) throw linksError;
+      }
+
+      // NOVO: Upload e Registro de Anexos
+      if (tempAttachments.length > 0 && request) {
+        for (const item of tempAttachments) {
+          const fileExt = item.file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `${request.id}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('request-attachments')
+            .upload(filePath, item.file);
+
+          if (!uploadError) {
+            await supabase.from('request_attachments').insert([{
+              request_id: request.id,
+              file_name: item.file.name,
+              file_path: filePath,
+              file_type: item.file.type
+            }]);
+          }
+        }
       }
 
       setSuccess(true);
@@ -366,6 +404,49 @@ export default function NewRequest() {
             </div>
             {/* Background decoration */}
             <LinkIcon size={160} className="absolute -right-20 -bottom-20 text-gp-blue opacity-[0.015] -rotate-12 pointer-events-none" />
+          </section>
+
+          {/* Seção 5: Documentos (NOVO) */}
+          <section className="gp-card p-8 sm:p-10 space-y-8">
+            <div className="flex items-center justify-between py-2 border-b border-gp-border">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
+                  <Plus size={20} strokeWidth={2} />
+                </div>
+                <h3 className="text-lg font-bold text-gp-text tracking-tight">Anexos e Documentos</h3>
+              </div>
+              <label className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[10px] cursor-pointer">
+                 <Plus size={14} className="mr-2" strokeWidth={3} /> ADICIONAR ARQUIVO
+                 <input type="file" multiple className="hidden" onChange={handleFileSelect} />
+              </label>
+            </div>
+
+            {tempAttachments.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {tempAttachments.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                       <div className="w-10 h-10 rounded-lg bg-gp-surface border border-gp-border flex items-center justify-center text-gp-text3 shrink-0">
+                         {item.file.type.startsWith('image/') ? <ImageIcon size={18} /> : <FileIcon size={18} />}
+                       </div>
+                       <div className="truncate">
+                          <p className="font-bold text-[13px] text-gp-text truncate">{item.file.name}</p>
+                          <p className="text-[10px] font-bold text-gp-text3 uppercase">{(item.file.size / 1024).toFixed(0)} KB</p>
+                       </div>
+                    </div>
+                    <button type="button" onClick={() => removeAttachment(item.id)} className="p-2 text-gp-text3 hover:text-gp-error transition-colors">
+                       <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-10 text-center border-2 border-dashed border-gp-border rounded-2xl bg-gp-surface2/30">
+                 <p className="text-gp-text3 font-bold text-[11px] uppercase tracking-widest">
+                   Nenhum documento anexado. Clique em "Adicionar Arquivo".
+                 </p>
+              </div>
+            )}
           </section>
         </div>
 

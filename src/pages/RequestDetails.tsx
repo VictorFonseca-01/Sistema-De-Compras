@@ -51,7 +51,23 @@ interface Attachment {
   created_at: string;
 }
 
-const statusMap: Record<string, { label: string; badge: string; icon: any }> = {
+interface RequestLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
+interface RequestHistory {
+  id: string;
+  new_status: string;
+  comment: string;
+  created_at: string;
+  profiles: {
+    full_name: string;
+  };
+}
+
+const statusMap: Record<string, { label: string; badge: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor:    { label: 'Aguardando Gestor',    badge: 'gp-badge-amber',  icon: Clock },
   pending_ti:        { label: 'Em Análise TI',        badge: 'gp-badge-blue',   icon: FileText },
   pending_compras:   { label: 'Em Compras',           badge: 'gp-badge-purple', icon: Clock },
@@ -76,7 +92,7 @@ export default function RequestDetails() {
   };
 
   const [request, setRequest] = useState<Request | null>(null);
-  const [links, setLinks] = useState<any[]>([]);
+  const [links, setLinks] = useState<RequestLink[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -85,12 +101,8 @@ export default function RequestDetails() {
   // States para edição técnica (TI/Compras)
   const [editValue, setEditValue] = useState('');
   const [newLink, setNewLink] = useState({ label: '', url: '' });
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<RequestHistory[]>([]);
   const [comment, setComment] = useState('');
-
-  useEffect(() => {
-    fetchRequest();
-  }, [id]);
 
   const fetchRequest = async () => {
     setLoading(true);
@@ -100,34 +112,49 @@ export default function RequestDetails() {
       .eq('id', id)
       .single();
 
-    if (!error && data) {
-      setRequest(data);
-      setEditValue(data.estimated_cost?.toString() || '');
-      
-      // Buscar links
-      const { data: linksData } = await supabase
-        .from('request_links')
-        .select('*')
-        .eq('request_id', id);
-      setLinks(linksData || []);
-
-      // Buscar anexos
-      const { data: attachmentsData } = await supabase
-        .from('request_attachments')
-        .select('*')
-        .eq('request_id', id);
-      setAttachments(attachmentsData || []);
-
-      // Buscar histórico (Auditoria)
-      const { data: historyData } = await supabase
-        .from('request_status_history')
-        .select('*, profiles(full_name)')
-        .eq('request_id', id)
-        .order('created_at', { ascending: false });
-      setHistory(historyData || []);
+    if (error || !data) {
+      if (id) {
+          console.error("Erro ao buscar pedido:", error);
+          navigate('/solicitacoes');
+      }
+      return;
     }
+
+    // Verificação de Segurança (RBAC) - Agora usando o 'profile' do hook
+    if (profile) {
+      const canAccess = 
+        profile.role === 'master_admin' || 
+        profile.role === 'ti' || 
+        profile.role === 'compras' || 
+        profile.role === 'diretoria' ||
+        (profile.role === 'gestor' && data.profiles?.department === profile.department) ||
+        (data.user_id === profile.id);
+
+      if (!canAccess) {
+        console.warn("Acesso negado ao pedido:", id);
+        navigate('/', { state: { accessDenied: true } });
+        return;
+      }
+    }
+
+    setRequest(data);
+    setEditValue(data.estimated_cost?.toString() || '');
     setLoading(false);
+
+    // Fetch related data
+    const { data: linkData } = await supabase.from('request_links').select('*').eq('request_id', id);
+    if (linkData) setLinks(linkData);
+
+    const { data: attachData } = await supabase.from('request_attachments').select('*').eq('request_id', id);
+    if (attachData) setAttachments(attachData);
+
+    const { data: historyData } = await supabase.from('request_status_history').select('*, profiles(full_name)').eq('request_id', id).order('created_at', { ascending: false });
+    if (historyData) setHistory(historyData);
   };
+
+  useEffect(() => {
+    fetchRequest();
+  }, [id, profile]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -366,99 +393,103 @@ export default function RequestDetails() {
                 </h3>
                 <div className="bg-gp-surface2/50 p-8 rounded-2xl border border-gp-border leading-relaxed text-gp-text2 text-[15px] font-medium whitespace-pre-wrap shadow-inner">
                   {request.description}
+                  {/* Seções de links e anexos removidas daqui para serem consolidadas no painel lateral */}
                 </div>
-             </div>
-
-             {links.length > 0 && (
-               <div className="pt-10 border-t border-gp-border space-y-6">
-                 <h3 className="text-[15px] font-bold uppercase tracking-widest text-gp-text3 flex items-center gap-2.5">
-                    <ExternalLink size={18} strokeWidth={2} /> Links de Referência
-                 </h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {links.map((link, i) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue hover:shadow-lg transition-all group">
-                         <span className="font-bold text-sm text-gp-text">{link.label}</span>
-                         <ExternalLink size={16} className="text-gp-text3 opacity-40 group-hover:text-gp-blue group-hover:opacity-100 transition-all" />
-                      </a>
-                    ))}
-                 </div>
-               </div>
-             )}
-
-             {/* MÓDULO DE ANEXOS */}
-             <div className="pt-10 border-t border-gp-border space-y-6">
-               <div className="flex items-center justify-between">
-                 <h3 className="text-[17px] font-bold flex items-center gap-3 text-gp-text tracking-tight">
-                   <Paperclip size={20} className="text-gp-blue" strokeWidth={2} />
-                   Documentos e Evidências
-                 </h3>
-                 {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
-                   <label className={clsx(
-                     "btn-premium-primary px-5 py-2.5 rounded-xl h-10 cursor-pointer text-[10px]",
-                     uploading && "opacity-50 cursor-not-allowed"
-                   )}>
-                     {uploading ? (
-                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                     ) : (
-                       <Plus size={14} strokeWidth={3} className="mr-2" />
-                     )}
-                     ANEXAR ARQUIVO
-                     <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
-                   </label>
-                 )}
-               </div>
-
-               {attachments.length > 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {attachments.map((file) => {
-                     const isImage = file.file_type?.startsWith('image/');
-                     return (
-                       <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
-                         <div className="flex items-center gap-3 overflow-hidden">
-                           <div className="w-10 h-10 rounded-xl bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-text3">
-                             {isImage ? <ImageIcon size={20} /> : <FileIcon size={20} />}
-                           </div>
-                           <div className="truncate">
-                             <p className="font-bold text-[13px] text-gp-text truncate">{file.file_name}</p>
-                             <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">
-                               {new Date(file.created_at).toLocaleDateString('pt-BR')}
-                             </p>
-                           </div>
-                         </div>
-                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                           <a 
-                             href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl}
-                             target="_blank"
-                             download={file.file_name}
-                             className="p-2 text-gp-text3 hover:text-gp-blue transition-colors"
-                           >
-                             <Download size={18} />
-                           </a>
-                           {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
-                             <button 
-                               onClick={() => handleDeleteAttachment(file)}
-                               className="p-2 text-gp-text3 hover:text-gp-error transition-colors"
-                             >
-                               <Trash2 size={18} />
-                             </button>
-                           )}
-                         </div>
-                       </div>
-                     );
-                   })}
-                 </div>
-               ) : (
-                 <div className="p-12 text-center border-2 border-dashed border-gp-border rounded-2xl bg-gp-surface2/30">
-                   <Paperclip size={40} className="mx-auto text-gp-text3 opacity-20 mb-4" />
-                   <p className="text-gp-text3 font-bold text-[11px] uppercase tracking-widest">Nenhuma evidência anexada até o momento</p>
-                 </div>
-               )}
              </div>
           </div>
         </div>
 
         {/* LADO DIREITO: Timeline e Ações */}
         <div className="w-full lg:w-96 space-y-6 lg:sticky lg:top-24">
+          
+          {/* PAINEL CONSOLIDADO DE ATIVOS (NOVO) */}
+          <div className="gp-card overflow-hidden border-gp-blue/30 border-2 shadow-2xl">
+            <div className="p-6 bg-gp-surface2 border-b border-gp-border flex items-center justify-between">
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gp-blue text-white flex items-center justify-center">
+                    <Paperclip size={16} strokeWidth={2.5} />
+                  </div>
+                  <h4 className="font-bold text-[14px] text-gp-text uppercase tracking-tight">Ativos e Mídias</h4>
+               </div>
+               {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin' || (profile?.id === request.user_id && request.status === 'adjustment_needed')) && (
+                  <label className="w-8 h-8 rounded-lg bg-gp-surface border border-gp-border flex items-center justify-center text-gp-blue hover:bg-gp-blue hover:text-white cursor-pointer transition-all shadow-sm">
+                    <Plus size={16} strokeWidth={3} />
+                    <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                  </label>
+               )}
+            </div>
+            
+            <div className="p-5 space-y-5 max-h-[400px] overflow-y-auto custom-scrollbar">
+               {/* Links */}
+               {links.length > 0 && (
+                 <div className="space-y-3">
+                   <p className="text-[10px] font-black text-gp-text3 uppercase tracking-widest flex items-center gap-2">
+                     <ExternalLink size={12} /> Referências Web
+                   </p>
+                   <div className="space-y-2">
+                     {links.map((link, i) => (
+                       <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-gp-surface border border-gp-border rounded-lg hover:border-gp-blue transition-all group">
+                          <span className="font-bold text-[12px] text-gp-text truncate pr-2">{link.label}</span>
+                          <ChevronRight size={14} className="text-gp-text3 group-hover:text-gp-blue transition-all" />
+                       </a>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
+               {/* Arquivos */}
+               {attachments.length > 0 && (
+                 <div className="space-y-3 pt-2 border-t border-gp-border">
+                   <p className="text-[10px] font-black text-gp-text3 uppercase tracking-widest flex items-center gap-2">
+                     <FileIcon size={12} /> Documentos & Fotos
+                   </p>
+                   <div className="space-y-2">
+                     {attachments.map((file) => {
+                       const isImage = file.file_type?.startsWith('image/');
+                       return (
+                         <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-lg group hover:border-gp-blue/40 transition-all">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-text3">
+                                {isImage ? <ImageIcon size={16} /> : <FileIcon size={16} />}
+                              </div>
+                              <div className="truncate">
+                                <p className="font-bold text-[11px] text-gp-text truncate">{file.file_name}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <a 
+                                href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl}
+                                target="_blank"
+                                download={file.file_name}
+                                className="p-1.5 text-gp-text3 hover:text-gp-blue transition-colors"
+                                title="Visualizar / Baixar"
+                              >
+                                {isImage ? <ImageIcon size={14} /> : <Download size={14} />}
+                              </a>
+                              {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
+                                <button 
+                                  onClick={() => handleDeleteAttachment(file)}
+                                  className="p-1.5 text-gp-text3 hover:text-gp-error transition-colors"
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                         </div>
+                       );
+                     })}
+                   </div>
+                 </div>
+               )}
+
+               {links.length === 0 && attachments.length === 0 && (
+                 <div className="py-6 text-center opacity-40">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-gp-text3">Nenhum ativo vinculado</p>
+                 </div>
+               )}
+            </div>
+          </div>
           
           {/* Central de Enriquecimento (TI e Compras) */}
           {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (

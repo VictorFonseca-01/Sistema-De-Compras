@@ -186,7 +186,20 @@ export default function Register() {
             )}
           </button>
 
-          <div className="pt-5 border-t border-gp-border text-center">
+          <div className="pt-5 border-t border-gp-border text-center space-y-4">
+            <button
+              type="button"
+              onClick={() => {
+                setName('Auditor de Testes');
+                setDepartment('TI');
+                setRole('ti');
+                setEmail(`teste_${Math.floor(Math.random() * 1000)}@globalp.com.br`);
+                setPassword('teste123456');
+              }}
+              className="text-[10px] font-bold text-gp-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
+            >
+              [ TESTE: Gerar Dados Aleatórios ]
+            </button>
             <p className="text-[12px] text-gp-text3">
               Já possui conta?{' '}
               <Link

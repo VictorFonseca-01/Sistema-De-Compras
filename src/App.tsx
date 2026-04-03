@@ -21,9 +21,9 @@ function App() {
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="nova-solicitacao" element={<NewRequest />} />
         <Route path="solicitacoes" element={<MyRequests />} />
-        <Route path="solicitacao/:id" element={<RequestDetails />} />
+        <Route path="solicitacoes/nova" element={<NewRequest />} />
+        <Route path="solicitacoes/:id" element={<RequestDetails />} />
         <Route path="configuracoes" element={<Settings />} />
         
         {/* Rotas de Inventário e Gestão */}
