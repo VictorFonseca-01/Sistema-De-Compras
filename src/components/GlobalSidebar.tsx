@@ -12,7 +12,6 @@ import {
   Warehouse
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
-import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
 interface SidebarProps {
