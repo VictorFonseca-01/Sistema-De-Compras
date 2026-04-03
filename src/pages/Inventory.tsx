@@ -100,10 +100,10 @@ export default function Inventory() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedAssetIds.size === paginatedAssets.length) {
+    if (selectedAssetIds.size === filteredAssets.length && filteredAssets.length > 0) {
       setSelectedAssetIds(new Set());
     } else {
-      setSelectedAssetIds(new Set(paginatedAssets.map(a => a.id)));
+      setSelectedAssetIds(new Set(filteredAssets.map(a => a.id)));
     }
   };
 
@@ -322,7 +322,7 @@ export default function Inventory() {
                 <div className="flex items-center justify-center">
                   <input 
                     type="checkbox" 
-                    checked={paginatedAssets.length > 0 && selectedAssetIds.size === paginatedAssets.length}
+                    checked={filteredAssets.length > 0 && selectedAssetIds.size === filteredAssets.length}
                     onChange={toggleSelectAll}
                     className="w-4 h-4 rounded border-gp-blue/50 bg-gp-surface2 text-gp-blue focus:ring-gp-blue transition-all cursor-pointer shadow-sm hover:border-gp-blue"
                   />
