@@ -15,7 +15,7 @@ import {
   FileBarChart
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
@@ -57,6 +57,7 @@ function RowSkeleton() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useProfile();
   const [loading, setLoading] = useState(true);
   const [requestStats, setRequestStats] = useState<any[]>([]);
@@ -64,6 +65,7 @@ export default function Dashboard() {
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [recentMovements, setRecentMovements] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [showAccessDenied, setShowAccessDenied] = useState(!!location.state?.accessDenied);
 
   useEffect(() => {
     async function fetchData() {
@@ -200,6 +202,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 pb-16 animate-fade-up">
+      {/* Access Denied Toast/Banner */}
+      {showAccessDenied && (
+        <div className="flex items-center justify-between p-4 bg-gp-error/10 border border-gp-error/30 text-gp-error rounded-xl animate-shake">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={20} strokeWidth={2.5} />
+            <span className="text-[13px] font-bold uppercase tracking-wider">Acesso Negado: Sua função não possui permissão para esta rota.</span>
+          </div>
+          <button onClick={() => setShowAccessDenied(false)} className="text-[11px] font-black opacity-60 hover:opacity-100">FECHAR</button>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -231,26 +244,78 @@ export default function Dashboard() {
       {/* Summary KPI Sections */}
       <div className="space-y-6">
         {/* Financial Summary */}
-        <div className="space-y-3">
-          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Resumo Financeiro</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {loading
-              ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
-              : requestStats.filter(s => s.group === 'financial').map((stat, i) => (
-                  <div key={i} className="gp-metric group">
-                    <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
-                      <stat.icon size={20} strokeWidth={2.5} />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em]">Balanço Financeiro</h3>
+            <span className="text-[10px] font-bold text-gp-blue-light uppercase tracking-widest bg-gp-blue/5 px-2 py-0.5 rounded border border-gp-blue/10">Controladoria Automática</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            {/* Main KPI: Investimento Total */}
+            <div className="md:col-span-5">
+              {loading ? (
+                <KpiSkeleton />
+              ) : (
+                <div className="gp-metric h-full border-gp-blue/20 bg-gradient-to-br from-gp-surface to-gp-blue/5 shadow-gp-shadow-blue/10">
+                  <div className="flex items-start justify-between">
+                    <div className="gp-metric-icon bg-gp-blue text-white shadow-lg shadow-gp-blue/20">
+                      <BarChart3 size={20} strokeWidth={2.5} />
                     </div>
-                    <div className="mt-4">
-                      <p className="gp-metric-value">{stat.value}</p>
-                      <p className={clsx("gp-metric-label", stat.secondary ? "mb-1" : "")}>{stat.label}</p>
-                      {stat.secondary && (
-                        <p className="text-[13px] font-bold text-gp-text truncate">{stat.secondary}</p>
-                      )}
+                    <div className="px-2 py-1 bg-gp-blue/10 text-gp-blue rounded-lg text-[9px] font-black uppercase tracking-tighter">Budget Total</div>
+                  </div>
+                  <div className="mt-5">
+                    <p className="gp-metric-value text-3xl">{requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}</p>
+                    <p className="gp-metric-label">Investimento Total Aprovado</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sub KPIs: Pendente e Aprovado */}
+            <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {loading ? (
+                <>
+                  <KpiSkeleton />
+                  <KpiSkeleton />
+                </>
+              ) : (
+                <>
+                  {/* Pendente */}
+                  <div className="gp-metric border-gp-warning/30 bg-gp-warning/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gp-warning/20 text-gp-warning flex items-center justify-center shrink-0">
+                        <Clock size={16} strokeWidth={2.5} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate">Custo em Aprovação</p>
+                        <p className="text-lg font-black text-gp-text truncate">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.secondary || 'R$ 0,00'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gp-warning/10 flex items-center justify-between text-[10px]">
+                      <span className="text-gp-text3 font-medium">Processos Pendentes:</span>
+                      <span className="font-bold text-gp-warning">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.value || 0} itens</span>
                     </div>
                   </div>
-                ))
-            }
+
+                  {/* Aprovado Unitário */}
+                  <div className="gp-metric border-gp-success/30 bg-gp-success/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gp-success/20 text-gp-success flex items-center justify-center shrink-0">
+                        <CheckCircle size={16} strokeWidth={2.5} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate">Itens Aprovados (QTD)</p>
+                        <p className="text-lg font-black text-gp-text truncate">{requestStats.find(s => s.label === 'Aprovadas (Custo Total)')?.value || 0} Equipamentos</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gp-success/10 flex items-center justify-between text-[10px]">
+                      <span className="text-gp-text3 font-medium">Taxa de Incorporação:</span>
+                      <span className="font-bold text-gp-success">Proteção de Ativos</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -315,6 +380,7 @@ export default function Dashboard() {
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--gp-border)" strokeWidth="3" />
                 {chartData.map((d, i) => {
+                  if (d.percent <= 0) return null;
                   const offset = chartData.slice(0, i).reduce((acc, curr) => acc + curr.percent, 0);
                   const circumference = 2 * Math.PI * 15.5;
                   return (

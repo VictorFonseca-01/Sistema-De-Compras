@@ -365,7 +365,7 @@ export default function NewRequest() {
               )}
             </div>
             {/* Background decoration */}
-            <LinkIcon size={160} className="absolute -right-16 -bottom-16 text-gp-blue opacity-[0.03] -rotate-12 pointer-events-none" />
+            <LinkIcon size={160} className="absolute -right-20 -bottom-20 text-gp-blue opacity-[0.015] -rotate-12 pointer-events-none" />
           </section>
         </div>
 

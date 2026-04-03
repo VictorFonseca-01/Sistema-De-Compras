@@ -12,12 +12,19 @@ import {
   Warehouse
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
+import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
-export function Sidebar() {
+interface SidebarProps {
+  theme: 'light' | 'dark';
+}
+
+export function Sidebar({ theme }: SidebarProps) {
   const { profile, loading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
+  console.log('--- GLOBAL SIDEBAR RENDERING ---', { theme, isCollapsed, role: profile?.role });
+
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: ListOrdered, label: 'Minhas Solicitações', path: '/solicitacoes' },
@@ -39,16 +46,19 @@ export function Sidebar() {
   if (loading) {
      return (
        <aside 
-         style={{ background: 'var(--gp-sidebar)', borderRight: '1px solid var(--gp-border)' }}
+         style={{ 
+           background: theme === 'light' ? '#ffffff' : 'var(--gp-sidebar)', 
+           borderRight: '1px solid var(--gp-sidebar-border)' 
+         }}
          className={clsx('flex flex-col h-screen sticky top-0 animate-pulse', isCollapsed ? 'w-[68px]' : 'w-60')}
        >
-         <div className="h-14 border-b border-gp-border flex items-center px-4">
-           <div className="w-8 h-8 rounded bg-white/5" />
+         <div className="h-14 border-b border-gp-sidebar-border flex items-center px-4">
+           <div className="w-8 h-8 rounded bg-gp-blue/5" />
          </div>
          <div className="p-4 space-y-4">
-           <div className="h-8 rounded bg-white/5" />
-           <div className="h-8 rounded bg-white/5 w-2/3" />
-           <div className="h-8 rounded bg-white/5" />
+           <div className="h-8 rounded bg-gp-blue/5" />
+           <div className="h-8 rounded bg-gp-blue/5 w-2/3" />
+           <div className="h-8 rounded bg-gp-blue/5" />
          </div>
        </aside>
      );
@@ -56,28 +66,32 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{ background: 'var(--gp-sidebar)', borderRight: '1px solid var(--gp-border)' }}
+      style={{ 
+        background: theme === 'light' ? '#ffffff' : 'var(--gp-sidebar)', 
+        borderRight: theme === 'light' ? '1px solid #e2e8f0' : '1px solid var(--gp-sidebar-border)',
+        color: theme === 'light' ? '#0f172a' : 'var(--gp-text)'
+      }}
       className={clsx(
         'flex flex-col h-screen sticky top-0 transition-all duration-300 z-40 flex-shrink-0',
         isCollapsed ? 'w-[68px]' : 'w-60'
       )}
     >
       {/* Logo */}
-      <div className="h-14 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--gp-border)' }}>
+      <div className="h-14 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: theme === 'light' ? '1px solid #e2e8f0' : '1px solid var(--gp-border)' }}>
         {!isCollapsed && (
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center">
-              <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain" />
-            </div>
+               <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain dark:invert-0 invert opacity-95 transition-all" />
+             </div>
             <div className="min-w-0">
-              <p className="text-[13px] font-bold text-white leading-none truncate">Sistema de Compras</p>
-              <p className="text-[10px] mt-0.5 font-semibold tracking-widest uppercase" style={{ color: 'var(--gp-blue-light)' }}>Global Parts</p>
+              <p className="text-[13px] font-bold leading-none truncate" style={{ color: theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)' }}>Sistema de Compras</p>
+              <p className="text-[10px] mt-0.5 font-semibold tracking-widest uppercase" style={{ color: theme === 'light' ? '#3b82f6' : 'var(--gp-blue-light)' }}>Global Parts</p>
             </div>
           </div>
         )}
         {isCollapsed && (
           <div className="mx-auto w-7 h-7 flex items-center justify-center">
-            <img src="/logo-branca.png" alt="GP" className="w-full h-full object-contain" />
+            <img src="/logo-branca.png" alt="GP" className="w-full h-full object-contain dark:invert-0 invert opacity-95 transition-all" />
           </div>
         )}
         <button
@@ -86,9 +100,15 @@ export function Sidebar() {
             'w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200',
             isCollapsed && 'hidden'
           )}
-          style={{ color: 'var(--gp-sidebar-text)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--gp-sidebar-hover)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+          style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}
+          onMouseEnter={e => { 
+            (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)'; 
+            (e.currentTarget as HTMLElement).style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)'; 
+          }}
+          onMouseLeave={e => { 
+            (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'; 
+            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
+          }}
         >
           <ChevronLeft size={14} />
         </button>
@@ -100,10 +120,10 @@ export function Sidebar() {
           <NavLink
             to="/nova-solicitacao"
             onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[11px] font-bold tracking-wide uppercase text-white transition-all duration-200"
-            style={{ background: 'var(--gp-blue)', boxShadow: 'var(--gp-shadow-blue)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue-hover)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue)'; }}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[11px] font-bold tracking-wide uppercase transition-all duration-200 text-white"
+            style={{ background: '#2563eb', boxShadow: '0 4px 14px rgba(37,99,235,0.2)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1d4ed8'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#2563eb'; }}
           >
             <PlusCircle size={15} strokeWidth={2.5} />
             Nova Solicitação
@@ -116,10 +136,10 @@ export function Sidebar() {
           <NavLink
             to="/nova-solicitacao"
             className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 text-white"
-            style={{ background: 'var(--gp-blue)' }}
+            style={{ background: '#2563eb' }}
             title="Nova Solicitação"
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue-hover)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-blue)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1d4ed8'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#2563eb'; }}
           >
             <PlusCircle size={16} strokeWidth={2.5} />
           </NavLink>
@@ -131,7 +151,7 @@ export function Sidebar() {
         {/* Main Menu */}
         <div>
           {!isCollapsed && (
-            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-sidebar-text)' }}>
+            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}>
               Menu Principal
             </p>
           )}
@@ -147,26 +167,26 @@ export function Sidebar() {
                   'flex items-center gap-3 rounded-lg transition-all duration-150 group relative',
                   isCollapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
                   isActive
-                    ? 'font-semibold'
+                    ? 'font-bold'
                     : 'font-medium'
                 )}
                 style={({ isActive }) => ({
                   background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-                  color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
-                  borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
+                  color: isActive ? '#2563eb' : (theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'),
+                  borderLeft: isActive && !isCollapsed ? '2px solid #2563eb' : '2px solid transparent',
                 })}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement;
                   if (!el.className.includes('active')) {
-                    el.style.background = 'var(--gp-sidebar-hover)';
-                    el.style.color = 'var(--gp-sidebar-text-active)';
+                    el.style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)';
+                    el.style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)';
                   }
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLElement;
                   if (!el.className.includes('active')) {
                      el.style.background = 'transparent';
-                     el.style.color = 'var(--gp-sidebar-text)';
+                     el.style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)';
                   }
                 }}
               >
@@ -183,7 +203,7 @@ export function Sidebar() {
                     {isActive && !isCollapsed && (
                       <span
                         className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ background: 'var(--gp-blue-light)' }}
+                        style={{ background: '#2563eb' }}
                       />
                     )}
                   </>
@@ -197,7 +217,7 @@ export function Sidebar() {
         {adminItems.length > 0 && (
           <div>
             {!isCollapsed && (
-              <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--gp-sidebar-text)' }}>
+              <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}>
                 Administração
               </p>
             )}
@@ -215,21 +235,21 @@ export function Sidebar() {
                   )}
                   style={({ isActive }) => ({
                     background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-                    color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
-                    borderLeft: isActive && !isCollapsed ? '2px solid var(--gp-blue)' : '2px solid transparent',
+                    color: isActive ? '#2563eb' : (theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'),
+                    borderLeft: isActive && !isCollapsed ? '2px solid #2563eb' : '2px solid transparent',
                   })}
                   onMouseEnter={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!el.className.includes('active')) {
-                      el.style.background = 'var(--gp-sidebar-hover)';
-                      el.style.color = 'var(--gp-sidebar-text-active)';
+                      el.style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)';
+                      el.style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)';
                     }
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!el.className.includes('active')) {
                        el.style.background = 'transparent';
-                       el.style.color = 'var(--gp-sidebar-text)';
+                       el.style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)';
                     }
                   }}
                 >
@@ -247,15 +267,18 @@ export function Sidebar() {
       </div>
 
       {/* Footer */}
-      <div className="px-2 pb-3 pt-2 flex-shrink-0" style={{ borderTop: '1px solid var(--gp-border)' }}>
+      <div className="px-2 pb-3 pt-2 flex-shrink-0" style={{ borderTop: theme === 'light' ? '1px solid #e2e8f0' : '1px solid var(--gp-border)' }}>
         {/* Expand button when collapsed */}
         {isCollapsed && (
           <button
             onClick={() => setIsCollapsed(false)}
             className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 mb-1"
-            style={{ color: 'var(--gp-sidebar-text)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-sidebar-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text-active)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-sidebar-text)'; }}
+            style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}
+            onMouseEnter={e => { 
+              (e.currentTarget as HTMLElement).style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)'; 
+              (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)'; 
+            }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'; }}
           >
             <ChevronRight size={14} />
           </button>
@@ -272,20 +295,20 @@ export function Sidebar() {
           )}
           style={({ isActive }) => ({
             background: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-            color: isActive ? 'var(--gp-blue-light)' : 'var(--gp-sidebar-text)',
+            color: isActive ? '#2563eb' : (theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'),
           })}
           onMouseEnter={e => {
             const el = e.currentTarget as HTMLElement;
             if (!el.className.includes('active')) {
-              el.style.background = 'var(--gp-sidebar-hover)';
-              el.style.color = 'var(--gp-sidebar-text-active)';
+              el.style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)';
+              el.style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)';
             }
           }}
           onMouseLeave={e => {
             const el = e.currentTarget as HTMLElement;
             if (!el.className.includes('active')) {
                el.style.background = 'transparent';
-               el.style.color = 'var(--gp-sidebar-text)';
+               el.style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)';
             }
           }}
         >

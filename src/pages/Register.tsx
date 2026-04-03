@@ -64,8 +64,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-10 bg-gp-bg">
-      <div className="w-full max-w-2xl rounded-2xl overflow-hidden bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
+    <div className="min-h-screen flex items-start md:items-center justify-center p-4 py-12 bg-gp-bg overflow-y-auto">
+      <div className="w-full max-w-2xl rounded-2xl overflow-hidden bg-gp-surface border border-gp-border shadow-gp-shadow-lg my-auto">
         {/* Header */}
         <div className="px-8 pt-10 pb-8 text-center bg-gp-surface2 border-b border-gp-border">
           <div className="w-14 h-14 mx-auto mb-5 rounded-xl flex items-center justify-center p-3 bg-gp-blue/10 border border-gp-blue/20">

@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import { Sidebar } from '../components/Sidebar';
+import { Sidebar } from '../components/GlobalSidebar';
 import { Header } from '../components/Header';
+import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
+import { clsx } from 'clsx';
 
 export function MainLayout() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -24,7 +27,7 @@ export function MainLayout() {
   if (loading) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className={clsx("min-h-screen flex items-center justify-center", theme)}
         style={{ background: 'var(--gp-bg)' }}
       >
         <div className="flex flex-col items-center gap-4">
@@ -53,12 +56,16 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--gp-bg)' }}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto no-scrollbar">
-          <div className="max-w-7xl mx-auto p-6 lg:p-8">
+    <div className={clsx("flex h-screen overflow-hidden print:h-auto print:overflow-visible", theme)} style={{ background: 'var(--gp-bg)' }}>
+      <div className="print:hidden">
+        <Sidebar theme={theme} />
+      </div>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible">
+        <div className="print:hidden">
+          <Header />
+        </div>
+        <main className="flex-1 overflow-y-auto no-scrollbar print:overflow-visible print:bg-white">
+          <div className="max-w-7xl mx-auto p-6 lg:p-8 print:p-0 print:max-w-none">
             <Outlet />
           </div>
         </main>

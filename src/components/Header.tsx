@@ -104,7 +104,7 @@ export function Header() {
         <button
           onClick={toggleTheme}
           className={iconBtn}
-          title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+          title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
           style={{ color: 'var(--gp-text3)' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--gp-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text2)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gp-text3)'; }}
