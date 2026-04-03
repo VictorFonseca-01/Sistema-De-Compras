@@ -13,12 +13,16 @@ import {
   Package,
   ChevronUp,
   ChevronDown,
-  ArrowUpDown
+  ArrowUpDown,
+  Settings2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { BarcodeScanner } from '../components/BarcodeScanner';
 import { useProfile } from '../hooks/useProfile';
+import { assetService } from '../services/assetService';
+import { BulkActionModal } from '../components/BulkActionModal';
+import { toast } from 'react-hot-toast';
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -36,6 +40,12 @@ export default function Inventory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'recent' | 'az'>('recent');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  
+  // Estados de Gestão em Massa v5.5
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -79,6 +89,49 @@ export default function Inventory() {
       setAssets(data);
     }
     setLoading(false);
+  }
+
+  // Funções de Gestão em Massa v5.5
+  const toggleSelectAsset = (id: string) => {
+    const newSelected = new Set(selectedAssetIds);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelectedAssetIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedAssetIds.size === paginatedAssets.length) {
+      setSelectedAssetIds(new Set());
+    } else {
+      setSelectedAssetIds(new Set(paginatedAssets.map(a => a.id)));
+    }
+  };
+
+  async function handleBulkActionConfirm(data: { type: 'status' | 'local', value: string, notes: string }) {
+    setIsBulkProcessing(true);
+    const assetIds = Array.from(selectedAssetIds);
+
+    try {
+      let result;
+      if (data.type === 'status') {
+        result = await assetService.bulkUpdateAssetsStatus(assetIds, data.value as any, profile!.id, data.notes);
+      } else {
+        result = await assetService.bulkUpdateAssetsLocation(assetIds, data.value, profile!.id, data.notes);
+      }
+
+      if (result.errors) {
+        toast.error(`Erro ao atualizar lote: ${result.successCount} concluídos, falha nos demais.`);
+      } else {
+        toast.success(`${result.successCount} ativos atualizados com sucesso!`);
+        setSelectedAssetIds(new Set());
+        setIsBulkModalOpen(false);
+        fetchAssets();
+      }
+    } catch (err: any) {
+      toast.error('Erro crítico no processamento em massa: ' + err.message);
+    } finally {
+      setIsBulkProcessing(false);
+    }
   }
 
   const uniqueCategories = Array.from(new Set(assets.map(a => a.categoria).filter(Boolean)));
@@ -265,6 +318,16 @@ export default function Inventory() {
         <table className="gp-table">
           <thead>
             <tr>
+              <th className="w-10">
+                <div className="flex items-center justify-center">
+                  <input 
+                    type="checkbox" 
+                    checked={paginatedAssets.length > 0 && selectedAssetIds.size === paginatedAssets.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gp-blue/50 bg-gp-surface2 text-gp-blue focus:ring-gp-blue transition-all cursor-pointer shadow-sm hover:border-gp-blue"
+                  />
+                </div>
+              </th>
               <th onClick={() => toggleSort('numero_patrimonio')} className="cursor-pointer group/th">
                 <div className="flex items-center gap-2">
                   PATRIMÔNIO
@@ -312,13 +375,27 @@ export default function Inventory() {
                 </td>
               </tr>
             ) : (
-              paginatedAssets.map((asset) => {
+               paginatedAssets.map((asset) => {
+                const isSelected = selectedAssetIds.has(asset.id);
                 const displayName = (asset.nome_item === 'Item sem nome' || !asset.nome_item) 
                   ? (asset.modelo || asset.marca || 'Ativo sem Identificação') 
                   : asset.nome_item;
                 return (
-                  <tr key={asset.id} className="cursor-pointer" onClick={() => navigate(`/estoque/${asset.id}`)}>
-                    <td>
+                  <tr 
+                    key={asset.id} 
+                    className={clsx("cursor-pointer transition-colors", isSelected ? "bg-gp-blue/5 border-l-2 border-l-gp-blue" : "hover:bg-gp-surface3")} 
+                  >
+                    <td onClick={(e) => { e.stopPropagation(); toggleSelectAsset(asset.id); }}>
+                      <div className="flex items-center justify-center">
+                        <input 
+                          type="checkbox" 
+                          checked={isSelected}
+                          onChange={() => toggleSelectAsset(asset.id)}
+                          className="w-4 h-4 rounded border-gp-blue/50 bg-gp-surface2 text-gp-blue focus:ring-gp-blue transition-all cursor-pointer shadow-sm hover:border-gp-blue"
+                        />
+                      </div>
+                    </td>
+                    <td onClick={() => navigate(`/estoque/${asset.id}`)}>
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-gp-surface2 flex items-center justify-center font-bold text-gp-text3 group-hover:bg-gp-blue group-hover:text-white transition-all">
                           {displayName.charAt(0).toUpperCase()}
@@ -457,6 +534,45 @@ export default function Inventory() {
           </div>
         </div>
       )}
+
+      {/* Barra de Ações em Massa v5.5 */}
+      {selectedAssetIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-slide-up">
+           <div className="bg-gp-navy2 border border-gp-blue/30 shadow-2xl shadow-gp-blue/20 rounded-2xl px-6 py-4 flex items-center gap-8 backdrop-blur-md">
+              <div className="flex items-center gap-4 border-r border-gp-border pr-8">
+                 <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                    <CheckCircle size={20} strokeWidth={2.5} />
+                 </div>
+                 <div>
+                    <p className="text-sm font-bold text-gp-text">{selectedAssetIds.size} itens selecionados</p>
+                    <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest leading-none">Gestão de Lote Ativa</p>
+                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                 <button 
+                  onClick={() => setIsBulkModalOpen(true)}
+                  className="btn-premium-primary px-6 py-2.5 rounded-xl text-[11px] font-bold shadow-lg shadow-gp-blue/20"
+                 >
+                    <Settings2 size={16} /> AÇÕES EM MASSA
+                 </button>
+                 <button 
+                  onClick={() => setSelectedAssetIds(new Set())}
+                  className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[11px] font-bold"
+                 >
+                    LIMPAR
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      <BulkActionModal 
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        selectedCount={selectedAssetIds.size}
+        isProcessing={isBulkProcessing}
+        onConfirm={handleBulkActionConfirm}
+      />
     </div>
   );
 }

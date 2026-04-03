@@ -191,5 +191,33 @@ export const assetService = {
       }]);
 
     return { error: moveError };
+  },
+
+  /**
+   * Atualiza o status de múltiplos ativos em massa.
+   */
+  async bulkUpdateAssetsStatus(assetIds: string[], newStatus: Asset['status'], performByUserId: string, notes: string) {
+    const promises = assetIds.map(id => this.updateAssetStatus(id, newStatus, performByUserId, notes));
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error);
+    
+    return { 
+      successCount: assetIds.length - errors.length,
+      errors: errors.length > 0 ? errors : null 
+    };
+  },
+
+  /**
+   * Atualiza a localização de múltiplos ativos em massa.
+   */
+  async bulkUpdateAssetsLocation(assetIds: string[], newLocal: string, performByUserId: string, notes: string) {
+    const promises = assetIds.map(id => this.updateAssetLocation(id, newLocal, performByUserId, notes));
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error);
+    
+    return { 
+      successCount: assetIds.length - errors.length,
+      errors: errors.length > 0 ? errors : null 
+    };
   }
 };
