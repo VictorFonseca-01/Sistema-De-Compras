@@ -274,7 +274,10 @@ export default function AssetDetails() {
                 <button 
                   key={i} 
                   onClick={() => {
-                    const type = action.label.toLowerCase().replace('mover local', 'movimentacao') as any;
+                    const type = action.label.toLowerCase()
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "")
+                      .replace('mover local', 'movimentacao') as any;
                     setActionModal({ open: true, type });
                   }}
                   className={clsx("flex flex-col items-center justify-center p-6 gp-card transition-all group", action.hover)}
