@@ -266,29 +266,29 @@ export default function Dashboard() {
       )}
 
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="gp-page-title">
+          <h1 className="gp-page-title text-2xl sm:text-3xl">
             Dashboard
           </h1>
           <p className="gp-page-subtitle">
-            Olá, {profile?.full_name || 'usuário'}. O sistema está operacional e atualizado.
+            Olá, {profile?.full_name || 'usuário'}. O sistema está atualizado.
           </p>
         </div>
-        <div className="flex gap-3 flex-shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={() => navigate('/relatorios')}
-            className="btn-premium-secondary px-5 py-2.5 rounded-xl text-[12px]"
+            className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[11px] sm:text-[12px]"
           >
             <FileBarChart size={16} strokeWidth={2} />
-            Relatório Executivo
+            Relatórios
           </button>
           <button
             onClick={() => navigate('/solicitacoes/nova')}
-            className="btn-premium-primary px-5 py-2.5 rounded-xl text-[12px]"
+            className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[11px] sm:text-[12px]"
           >
             <Plus size={16} strokeWidth={2.5} />
-            Nova Solicitação
+            Novo Pedido
           </button>
         </div>
       </div>
@@ -302,13 +302,13 @@ export default function Dashboard() {
             <span className="text-[10px] font-bold text-gp-blue-light uppercase tracking-widest bg-gp-blue/5 px-2 py-0.5 rounded border border-gp-blue/10">Controladoria Automática</span>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
             {/* Main KPI: Investimento Total */}
-            <div className="md:col-span-5">
+            <div className="sm:col-span-12 lg:col-span-5">
               {loading ? (
                 <KpiSkeleton />
               ) : (
-                <div className="gp-metric h-full border-gp-blue/20 bg-gradient-to-br from-gp-surface to-gp-blue/5 shadow-gp-shadow-blue/10">
+                <div className="gp-metric h-full border-gp-blue/20 bg-gradient-to-br from-gp-surface to-gp-blue/5 shadow-gp-shadow-blue/10 p-5 sm:p-6">
                   <div className="flex items-start justify-between">
                     <div className="gp-metric-icon bg-gp-blue text-white shadow-lg shadow-gp-blue/20">
                       <BarChart3 size={20} strokeWidth={2.5} />
@@ -316,8 +316,10 @@ export default function Dashboard() {
                     <div className="px-2 py-1 bg-gp-blue/10 text-gp-blue rounded-lg text-[9px] font-black uppercase tracking-tighter">Budget Total</div>
                   </div>
                   <div className="mt-5">
-                    <p className="gp-metric-value text-3xl">{requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}</p>
-                    <p className="gp-metric-label">Investimento Total Aprovado</p>
+                    <p className="gp-metric-value text-2xl sm:text-3xl truncate">
+                      {requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}
+                    </p>
+                    <p className="gp-metric-label mt-1">Investimento Total Aprovado</p>
                   </div>
                 </div>
               )}
@@ -418,8 +420,8 @@ export default function Dashboard() {
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Donut Chart */}
-        <div className="gp-card p-8 flex flex-col">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="gp-card p-5 sm:p-8 flex flex-col">
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
               <BarChart3 size={20} strokeWidth={2} />
             </div>

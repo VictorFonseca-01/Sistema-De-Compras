@@ -207,31 +207,31 @@ export default function Inventory() {
 
   return (
     <div className="space-y-6 animate-fade-up pb-20">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h1 className="gp-page-title text-3xl">
+          <h1 className="gp-page-title text-2xl sm:text-3xl">
              Inventário Global
           </h1>
-          <p className="gp-page-subtitle">Controle centralizado de ativos, hardware e patrimônio físico.</p>
+          <p className="gp-page-subtitle">Controle centralizado de ativos e hardware.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {profile?.role === 'master_admin' && assets.length > 0 && (
             <button 
               onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
-              className="btn-premium-danger px-5 py-2.5 rounded-xl text-[11px]"
+              className="btn-premium-danger flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]"
             >
               <Trash2 size={16} />
-              {isDeleting ? 'ESVAZIANDO...' : 'ZERAR ESTOQUE'}
+              {isDeleting ? '...' : 'ZERAR'}
             </button>
           )}
-          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary px-5 py-2.5 rounded-xl text-[11px]">
-            <Plus size={16} strokeWidth={3} /> NOVO ATIVO
+          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+            <Plus size={16} strokeWidth={3} /> NOVO
           </button>
-          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary px-5 py-2.5 rounded-xl text-[11px]">
-            <TableIcon size={16} /> IMPORTAR EXCEL
+          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+            <TableIcon size={16} /> IMPORTAR
           </button>
-          <button onClick={() => setShowScanner(true)} className="btn-premium-dark px-5 py-2.5 rounded-xl text-[11px]">
-            <Barcode size={16} strokeWidth={3} /> ESCANEAR
+          <button onClick={() => setShowScanner(true)} className="btn-premium-dark flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+            <Barcode size={16} strokeWidth={3} /> SCAN
           </button>
         </div>
       </header>
@@ -239,19 +239,19 @@ export default function Inventory() {
       {showScanner && <BarcodeScanner onScan={(text) => { setSearchTerm(text); setShowScanner(false); }} onClose={() => setShowScanner(false)} />}
 
       <div className="gp-filter-bar space-y-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative group">
             <Search className="absolute left-4 top-3 text-gp-text3 group-focus-within:text-gp-blue transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Pesquisar por patrimônio, nome, modelo, local..."
+              placeholder="Pesquisar patrimônio, nome, local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="gp-input pl-11 h-11" 
+              className="gp-input pl-11 h-11 text-sm sm:text-base" 
             />
           </div>
           
-          <div className="flex items-center bg-gp-navy2 p-1 rounded-full border border-gp-border w-fit shadow-inner">
+          <div className="flex items-center bg-gp-navy2 p-1 rounded-full border border-gp-border w-full sm:w-fit shadow-inner">
              {[
                { id: 'recent', label: 'Recentes' }, 
                { id: 'az', label: 'A-Z' }
@@ -260,7 +260,7 @@ export default function Inventory() {
                   key={sort.id} 
                   onClick={() => { setSortOrder(sort.id as any); setSortConfig(null); }} 
                   className={clsx(
-                    "px-7 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-widest transition-all duration-300 relative", 
+                    "flex-1 sm:flex-none px-6 py-2 rounded-full text-[10px] font-extrabold uppercase tracking-widest transition-all duration-300 relative", 
                     sortOrder === sort.id && !sortConfig
                       ? "bg-gp-blue text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]" 
                       : "text-gp-text3 hover:text-gp-text"
@@ -316,7 +316,82 @@ export default function Inventory() {
         </div>
       </div>
 
-      <div className="gp-table-wrap">
+      {/* Mobile Card List */}
+      <div className="grid grid-cols-1 gap-4 sm:hidden">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="gp-card p-4 animate-pulse space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="h-4 w-32 bg-gp-border rounded" />
+                <div className="h-6 w-24 bg-gp-border rounded-lg" />
+              </div>
+              <div className="h-5 w-full bg-gp-border/50 rounded" />
+            </div>
+          ))
+        ) : filteredAssets.length === 0 ? (
+          <div className="gp-card p-8 text-center text-gp-text3 italic text-sm">
+             Nenhum ativo encontrado.
+          </div>
+        ) : (
+          paginatedAssets.map((asset) => {
+            const isSelected = selectedAssetIds.has(asset.id);
+            const displayName = (asset.nome_item === 'Item sem nome' || !asset.nome_item) 
+              ? (asset.modelo || asset.marca || 'Ativo sem Identificação') 
+              : asset.nome_item;
+            return (
+              <div 
+                key={asset.id} 
+                onClick={() => navigate(`/estoque/${asset.id}`)}
+                className={clsx(
+                  "gp-card p-4 active:scale-[0.98] transition-all flex flex-col gap-3 group border-l-4",
+                  isSelected ? "border-l-gp-blue bg-gp-blue/5 shadow-inner" : "border-l-transparent"
+                )}
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div 
+                      onClick={(e) => { e.stopPropagation(); toggleSelectAsset(asset.id); }}
+                      className={clsx(
+                        "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                        isSelected ? "bg-gp-blue border-gp-blue text-white" : "border-gp-border bg-gp-surface2"
+                      )}
+                    >
+                      {isSelected && <CheckCircle size={14} strokeWidth={3} />}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest truncate">
+                         {asset.numero_patrimonio || 'S/N'} • {asset.categoria || 'Hardware'}
+                      </span>
+                      <span className="font-bold text-gp-text truncate mt-0.5">
+                        {displayName}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={clsx("gp-badge gp-badge-sm flex-shrink-0", statusColors[asset.status])}>
+                    {statusLabels[asset.status] || asset.status}
+                  </div>
+                </div>
+
+                <div className="flex flex-col border-t border-gp-border pt-3">
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-gp-text3 uppercase tracking-tighter">Local Atual</span>
+                        <span className="text-xs font-bold text-gp-text truncate">{asset.local || 'Estoque'}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-gp-text3 uppercase tracking-tighter">Responsável</span>
+                        <span className="text-xs font-bold text-gp-blue truncate">{asset.usuario_nome_importado || '-'}</span>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* Desktop/Tablet Table */}
+      <div className="gp-table-wrap hidden sm:block">
         <table className="gp-table">
           <thead>
             <tr>
@@ -367,12 +442,12 @@ export default function Inventory() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
-                  <td colSpan={6} className="h-20 bg-gp-surface2/50"></td>
+                  <td colSpan={7} className="h-20 bg-gp-surface2/50"></td>
                 </tr>
               ))
             ) : filteredAssets.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-20 text-center text-gp-text3 italic font-medium">
+                <td colSpan={7} className="py-20 text-center text-gp-text3 italic font-medium">
                   Nenhum item encontrado no inventário.
                 </td>
               </tr>
@@ -539,27 +614,28 @@ export default function Inventory() {
 
       {/* Barra de Ações em Massa v5.5 */}
       {selectedAssetIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-slide-up">
-           <div className="bg-gp-navy2 border border-gp-blue/30 shadow-2xl shadow-gp-blue/20 rounded-2xl px-6 py-4 flex items-center gap-8 backdrop-blur-md">
-              <div className="flex items-center gap-4 border-r border-gp-border pr-8">
-                 <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
-                    <CheckCircle size={20} strokeWidth={2.5} />
+        <div className="fixed bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-slide-up w-[90%] sm:w-auto">
+           <div className="bg-gp-navy2 border border-gp-blue/30 shadow-2xl shadow-gp-blue/20 rounded-2xl px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sm:justify-start gap-4 sm:gap-8 backdrop-blur-md">
+              <div className="flex items-center gap-3 sm:gap-4 sm:border-r sm:border-gp-border sm:pr-8">
+                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                    <CheckCircle size={16} strokeWidth={3} />
                  </div>
-                 <div>
-                    <p className="text-sm font-bold text-gp-text">{selectedAssetIds.size} itens selecionados</p>
-                    <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest leading-none">Gestão de Lote Ativa</p>
+                 <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gp-text truncate">{selectedAssetIds.size} selecionados</p>
+                    <p className="hidden sm:block text-[10px] font-bold text-gp-text3 uppercase tracking-widest leading-none">Gestão de Lote</p>
                  </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                  <button 
                   onClick={() => setIsBulkModalOpen(true)}
-                  className="btn-premium-primary px-6 py-2.5 rounded-xl text-[11px] font-bold shadow-lg shadow-gp-blue/20"
+                  className="btn-premium-primary px-3 py-2 sm:px-6 sm:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-bold shadow-lg shadow-gp-blue/20"
                  >
-                    <Settings2 size={16} /> AÇÕES EM MASSA
+                    <Settings2 size={14} className="sm:hidden" />
+                    <span className="hidden sm:inline"><Settings2 size={16} /> AÇÕES EM MASSA</span>
                  </button>
                  <button 
                   onClick={() => setSelectedAssetIds(new Set())}
-                  className="btn-premium-secondary px-6 py-2.5 rounded-xl text-[11px] font-bold"
+                  className="btn-premium-secondary px-3 py-2 sm:px-6 sm:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-bold"
                  >
                     LIMPAR
                  </button>

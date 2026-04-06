@@ -7,9 +7,12 @@ import { supabase } from '../lib/supabase';
 import { clsx } from 'clsx';
 import { Toaster } from 'react-hot-toast';
 
+import { BottomNavigation } from '../components/BottomNavigation';
+
 export function MainLayout() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -69,18 +72,34 @@ export function MainLayout() {
           fontWeight: '600'
         }
       }} />
+
+      {/* Mobile Drawer Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] sm:hidden transition-all duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       <div className="print:hidden">
-        <Sidebar theme={theme} />
+        <Sidebar 
+          theme={theme} 
+          isOpen={isMobileMenuOpen} 
+          onClose={() => setIsMobileMenuOpen(false)} 
+        />
       </div>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible">
         <div className="print:hidden">
           <Header />
         </div>
-        <main className="flex-1 overflow-y-auto no-scrollbar print:overflow-visible print:bg-white">
-          <div className="max-w-7xl mx-auto p-6 lg:p-8 print:p-0 print:max-w-none">
+        <main className="flex-1 overflow-y-auto no-scrollbar pb-20 sm:pb-0 print:overflow-visible print:bg-white">
+          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none">
             <Outlet />
           </div>
         </main>
+        
+        {/* Mobile App Navigation */}
+        <BottomNavigation onMenuClick={() => setIsMobileMenuOpen(true)} />
       </div>
     </div>
   );

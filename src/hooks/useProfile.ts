@@ -14,6 +14,7 @@ export interface Profile {
 export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     async function getProfile() {
@@ -21,18 +22,24 @@ export function useProfile() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          const { data, error } = await supabase
+          const { data, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
           
-          if (!error && data) {
+          if (profileError) {
+            console.error('Profile query error:', profileError);
+            setError(new Error(profileError.message));
+          } else if (data) {
             setProfile(data);
+          } else {
+            setError(new Error('Perfil não encontrado para este usuário.'));
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching profile:', err);
+        setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setLoading(false);
       }
@@ -41,5 +48,5 @@ export function useProfile() {
     getProfile();
   }, []);
 
-  return { profile, loading };
+  return { profile, loading, error };
 }

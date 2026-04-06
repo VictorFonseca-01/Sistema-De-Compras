@@ -600,7 +600,7 @@ body {
     transition: all 0.18s ease;
     flex-shrink: 0;
     background: var(--gp-surface);
-    color: var(--gp-text2);
+    color: var(--gp-text); /* Melhorado de gp-text2 para gp-text */
     border: 1.5px solid var(--gp-border2);
     box-shadow: var(--gp-shadow-sm);
   }

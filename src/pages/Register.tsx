@@ -1,25 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, Lock, AlertCircle, User, ArrowRight } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
 import { useTheme } from '../context/ThemeContext';
-
-const departmentOptions = [
-  { value: 'Administrativo', label: 'Administrativo' },
-  { value: 'Comercial', label: 'Comercial' },
-  { value: 'Compras', label: 'Compras' },
-  { value: 'Diretoria', label: 'Diretoria' },
-  { value: 'Engenharia', label: 'Engenharia' },
-  { value: 'Estoque', label: 'Estoque' },
-  { value: 'Financeiro', label: 'Financeiro' },
-  { value: 'Logística', label: 'Logística' },
-  { value: 'Operacional', label: 'Operacional' },
-  { value: 'Recursos Humanos', label: 'Recursos Humanos (RH)' },
-  { value: 'TI', label: 'Tecnologia (TI)' },
-  { value: 'Outro', label: 'Outro' },
-];
 
 const roleOptions = [
   { value: 'usuario', label: 'Funcionário' },
@@ -31,7 +16,10 @@ const labelClass = 'block text-[11px] font-bold uppercase tracking-widest mb-2';
 
 export default function Register() {
   const [name, setName] = useState('');
-  const [department, setDepartment] = useState('');
+  const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
+  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [companyId, setCompanyId] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
   const [role, setRole] = useState('usuario');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,19 +28,53 @@ export default function Register() {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
+  useEffect(() => {
+    async function loadData() {
+      const { data: cos } = await supabase.from('companies').select('id, name').eq('active', true).order('name');
+      const { data: depts } = await supabase.from('departments').select('id, name').eq('active', true).order('name');
+      if (cos) setCompanies(cos);
+      if (depts) setDepartments(depts);
+      
+      if (cos) {
+        const matriz = cos.find(c => c.name === 'Matriz');
+        if (matriz) setCompanyId(matriz.id);
+      }
+    }
+    loadData();
+  }, []);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!companyId || !departmentId) {
+      setError('Por favor, selecione sua Unidade e Departamento.');
+      return;
+    }
+
     if (!email.endsWith('@globalp.com.br')) {
       setError('Apenas e-mails @globalp.com.br são permitidos.');
       return;
     }
+
     setLoading(true);
+    
+    const selectedDept = departments.find(d => d.id === departmentId)?.name;
+
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name, department, role } },
+      options: { 
+        data: { 
+          full_name: name, 
+          department: selectedDept,
+          department_id: departmentId,
+          company_id: companyId,
+          role 
+        } 
+      },
     });
+
     if (signUpError) {
       setError(signUpError.message.includes('Apenas e-mails')
         ? 'Apenas e-mails @globalp.com.br são permitidos.'
@@ -110,30 +132,45 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Unit/Company */}
+            <div>
+              <label className={clsx(labelClass, "text-gp-text3")}>Unidade / Filial</label>
+              <SearchableSelect
+                options={companies.map(c => ({ value: c.id, label: c.name }))}
+                value={companyId}
+                onChange={setCompanyId}
+                placeholder="Selecione a unidade..."
+              />
+            </div>
+
             {/* Department */}
             <div>
               <label className={clsx(labelClass, "text-gp-text3")}>Departamento</label>
               <SearchableSelect
-                options={departmentOptions}
-                value={department}
-                onChange={dept => {
-                  setDepartment(dept);
-                  if (dept === 'TI') setRole('ti');
+                options={departments.map(d => ({ value: d.id, label: d.name }))}
+                value={departmentId}
+                onChange={id => {
+                  setDepartmentId(id);
+                  const deptName = departments.find(d => d.id === id)?.name;
+                  if (deptName === 'TI') setRole('ti');
                   else if (role === 'ti') setRole('usuario');
                 }}
-                placeholder="Selecione..."
+                placeholder="Selecione o setor..."
               />
             </div>
 
             {/* Role */}
-            <div>
-              <label className={clsx(labelClass, "text-gp-text3")}>Cargo no Setor</label>
+            <div className="md:col-span-2">
+              <label className={clsx(labelClass, "text-gp-text3")}>Cargo / Função</label>
               <SearchableSelect
-                options={department === 'TI' ? [{ value: 'ti', label: 'Equipe de TI' }] : roleOptions}
+                options={departments.find(d => d.id === departmentId)?.name === 'TI' 
+                  ? [{ value: 'ti', label: 'Equipe de TI' }] 
+                  : roleOptions
+                }
                 value={role}
-                onChange={val => setRole(val)}
-                disabled={department === 'TI'}
-                placeholder="Selecione..."
+                onChange={setRole}
+                disabled={!departmentId || departments.find(d => d.id === departmentId)?.name === 'TI'}
+                placeholder="Selecione sua função..."
               />
             </div>
 
@@ -190,15 +227,18 @@ export default function Register() {
             <button
               type="button"
               onClick={() => {
-                setName('Auditor de Testes');
-                setDepartment('TI');
+                setName('Usuário Auditor');
+                const ti = departments.find(d => d.name === 'TI');
+                const matriz = companies.find(c => c.name === 'Matriz');
+                if (ti) setDepartmentId(ti.id);
+                if (matriz) setCompanyId(matriz.id);
                 setRole('ti');
-                setEmail(`teste_${Math.floor(Math.random() * 1000)}@globalp.com.br`);
-                setPassword('teste123456');
+                setEmail(`auditor_${Math.floor(Math.random() * 1000)}@globalp.com.br`);
+                setPassword('auditor123456');
               }}
               className="text-[10px] font-bold text-gp-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
             >
-              [ TESTE: Gerar Dados Aleatórios ]
+              [ TESTE: Gerar Dados Automáticos ]
             </button>
             <p className="text-[12px] text-gp-text3">
               Já possui conta?{' '}

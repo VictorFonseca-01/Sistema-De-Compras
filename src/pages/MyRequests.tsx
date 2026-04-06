@@ -96,14 +96,14 @@ export default function MyRequests() {
 
   return (
     <div className="space-y-8 animate-fade-up pb-16">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
           <h1 className="gp-page-title">Solicitações</h1>
           <p className="gp-page-subtitle">Central de acompanhamento e auditoria de compras corporativas.</p>
         </div>
         <Link 
           to="/solicitacoes/nova"
-          className="btn-premium-primary px-6 py-3 rounded-xl shadow-gp-blue/20"
+          className="btn-premium-primary w-full sm:w-auto px-6 py-3 rounded-xl shadow-gp-blue/20 flex justify-center"
         >
           <Plus size={18} strokeWidth={2} />
           NOVA SOLICITAÇÃO
@@ -111,32 +111,98 @@ export default function MyRequests() {
       </header>
 
       {/* Filters Bar */}
-      <div className="gp-card p-5 flex flex-col md:flex-row gap-5 items-center">
+      <div className="gp-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-center">
         <div className="relative flex-1 w-full group">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
           <input 
             type="text" 
-            placeholder="Pesquisar por título ou solicitante..."
+            placeholder="Pesquisar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="gp-input pl-11 pr-4 py-3"
+            className="gp-input pl-11 pr-4 py-3 text-sm sm:text-base"
           />
         </div>
-        <div className="w-full md:w-64 flex items-center gap-3">
+        <div className="w-full sm:w-64 flex items-center gap-3">
           <Filter size={16} className="text-gp-text3 flex-shrink-0" />
-          <SearchableSelect 
-            options={[
-              { value: 'all', label: 'Todos os Status' },
-              ...Object.keys(statusMap).map(key => ({ value: key, label: statusMap[key].label }))
-            ]}
-            value={statusFilter}
-            onChange={(val) => setStatusFilter(val)}
-            placeholder="Filtrar por Status"
-          />
+          <div className="flex-1 min-w-0">
+            <SearchableSelect 
+              options={[
+                { value: 'all', label: 'Todos os Status' },
+                ...Object.keys(statusMap).map(key => ({ value: key, label: statusMap[key].label }))
+              ]}
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              placeholder="Status"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="gp-table-wrap">
+      {/* Mobile Card List */}
+      <div className="grid grid-cols-1 gap-4 sm:hidden">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="gp-card p-4 animate-pulse space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="h-4 w-32 bg-gp-border rounded" />
+                <div className="h-6 w-24 bg-gp-border rounded-lg" />
+              </div>
+              <div className="h-5 w-full bg-gp-border/50 rounded" />
+              <div className="h-3 w-40 bg-gp-border/50 rounded" />
+            </div>
+          ))
+        ) : filteredRequests.length === 0 ? (
+          <div className="gp-card p-8 text-center text-gp-text3 italic text-sm">
+             Nenhuma solicitação encontrada.
+          </div>
+        ) : (
+          filteredRequests.map((req) => {
+            const status = statusMap[req.status] || { label: req.status, badgeClass: 'gp-badge-gray', icon: Clock };
+            return (
+              <Link 
+                key={req.id} 
+                to={`/solicitacoes/${req.id}`}
+                className="gp-card p-4 active:scale-[0.98] transition-all flex flex-col gap-3 group"
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest truncate">
+                       { (req as any).companies?.name || 'Matriz' } • {new Date(req.created_at).toLocaleDateString()}
+                    </span>
+                    <span className="font-bold text-gp-text truncate mt-0.5">
+                      {req.profiles?.full_name}
+                    </span>
+                  </div>
+                  <div className={clsx("gp-badge gp-badge-sm flex-shrink-0", status.badgeClass)}>
+                    <status.icon size={10} strokeWidth={2.5} />
+                    {status.label.toUpperCase()}
+                  </div>
+                </div>
+
+                <div className="flex flex-col border-t border-gp-border pt-3">
+                  <span className="font-bold text-gp-text group-hover:text-gp-blue transition-colors line-clamp-2">
+                    {req.title}
+                  </span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className={clsx(
+                        "text-[9px] font-bold uppercase tracking-widest",
+                        (req.priority === 'alta' || req.priority === 'critica') ? 'text-gp-error' : 'text-gp-text3'
+                    )}>
+                        Prioridade {req.priority} • {req.category}
+                    </span>
+                    <span className="text-[11px] font-bold text-gp-blue">
+                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(req.estimated_cost)}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            )
+          })
+        )}
+      </div>
+
+      {/* Desktop/Tablet Table */}
+      <div className="gp-table-wrap hidden sm:block">
         <div className="overflow-x-auto">
           <table className="gp-table">
             <thead>

@@ -9,20 +9,21 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCheck,
-  Warehouse
+  Warehouse,
+  X
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
 interface SidebarProps {
   theme: 'light' | 'dark';
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ theme }: SidebarProps) {
+export function Sidebar({ theme, isOpen, onClose }: SidebarProps) {
   const { profile, loading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  console.log('--- GLOBAL SIDEBAR RENDERING ---', { theme, isCollapsed, role: profile?.role });
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -71,7 +72,10 @@ export function Sidebar({ theme }: SidebarProps) {
         color: theme === 'light' ? '#0f172a' : 'var(--gp-text)'
       }}
       className={clsx(
-        'flex flex-col h-screen sticky top-0 transition-all duration-300 z-40 flex-shrink-0',
+        'flex flex-col h-screen sticky top-0 transition-all duration-300 z-[70] flex-shrink-0',
+        'fixed inset-y-0 left-0 sm:sticky transform',
+        !isOpen && '-translate-x-full sm:translate-x-0',
+        isOpen && 'translate-x-0',
         isCollapsed ? 'w-[68px]' : 'w-60'
       )}
     >
@@ -96,21 +100,23 @@ export function Sidebar({ theme }: SidebarProps) {
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={clsx(
-            'w-6 h-6 flex items-center justify-center rounded-md transition-all duration-200',
-            isCollapsed && 'hidden'
+            'w-6 h-6 sm:flex items-center justify-center rounded-md transition-all duration-200 hidden',
+            isCollapsed && '!hidden'
           )}
           style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}
-          onMouseEnter={e => { 
-            (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)'; 
-            (e.currentTarget as HTMLElement).style.background = theme === 'light' ? 'rgba(15,23,42,0.04)' : 'var(--gp-sidebar-hover)'; 
-          }}
-          onMouseLeave={e => { 
-            (e.currentTarget as HTMLElement).style.color = theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)'; 
-            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
-          }}
         >
-          <ChevronLeft size={14} />
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
+
+        {/* Mobile Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="sm:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-gp-surface border border-gp-border text-gp-text2"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* New Request CTA */}

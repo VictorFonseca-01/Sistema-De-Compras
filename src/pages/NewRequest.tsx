@@ -119,6 +119,23 @@ export default function NewRequest() {
     }
 
     try {
+      // Garantia: se os IDs organizacionais não vierem do hook profile (ex: usuário novo), buscamos do banco
+      let finalCompanyId = profile?.company_id;
+      let finalDepartmentId = profile?.department_id;
+
+      if (!finalCompanyId || !finalDepartmentId) {
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('company_id, department_id')
+          .eq('id', user.id)
+          .single();
+        
+        if (currentProfile) {
+          finalCompanyId = currentProfile.company_id;
+          finalDepartmentId = currentProfile.department_id;
+        }
+      }
+
       const { data: request, error: requestError } = await supabase
         .from('requests')
         .insert([{
@@ -130,8 +147,8 @@ export default function NewRequest() {
           priority: form.priority,
           status: 'pending_gestor',
           current_step: 'gestor',
-          company_id: profile?.company_id,
-          department_id: profile?.department_id
+          company_id: finalCompanyId,
+          department_id: finalDepartmentId
         }])
         .select()
         .single();
