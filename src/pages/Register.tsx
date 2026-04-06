@@ -224,22 +224,24 @@ export default function Register() {
           </button>
 
           <div className="pt-5 border-t border-gp-border text-center space-y-4">
-            <button
-              type="button"
-              onClick={() => {
-                setName('Usuário Auditor');
-                const ti = departments.find(d => d.name === 'TI');
-                const matriz = companies.find(c => c.name === 'Matriz');
-                if (ti) setDepartmentId(ti.id);
-                if (matriz) setCompanyId(matriz.id);
-                setRole('ti');
-                setEmail(`auditor_${Math.floor(Math.random() * 1000)}@globalp.com.br`);
-                setPassword('auditor123456');
-              }}
-              className="text-[10px] font-bold text-gp-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
-            >
-              [ TESTE: Gerar Dados Automáticos ]
-            </button>
+            {import.meta.env.DEV && (
+              <button
+                type="button"
+                onClick={() => {
+                  setName('Usuário Auditor');
+                  const ti = departments.find(d => d.name === 'TI');
+                  const matriz = companies.find(c => c.name === 'Matriz');
+                  if (ti) setDepartmentId(ti.id);
+                  if (matriz) setCompanyId(matriz.id);
+                  setRole('ti');
+                  setEmail(`auditor_${Math.floor(Math.random() * 1000)}@globalp.com.br`);
+                  setPassword('auditor123456');
+                }}
+                className="text-[10px] font-bold text-gp-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
+              >
+                [ TESTE: Gerar Dados Automáticos ]
+              </button>
+            )}
             <p className="text-[12px] text-gp-text3">
               Já possui conta?{' '}
               <Link

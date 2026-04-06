@@ -33,8 +33,8 @@ interface Request {
 const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-warning', icon: Clock },
   pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
-  pending_compras: { label: 'Em Compras', badgeClass: 'gp-badge-purple', icon: Clock },
   pending_diretoria: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_compras: { label: 'Em Compras', badgeClass: 'gp-badge-purple', icon: Clock },
   approved: { label: 'Aprovado Final', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
   rejected: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
   adjustment_needed: { label: 'Ajuste Necessário', badgeClass: 'gp-badge-warning', icon: Clock },

@@ -571,9 +571,9 @@ export default function RequestDetails() {
                     onClick={() => {
                       let nextStatus = ''; let nextStep = '';
                       if (request.status === 'pending_gestor') { nextStatus = 'pending_ti'; nextStep = 'ti'; }
-                      else if (request.status === 'pending_ti') { nextStatus = 'pending_compras'; nextStep = 'compras'; }
-                      else if (request.status === 'pending_compras') { nextStatus = 'pending_diretoria'; nextStep = 'diretoria'; }
-                      else if (request.status === 'pending_diretoria') { nextStatus = 'approved'; nextStep = 'diretoria'; }
+                      else if (request.status === 'pending_ti') { nextStatus = 'pending_diretoria'; nextStep = 'diretoria'; }
+                      else if (request.status === 'pending_diretoria') { nextStatus = 'pending_compras'; nextStep = 'compras'; }
+                      else if (request.status === 'pending_compras') { nextStatus = 'approved'; nextStep = 'compras'; }
                       handleAction(nextStatus, nextStep);
                     }}
                     className="w-full btn-premium-primary py-4 rounded-xl text-[12px] shadow-lg"
@@ -605,11 +605,11 @@ export default function RequestDetails() {
                 {[
                   { step: 'gestor', label: 'Gestor Imediato', desc: 'Validação de necessidade' },
                   { step: 'ti', label: 'Análise de TI', desc: 'Viabilidade técnica' },
-                  { step: 'compras', label: 'Cotação Compras', desc: 'Melhor custo/benefício' },
                   { step: 'diretoria', label: 'Diretoria Executiva', desc: 'Aprovação orçamentária' },
+                  { step: 'compras', label: 'Cotação Compras', desc: 'Melhor custo/benefício' },
                 ].map((s, idx) => {
                   const isActive = request.current_step === s.step && !isFinalized;
-                  const isPast = ['pending_ti', 'pending_compras', 'pending_diretoria', 'approved'].indexOf(request.status) > idx;
+                  const isPast = ['pending_ti', 'pending_diretoria', 'pending_compras', 'approved'].indexOf(request.status) >= idx;
                   const isRejected = request.status === 'rejected' && request.current_step === s.step;
                   
                   return (

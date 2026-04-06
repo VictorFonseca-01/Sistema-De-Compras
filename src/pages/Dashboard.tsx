@@ -22,8 +22,8 @@ import { clsx } from 'clsx';
 const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor:    { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
   pending_ti:        { label: 'Em Análise TI', color: 'var(--gp-blue)',    icon: FileText },
-  pending_compras:   { label: 'Em Compras',    color: 'var(--gp-purple)',  icon: TrendingUp },
   pending_diretoria: { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
+  pending_compras:   { label: 'Em Compras',    color: 'var(--gp-purple)',  icon: TrendingUp },
   approved:          { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
   rejected:          { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
   adjustment_needed: { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
@@ -199,21 +199,21 @@ export default function Dashboard() {
           },
           { 
             group: 'pipeline',
-            label: 'Fila Compras', 
-            value: stats_pending_compras.count,
-            secondary: formatCurrency(stats_pending_compras.sum),
-            icon: TrendingUp, 
-            colorClass: 'text-gp-purple', 
-            bgClass: 'bg-gp-purple/10' 
-          },
-          { 
-            group: 'pipeline',
             label: 'Fila Diretoria', 
             value: stats_pending_diretoria.count,
             secondary: formatCurrency(stats_pending_diretoria.sum),
             icon: Clock, 
             colorClass: 'text-gp-warning', 
             bgClass: 'bg-gp-warning/10' 
+          },
+          { 
+            group: 'pipeline',
+            label: 'Fila Compras', 
+            value: stats_pending_compras.count,
+            secondary: formatCurrency(stats_pending_compras.sum),
+            icon: TrendingUp, 
+            colorClass: 'text-gp-purple', 
+            bgClass: 'bg-gp-purple/10' 
           },
         ]);
 
