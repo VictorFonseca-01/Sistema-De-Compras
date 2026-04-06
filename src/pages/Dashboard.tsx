@@ -308,18 +308,23 @@ export default function Dashboard() {
               {loading ? (
                 <KpiSkeleton />
               ) : (
-                <div className="gp-metric h-full border-gp-blue/20 bg-gradient-to-br from-gp-surface to-gp-blue/5 shadow-gp-shadow-blue/10 p-5 sm:p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="gp-metric-icon bg-gp-blue text-white shadow-lg shadow-gp-blue/20">
-                      <BarChart3 size={20} strokeWidth={2.5} />
+                <div className="relative group overflow-hidden bg-gp-surface border border-gp-blue/30 rounded-2xl p-5 sm:p-7 shadow-2xl transition-all duration-500 hover:border-gp-blue/50">
+                  {/* Premium Glow Effect */}
+                  <div className="absolute -right-20 -top-20 w-64 h-64 bg-gp-blue/10 rounded-full blur-[80px] group-hover:bg-gp-blue/20 transition-all duration-700" />
+                  <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-gp-purple/5 rounded-full blur-[60px]" />
+                  
+                  <div className="relative flex items-start justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-gp-blue text-white shadow-xl shadow-gp-blue/40 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                      <BarChart3 size={24} strokeWidth={2.5} />
                     </div>
-                    <div className="px-2 py-1 bg-gp-blue/10 text-gp-blue rounded-lg text-[9px] font-black uppercase tracking-tighter">Budget Total</div>
+                    <div className="px-2 py-1 bg-gp-blue/10 text-gp-blue rounded-lg text-[9px] font-black uppercase tracking-tighter border border-gp-blue/20">Controladoria Global</div>
                   </div>
-                  <div className="mt-5">
-                    <p className="gp-metric-value text-2xl sm:text-3xl truncate">
+                  
+                  <div className="relative mt-8">
+                    <p className="text-3xl sm:text-4xl font-black text-gp-text tracking-tighter group-hover:translate-x-1 transition-transform duration-500">
                       {requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}
                     </p>
-                    <p className="gp-metric-label mt-1">Investimento Total Aprovado</p>
+                    <p className="text-[12px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-2 opacity-80">Patrimônio Gerenciado Aprovado</p>
                   </div>
                 </div>
               )}
@@ -335,36 +340,38 @@ export default function Dashboard() {
               ) : (
                 <>
                   {/* Pendente */}
-                  <div className="gp-metric border-gp-warning/30 bg-gp-warning/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gp-warning/20 text-gp-warning flex items-center justify-center shrink-0">
-                        <Clock size={16} strokeWidth={2.5} />
+                  <div className="relative group overflow-hidden bg-gp-surface border border-gp-warning/30 rounded-2xl p-5 shadow-lg hover:border-gp-warning/50 transition-all duration-300">
+                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-gp-warning/5 rounded-full blur-[40px]" />
+                    <div className="relative flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gp-warning/15 text-gp-warning flex items-center justify-center shrink-0 border border-gp-warning/20">
+                        <Clock size={20} strokeWidth={2.5} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate">Custo em Aprovação</p>
-                        <p className="text-lg font-black text-gp-text truncate">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.secondary || 'R$ 0,00'}</p>
+                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate opacity-70">Aguardando Avaliação</p>
+                        <p className="text-xl font-black text-gp-text truncate tracking-tight">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.secondary || 'R$ 0,00'}</p>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gp-warning/10 flex items-center justify-between text-[10px]">
-                      <span className="text-gp-text3 font-medium">Processos Pendentes:</span>
-                      <span className="font-bold text-gp-warning">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.value || 0} itens</span>
+                    <div className="relative mt-5 pt-4 border-t border-gp-border flex items-center justify-between text-[11px]">
+                      <span className="text-gp-text3 font-medium">Processos em Fila:</span>
+                      <span className="font-black text-gp-warning bg-gp-warning/10 px-2 py-0.5 rounded-full">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.value || 0} pendentes</span>
                     </div>
                   </div>
 
                   {/* Aprovado Unitário */}
-                  <div className="gp-metric border-gp-success/30 bg-gp-success/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gp-success/20 text-gp-success flex items-center justify-center shrink-0">
-                        <CheckCircle size={16} strokeWidth={2.5} />
+                  <div className="relative group overflow-hidden bg-gp-surface border border-gp-success/30 rounded-2xl p-5 shadow-lg hover:border-gp-success/50 transition-all duration-300">
+                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-gp-success/5 rounded-full blur-[40px]" />
+                    <div className="relative flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gp-success/15 text-gp-success flex items-center justify-center shrink-0 border border-gp-success/20">
+                        <CheckCircle size={20} strokeWidth={2.5} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate">Itens Aprovados (QTD)</p>
-                        <p className="text-lg font-black text-gp-text truncate">{requestStats.find(s => s.label === 'Aprovadas (Custo Total)')?.value || 0} Equipamentos</p>
+                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate opacity-70">Sucesso em Aquisição</p>
+                        <p className="text-xl font-black text-gp-text truncate tracking-tight">{requestStats.find(s => s.label === 'Aprovadas (Custo Total)')?.value || 0} Equipamentos</p>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gp-success/10 flex items-center justify-between text-[10px]">
-                      <span className="text-gp-text3 font-medium">Taxa de Incorporação:</span>
-                      <span className="font-bold text-gp-success">Proteção de Ativos</span>
+                    <div className="relative mt-5 pt-4 border-t border-gp-border flex items-center justify-between text-[11px]">
+                      <span className="text-gp-text3 font-medium">SLA de Conformidade:</span>
+                      <span className="font-black text-gp-success uppercase tracking-tighter">Ativo Protegido</span>
                     </div>
                   </div>
                 </>

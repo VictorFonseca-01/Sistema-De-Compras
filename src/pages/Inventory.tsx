@@ -338,50 +338,68 @@ export default function Inventory() {
             const displayName = (asset.nome_item === 'Item sem nome' || !asset.nome_item) 
               ? (asset.modelo || asset.marca || 'Ativo sem Identificação') 
               : asset.nome_item;
+            const s = statusLabels[asset.status] || asset.status;
+            const sColor = statusColors[asset.status];
+
             return (
               <div 
                 key={asset.id} 
-                onClick={() => navigate(`/estoque/${asset.id}`)}
                 className={clsx(
-                  "gp-card p-4 active:scale-[0.98] transition-all flex flex-col gap-3 group border-l-4",
-                  isSelected ? "border-l-gp-blue bg-gp-blue/5 shadow-inner" : "border-l-transparent"
+                  "relative group overflow-hidden bg-gp-surface border-l-4 rounded-2xl p-5 shadow-lg transition-all active:scale-[0.98] border-y border-r border-gp-border",
+                  isSelected ? "border-l-gp-blue bg-gp-blue/5" : "border-l-gp-border hover:border-l-gp-blue/40"
                 )}
+                onClick={() => navigate(`/estoque/${asset.id}`)}
               >
-                <div className="flex justify-between items-start gap-3">
+                <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div 
                       onClick={(e) => { e.stopPropagation(); toggleSelectAsset(asset.id); }}
                       className={clsx(
-                        "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                        "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all shrink-0",
                         isSelected ? "bg-gp-blue border-gp-blue text-white" : "border-gp-border bg-gp-surface2"
                       )}
                     >
                       {isSelected && <CheckCircle size={14} strokeWidth={3} />}
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] text-gp-text3 font-bold uppercase tracking-widest truncate">
-                         {asset.numero_patrimonio || 'S/N'} • {asset.categoria || 'Hardware'}
-                      </span>
-                      <span className="font-bold text-gp-text truncate mt-0.5">
-                        {displayName}
-                      </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-black text-gp-blue uppercase tracking-widest bg-gp-blue/10 px-2 py-0.5 rounded leading-none border border-gp-blue/20">
+                          {asset.numero_patrimonio || 'S/N'}
+                        </span>
+                        <span className="text-[10px] font-bold text-gp-text3 uppercase tracking-tighter opacity-60">
+                           {asset.categoria || 'Hardware'}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-gp-text text-base truncate pr-2">{displayName}</h4>
                     </div>
                   </div>
-                  <div className={clsx("gp-badge gp-badge-sm flex-shrink-0", statusColors[asset.status])}>
-                    {statusLabels[asset.status] || asset.status}
+                  <div className={clsx("gp-badge gp-badge-sm shrink-0 whitespace-nowrap", sColor)}>
+                    {s}
                   </div>
                 </div>
 
-                <div className="flex flex-col border-t border-gp-border pt-3">
-                   <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-gp-text3 uppercase tracking-tighter">Local Atual</span>
-                        <span className="text-xs font-bold text-gp-text truncate">{asset.local || 'Estoque'}</span>
+                <div className="grid grid-cols-2 gap-4 py-4 border-t border-gp-border/50 bg-gp-surface2/30 -mx-5 px-5">
+                   <div className="min-w-0">
+                      <p className="text-[9px] font-black text-gp-text3 uppercase tracking-wide mb-1 opacity-50">Local Atual</p>
+                      <p className="text-[13px] font-bold text-gp-text truncate">{asset.local || 'Estoque Central'}</p>
+                   </div>
+                   <div className="min-w-0">
+                      <p className="text-[9px] font-black text-gp-text3 uppercase tracking-wide mb-1 opacity-50">Empresa/Unidade</p>
+                      <p className="text-[13px] font-bold text-gp-blue truncate">{asset.empresa || 'Global Parts'}</p>
+                   </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4">
+                   <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-gp-surface3 border border-gp-border flex items-center justify-center text-[10px] font-bold text-gp-text3">
+                         {asset.usuario_nome_importado?.charAt(0) || '-'}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-gp-text3 uppercase tracking-tighter">Responsável</span>
-                        <span className="text-xs font-bold text-gp-blue truncate">{asset.usuario_nome_importado || '-'}</span>
-                      </div>
+                      <span className="text-[11px] font-bold text-gp-text2 truncate max-w-[120px]">
+                        {asset.usuario_nome_importado || 'Sem responsável'}
+                      </span>
+                   </div>
+                   <div className="text-[10px] font-bold text-gp-text3 opacity-40 uppercase tracking-tighter">
+                      Mod: {new Date(asset.created_at).toLocaleDateString('pt-BR')}
                    </div>
                 </div>
               </div>

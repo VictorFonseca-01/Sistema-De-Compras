@@ -6,7 +6,6 @@ import {
   ListOrdered, 
   Users, 
   Settings,
-  ChevronLeft,
   ChevronRight,
   UserCheck,
   Warehouse,
@@ -80,73 +79,64 @@ export function Sidebar({ theme, isOpen, onClose }: SidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="h-14 flex items-center justify-between px-4 flex-shrink-0" style={{ borderBottom: theme === 'light' ? '1px solid #e2e8f0' : '1px solid var(--gp-border)' }}>
+      <div className="h-20 flex items-center justify-between px-5 flex-shrink-0" style={{ borderBottom: theme === 'light' ? '1px solid #f1f5f9' : '1px solid var(--gp-border)' }}>
         {!isCollapsed && (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center">
-               <img src="/logo-branca.png" alt="Global Parts" className="w-full h-full object-contain dark:invert-0 invert opacity-95 transition-all" />
+          <div className="flex items-center gap-3.5 min-w-0 group cursor-default">
+            <div className="w-9 h-9 flex-shrink-0 flex items-center justify-center bg-gp-blue rounded-xl shadow-lg shadow-gp-blue/20 transform group-hover:rotate-6 transition-transform">
+               <img src="/logo-branca.png" alt="Global Parts" className="w-5 h-5 object-contain" />
              </div>
             <div className="min-w-0">
-              <p className="text-[13px] font-bold leading-none truncate" style={{ color: theme === 'light' ? '#2563eb' : 'var(--gp-sidebar-text-active)' }}>Sistema de Compras</p>
-              <p className="text-[10px] mt-0.5 font-semibold tracking-widest uppercase" style={{ color: theme === 'light' ? '#3b82f6' : 'var(--gp-blue-light)' }}>Global Parts</p>
+               <p className="text-[14px] font-black leading-tight tracking-tight" style={{ color: theme === 'light' ? '#0f172a' : 'var(--gp-text)' }}>
+                 SITE <span className="text-gp-blue">PROCURE</span>
+               </p>
+               <p className="text-[9px] font-black tracking-[0.25em] uppercase opacity-50" style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-text3)' }}>
+                 Global Parts
+               </p>
             </div>
           </div>
         )}
         {isCollapsed && (
-          <div className="mx-auto w-7 h-7 flex items-center justify-center">
-            <img src="/logo-branca.png" alt="GP" className="w-full h-full object-contain dark:invert-0 invert opacity-95 transition-all" />
+          <div className="mx-auto w-9 h-9 flex items-center justify-center bg-gp-blue rounded-xl shadow-lg shadow-gp-blue/20">
+            <img src="/logo-branca.png" alt="GP" className="w-5 h-5 object-contain" />
           </div>
         )}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={clsx(
-            'w-6 h-6 sm:flex items-center justify-center rounded-md transition-all duration-200 hidden',
-            isCollapsed && '!hidden'
-          )}
-          style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-sidebar-text)' }}
-        >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-        </button>
-
-        {/* Mobile Close Button */}
         {onClose && (
           <button
             onClick={onClose}
-            className="sm:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-gp-surface border border-gp-border text-gp-text2"
+            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gp-surface border border-gp-border text-gp-text2"
           >
-            <X size={18} />
+            <X size={20} strokeWidth={2.5} />
           </button>
         )}
       </div>
 
       {/* New Request CTA */}
       {!isCollapsed && (
-        <div className="px-3 pt-4 pb-2">
+        <div className="px-5 pt-6 pb-4">
           <NavLink
             to="/solicitacoes/nova"
-            onClick={() => window.innerWidth < 1024 && setIsCollapsed(true)}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[11px] font-bold tracking-wide uppercase transition-all duration-200 text-white"
-            style={{ background: '#2563eb', boxShadow: '0 4px 14px rgba(37,99,235,0.2)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1d4ed8'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#2563eb'; }}
+            onClick={() => {
+              if (window.innerWidth < 1024 && onClose) onClose();
+            }}
+            className="relative overflow-hidden flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl text-[11px] font-black tracking-[0.1em] uppercase transition-all duration-300 text-white shadow-xl shadow-gp-blue/25 hover:shadow-gp-blue/40 hover:-translate-y-0.5 active:translate-y-0 group/btn"
+            style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
           >
-            <PlusCircle size={15} strokeWidth={2.5} />
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+            <PlusCircle size={16} strokeWidth={3} className="transform group-hover/btn:rotate-90 transition-transform" />
             Nova Solicitação
           </NavLink>
         </div>
       )}
 
       {isCollapsed && (
-        <div className="px-3 pt-4 pb-2">
+        <div className="px-3 pt-6 pb-4">
           <NavLink
             to="/solicitacoes/nova"
-            className="flex items-center justify-center w-full h-9 rounded-lg transition-all duration-200 text-white"
+            className="flex items-center justify-center w-full h-11 rounded-xl transition-all duration-300 text-white shadow-lg shadow-gp-blue/20 hover:scale-105 active:scale-95"
             style={{ background: '#2563eb' }}
             title="Nova Solicitação"
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1d4ed8'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#2563eb'; }}
           >
-            <PlusCircle size={16} strokeWidth={2.5} />
+            <PlusCircle size={20} strokeWidth={3} />
           </NavLink>
         </div>
       )}

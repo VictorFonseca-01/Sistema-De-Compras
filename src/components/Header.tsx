@@ -87,13 +87,7 @@ export function Header() {
 
   return (
     <header
-      className="h-14 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-30"
-      style={{
-        background: 'var(--gp-header)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--gp-border)',
-      }}
+      className="h-14 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-30 glass"
     >
       {/* Left — breadcrumb / page context (future use) */}
       <div className="flex-1" />
@@ -190,10 +184,11 @@ export function Header() {
 
           <button
             onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0 transition-all duration-150"
-            style={{ background: 'linear-gradient(135deg, var(--gp-blue) 0%, var(--gp-blue-dim) 100%)' }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 transition-all duration-300 shadow-lg shadow-gp-blue/20 hover:scale-105 active:scale-95 group/avatar overflow-hidden relative"
+            style={{ background: 'linear-gradient(135deg, var(--gp-blue) 0%, var(--gp-blue-hover) 100%)' }}
           >
-            <UserIcon size={16} strokeWidth={2} />
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
+            <UserIcon size={18} strokeWidth={2.5} className="relative z-10" />
           </button>
 
           {showUserMenu && (

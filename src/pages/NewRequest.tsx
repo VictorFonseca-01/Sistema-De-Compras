@@ -307,8 +307,8 @@ export default function NewRequest() {
           {/* Seção 2: Prioridade e Custo */}
           <section className="gp-card p-8 sm:p-10 space-y-8">
              <div className="flex items-center gap-4 py-2 border-b border-gp-border">
-              <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center">
-                <BadgeDollarSign size={20} strokeWidth={2} />
+              <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center ring-4 ring-gp-warning/5">
+                <BadgeDollarSign size={20} strokeWidth={2.5} />
               </div>
               <h3 className="text-lg font-bold text-gp-text tracking-tight">Prioridade e Investimento</h3>
             </div>
@@ -319,30 +319,39 @@ export default function NewRequest() {
                 <SearchableSelect 
                   options={prioridadeOptions}
                   value={form.priority}
-                  onChange={(val) => setForm({ ...form, priority: val as Priority })}
+                  onChange={(val) => {
+                    const newPriority = (val || 'media') as Priority;
+                    setForm(prev => ({ ...prev, priority: newPriority }));
+                  }}
                   placeholder="Prioridade..."
                 />
               </div>
 
               <div>
                 <label className={labelClass}>Custo Estimado (R$)</label>
-                <div className="relative">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-gp-text3 text-sm">R$</div>
+                <div className="relative group/input">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-gp-blue text-sm group-focus-within/input:scale-110 transition-transform">R$</div>
                   <input
                     required={profile?.role === 'ti'}
                     type="number"
                     step="0.01"
                     placeholder="0,00"
                     className={clsx(
-                      "gp-input pl-12 pr-5 py-3.5 font-bold text-gp-blue-light",
-                      profile?.role !== 'ti' && "opacity-80"
+                      "gp-input pl-12 pr-5 py-3.5 font-bold text-gp-blue text-lg",
+                      profile?.role !== 'ti' && "opacity-90"
                     )}
                     value={form.estimated_cost}
-                    onChange={e => setForm({ ...form, estimated_cost: e.target.value })}
+                    onChange={e => setForm(prev => ({ ...prev, estimated_cost: e.target.value }))}
+                    onBlur={e => {
+                      if (e.target.value) {
+                         const val = parseFloat(e.target.value).toFixed(2);
+                         setForm(prev => ({ ...prev, estimated_cost: val }));
+                      }
+                    }}
                   />
                 </div>
                 {profile?.role !== 'ti' && (
-                  <p className="mt-2 text-[10px] font-bold text-gp-text3 uppercase tracking-widest pl-2">Opcional para seu cargo</p>
+                  <p className="mt-2 text-[10px] font-bold text-gp-text3 uppercase tracking-widest pl-2 opacity-50">Opcional para seu cargo</p>
                 )}
               </div>
             </div>
