@@ -121,6 +121,48 @@
     border-radius: 14px;
     box-shadow: var(--gp-shadow-sm);
   }
+
+  .gp-card-premium {
+    background-color: var(--gp-surface);
+    border: 1px solid var(--gp-border);
+    border-radius: 18px;
+    box-shadow: var(--gp-shadow-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .gp-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--gp-shadow-lg);
+    border-color: var(--gp-blue-light);
+  }
+
+  .gp-metric {
+    background-color: var(--gp-surface);
+    border: 1px solid var(--gp-border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass {
+    background: var(--gp-header);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--gp-border);
+  }
+
+  .gp-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--gp-surface2) 25%,
+      var(--gp-surface3) 50%,
+      var(--gp-surface2) 75%
+    );
+    background-size: 200% 100%;
+    animation: gp-shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
 }
 
 /* Fortified Utilities */
@@ -139,3 +181,28 @@
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--gp-border); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gp-blue); }
+
+/* Animations */
+@keyframes gp-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.animate-shake { animation: shake 0.4s ease-in-out; }

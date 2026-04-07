@@ -31,13 +31,13 @@ const statusMap: Record<string, { label: string; color: string; icon: React.Comp
 
 function KpiSkeleton() {
   return (
-    <div className="gp-metric animate-pulse">
+    <div className="gp-metric animate-pulse bg-gp-surface/50 border-gp-border/30">
       <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-xl gp-skeleton" />
+        <div className="w-12 h-12 rounded-2xl gp-skeleton" />
       </div>
-      <div className="mt-4">
-        <div className="w-8 h-7 rounded gp-skeleton mb-2" />
-        <div className="w-20 h-3 rounded gp-skeleton" />
+      <div className="mt-6">
+        <div className="w-10 h-8 rounded-lg gp-skeleton mb-2" />
+        <div className="w-24 h-3.5 rounded gp-skeleton" />
       </div>
     </div>
   );
@@ -381,20 +381,47 @@ export default function Dashboard() {
         </div>
 
         {/* Approval Pipeline */}
-        <div className="space-y-3">
-          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Fila de Aprovação (Em Aberto)</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em]">Fila de Aprovação (Em Aberto)</h3>
+            <span className="text-[9px] font-black text-gp-blue uppercase tracking-tighter opacity-50 px-2 leading-none">Tempo médio: 4h</span>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {loading
               ? Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
               : requestStats.filter(s => s.group === 'pipeline').map((stat, i) => (
-                  <div key={i} className="gp-metric group bg-gp-surface border border-gp-border">
-                    <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
-                      <stat.icon size={18} strokeWidth={2.5} />
+                  <div 
+                    key={i} 
+                    className="gp-metric group bg-gp-surface/40 backdrop-blur-md border-gp-border/50 hover:bg-gp-surface transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl"
+                  >
+                    {/* Interior Glow */}
+                    <div className={clsx(
+                      "absolute -right-8 -top-8 w-24 h-24 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-500",
+                      stat.bgClass
+                    )} />
+                    
+                    <div className={clsx(
+                      "w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg",
+                      stat.bgClass,
+                      stat.colorClass,
+                      "border border-gp-border/30"
+                    )}>
+                      <stat.icon size={20} strokeWidth={2.5} />
                     </div>
-                    <div className="mt-4">
-                      <p className="text-[20px] font-black text-gp-text leading-tight">{stat.value}</p>
-                      <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-wider mb-1">{stat.label}</p>
-                      <p className="text-[12px] font-black text-gp-blue truncate">{stat.secondary}</p>
+                    <div className="mt-6 flex flex-col">
+                      <p className="text-2xl font-black text-gp-text leading-none tracking-tighter mb-1.5">
+                        {stat.value}
+                      </p>
+                      <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">
+                        {stat.label}
+                      </p>
+                      {stat.secondary && (
+                        <div className="mt-3 pt-3 border-t border-gp-border/30">
+                          <p className="text-[11px] font-black text-gp-blue tracking-tighter">
+                            {stat.secondary}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -403,19 +430,31 @@ export default function Dashboard() {
         </div>
 
         {/* Inventory Brief */}
-        <div className="space-y-3">
-          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] ml-1">Estado do Inventário</h3>
+        <div className="space-y-4">
+          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] px-1">Estado do Inventário</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {loading
               ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
               : inventoryStats.map((stat, i) => (
-                  <div key={i} className="gp-metric group flex items-center gap-4 py-4">
-                    <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0", stat.bgClass, stat.colorClass)}>
-                      <stat.icon size={22} strokeWidth={2} />
+                  <div 
+                    key={i} 
+                    className="gp-metric group flex items-center gap-5 p-6 bg-gp-surface/40 backdrop-blur-md border-gp-border/50 hover:bg-gp-surface transition-all duration-300 hover:shadow-xl"
+                  >
+                    <div className={clsx(
+                      "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-105 shadow-md",
+                      stat.bgClass, 
+                      stat.colorClass,
+                      "border border-gp-border/20"
+                    )}>
+                      <stat.icon size={26} strokeWidth={2.5} />
                     </div>
-                    <div>
-                      <p className="text-[18px] font-black text-gp-text">{stat.value}</p>
-                      <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-wider">{stat.label}</p>
+                    <div className="min-w-0">
+                      <p className="text-2xl font-black text-gp-text tracking-tighter leading-none mb-1">
+                        {stat.value}
+                      </p>
+                      <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.15em] opacity-60">
+                        {stat.label}
+                      </p>
                     </div>
                   </div>
                 ))
