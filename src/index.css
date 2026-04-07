@@ -2,7 +2,7 @@
 
 /* ================================================================
    GLOBAL PARTS DESIGN SYSTEM — TOKEN LAYER
-   Corporate Dark Identity v3.1
+   Corporate Identity v3.0 (Recovered)
    Stack: Tailwind v4 + CSS Custom Properties
    ================================================================ */
 
@@ -14,20 +14,7 @@
    CSS CUSTOM PROPERTIES — Dual Theme (Dark First)
    ================================================================ */
 :root {
-  /* Primary scale (Tailwind v4 automatic mapping via --color- prefix) */
-  --color-primary-50:  #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
-
-  /* GP Dynamic Tokens (Tailwind v4 automatic mapping) */
+  /* Dynamic Tokens mapping for v4 */
   --color-gp-blue:        var(--gp-blue);
   --color-gp-blue-light:  var(--gp-blue-light);
   --color-gp-blue-dim:    var(--gp-blue-hover);
@@ -46,33 +33,33 @@
   --color-gp-error:       var(--gp-error);
   --color-gp-info:        var(--gp-info);
 
-  /* Backgrounds & Surfaces (Corporate Navy Dark) */
-  --gp-bg:           #07111d;
-  --gp-bg2:          #0c1828;
-  --gp-surface:      #101f33;
-  --gp-surface2:     #162540;
-  --gp-surface3:     #1e2f4a;
-  --gp-header:       rgba(10,17,30,0.88);
+  /* Backgrounds & Surfaces (Original Light v3.0) */
+  --gp-bg:           #f8fafc;
+  --gp-bg2:          #f1f5f9;
+  --gp-surface:      #ffffff;
+  --gp-surface2:     #f8fafc;
+  --gp-surface3:     #f1f5f9;
+  --gp-header:       rgba(255,255,255,0.85);
 
-  /* Sidebar (Corporate Navy) */
-  --gp-sidebar:      #060e1c;
-  --gp-sidebar-text: #8fa5c0;
-  --gp-sidebar-text-active: #ffffff;
-  --gp-sidebar-hover: rgba(255,255,255,0.06);
-  --gp-sidebar-border: #1d2f48;
+  /* Sidebar (Original Light v3.0) */
+  --gp-sidebar:      #ffffff;
+  --gp-sidebar-text: #64748b;
+  --gp-sidebar-text-active: #2563eb;
+  --gp-sidebar-hover: rgba(15,23,42,0.04);
+  --gp-sidebar-border: #e2e8f0;
 
-  /* Borders */
-  --gp-border:       #1d2f48;
-  --gp-border2:      #253a58;
-  --gp-border-hover: rgba(37,99,235,0.35);
+  /* Borders (Original v3.0) */
+  --gp-border:       #e2e8f0;
+  --gp-border2:      #cbd5e1;
+  --gp-border-hover: rgba(37,99,235,0.25);
 
-  /* Text (Optimized Contrast) */
-  --gp-text:         #dde6f0;
-  --gp-text2:        #8fa5c0;
-  --gp-text3:        #536a84;
-  --gp-text-inv:     #07111d;
+  /* Text (Original v3.0) */
+  --gp-text:         #0f172a;
+  --gp-text2:        #475569;
+  --gp-text3:        #64748b;
+  --gp-text-inv:     #ffffff;
 
-  /* Brand */
+  /* Brand (Vibrant Original) */
   --gp-blue:         #2563eb;
   --gp-blue-hover:   #1d4ed8;
   --gp-blue-active:  #1e40af;
@@ -80,10 +67,10 @@
   --gp-blue-light:   #3b82f6;
 
   /* Interactions */
-  --gp-hover:        rgba(255,255,255,0.04);
-  --gp-active-l:     rgba(255,255,255,0.08);
-  --gp-selected:     rgba(37,99,235,0.12);
-  --gp-focus-ring:   rgba(37,99,235,0.25);
+  --gp-hover:        rgba(15,23,42,0.04);
+  --gp-active-l:     rgba(15,23,42,0.08);
+  --gp-selected:     rgba(37,99,235,0.08);
+  --gp-focus-ring:   rgba(37,99,235,0.15);
 
   /* Feedback */
   --gp-success:      #10b981;
@@ -91,11 +78,11 @@
   --gp-error:        #ef4444;
   --gp-info:         #3b82f6;
 
-  /* Shadows (Dark Optimized) */
-  --gp-shadow-sm:    0 1px 3px rgba(0,0,0,0.35);
-  --gp-shadow-md:    0 4px 12px rgba(0,0,0,0.45);
-  --gp-shadow-lg:    0 8px 24px rgba(0,0,0,0.55);
-  --gp-shadow-blue:  0 4px 14px rgba(37,99,235,0.25);
+  /* Shadows (Original v3.0) */
+  --gp-shadow-sm:    0 1px 2px rgba(0,0,0,0.05);
+  --gp-shadow-md:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --gp-shadow-lg:    0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+  --gp-shadow-blue:  0 4px 14px rgba(37,99,235,0.2);
 
   /* Layout & Spacing */
   --gp-gap-xs:       8px;
@@ -117,56 +104,44 @@
   --gp-font-3xl:     32px;
 }
 
-.light {
-  /* Dynamic Token Overrides for v4 utility mapping */
-  --color-gp-blue:        #2563eb;
-  --color-gp-navy:        #f8fafc;
-  --color-gp-navy2:       #f1f5f9;
-  --color-gp-surface:     #ffffff;
-  --color-gp-surface2:    #f8fafc;
-  --color-gp-surface3:    #f1f5f9;
-  --color-gp-border:      #e2e8f0;
-  --color-gp-border2:     #cbd5e1;
-  --color-gp-text:        #0f172a;
-  --color-gp-muted:       #64748b;
+.dark {
+  /* Backgrounds & Surfaces (Original Vibrant Dark) */
+  --gp-bg:           #07111d;
+  --gp-bg2:          #0c1828;
+  --gp-surface:      #101f33;
+  --gp-surface2:     #162540;
+  --gp-surface3:     #1e2f4a;
+  --gp-header:       rgba(10,17,30,0.88);
 
-  /* Backgrounds & Surfaces */
-  --gp-bg:           #f8fafc;
-  --gp-bg2:          #f1f5f9;
-  --gp-surface:      #ffffff;
-  --gp-surface2:     #f8fafc;
-  --gp-surface3:     #f1f5f9;
-  --gp-header:       rgba(255,255,255,0.85);
+  /* Sidebar (Original Dark) */
+  --gp-sidebar:      #060e1c;
+  --gp-sidebar-text: #8fa5c0;
+  --gp-sidebar-text-active: #ffffff;
+  --gp-sidebar-hover: rgba(255,255,255,0.06);
+  --gp-sidebar-border: #1d2f48;
 
-  /* Sidebar */
-  --gp-sidebar:      #ffffff;
-  --gp-sidebar-text: #64748b;
-  --gp-sidebar-text-active: #2563eb;
-  --gp-sidebar-hover: rgba(15,23,42,0.04);
-  --gp-sidebar-border: #e2e8f0;
+  /* Borders (Restore Contrast) */
+  --gp-border:       #1d2f48;
+  --gp-border2:      #253a58;
+  --gp-border-hover: rgba(37,99,235,0.35);
 
-  /* Borders */
-  --gp-border:       #e2e8f0;
-  --gp-border2:      #cbd5e1;
-  --gp-border-hover: rgba(37,99,235,0.25);
+  /* Text (Original v3.0) */
+  --gp-text:         #dde6f0;
+  --gp-text2:        #8fa5c0;
+  --gp-text3:        #536a84;
+  --gp-text-inv:     #07111d;
 
-  /* Text */
-  --gp-text:         #0f172a;
-  --gp-text2:        #475569;
-  --gp-text3:        #64748b;
-  --gp-text-inv:     #ffffff;
+  /* Interactions (Restore Vibrancy) */
+  --gp-hover:        rgba(255,255,255,0.04);
+  --gp-active-l:     rgba(255,255,255,0.08);
+  --gp-selected:     rgba(37,99,235,0.12);
+  --gp-focus-ring:   rgba(37,99,235,0.25);
 
-  /* Interactions */
-  --gp-hover:        rgba(15,23,42,0.04);
-  --gp-active-l:     rgba(15,23,42,0.08);
-  --gp-selected:     rgba(37,99,235,0.08);
-  --gp-focus-ring:   rgba(37,99,235,0.15);
-
-  /* Shadows */
-  --gp-shadow-sm:    0 1px 2px rgba(0,0,0,0.05);
-  --gp-shadow-md:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-  --gp-shadow-lg:    0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-  --gp-shadow-blue:  0 4px 14px rgba(37,99,235,0.2);
+  /* Shadows (Restore Contrast) */
+  --gp-shadow-sm:    0 1px 3px rgba(0,0,0,0.35);
+  --gp-shadow-md:    0 4px 12px rgba(0,0,0,0.45);
+  --gp-shadow-lg:    0 8px 24px rgba(0,0,0,0.55);
+  --gp-shadow-blue:  0 4px 14px rgba(37,99,235,0.25);
 }
 
 /* ================================================================
@@ -618,8 +593,6 @@ body, .gp-card, .gp-input, .gp-surface, .gp-surface2 {
   }
   .btn-premium-primary:hover {
     background: var(--gp-blue-hover);
-    box-shadow: 0 6px 18px rgba(37,99,235,0.4);
-    transform: translateY(-1px);
   }
   .btn-premium-primary:active {
     transform: scale(0.97);
@@ -651,7 +624,6 @@ body, .gp-card, .gp-input, .gp-surface, .gp-surface2 {
     background: var(--gp-surface2);
     border-color: var(--gp-border-hover);
     color: var(--gp-blue);
-    transform: translateY(-1px);
   }
   .btn-premium-secondary:active { transform: scale(0.97); }
   .btn-premium-secondary:disabled { opacity: 0.4; pointer-events: none; }
@@ -679,8 +651,6 @@ body, .gp-card, .gp-input, .gp-surface, .gp-surface2 {
   .btn-premium-dark:hover {
     background: var(--gp-surface3);
     border-color: var(--gp-border2);
-    transform: translateY(-1px);
-    box-shadow: var(--gp-shadow-md);
   }
   .btn-premium-dark:active { transform: scale(0.97); }
   .btn-premium-dark:disabled { opacity: 0.4; pointer-events: none; }

@@ -212,7 +212,7 @@ export default function Inventory() {
           <h1 className="gp-page-title text-2xl sm:text-3xl">
              Inventário Global
           </h1>
-          <p className="gp-page-subtitle">Controle centralizado de ativos e hardware.</p>
+          <p className="gp-page-subtitle">Controle centralizado de ativos, hardware e patrimônio físico.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {['master_admin', 'ti', 'compras', 'gestor', 'diretoria'].includes(profile?.role || '') && (
@@ -227,13 +227,13 @@ export default function Inventory() {
                 </button>
               )}
               <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-                <Plus size={16} strokeWidth={3} /> NOVO
+                <Plus size={16} strokeWidth={3} /> NOVO ATIVO
               </button>
               <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-                <TableIcon size={16} /> IMPORTAR
+                <TableIcon size={16} /> IMPORTAR EXCEL
               </button>
               <button onClick={() => setShowScanner(true)} className="btn-premium-dark flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-                <Barcode size={16} strokeWidth={3} /> SCAN
+                <Barcode size={16} strokeWidth={3} /> ESCANEAR
               </button>
             </>
           )}

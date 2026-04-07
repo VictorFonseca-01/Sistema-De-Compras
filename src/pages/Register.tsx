@@ -105,20 +105,18 @@ export default function Register() {
               )} 
             />
           </div>
-          <p className="text-[10px] font-black text-gp-blue uppercase tracking-[0.25em] mb-2 leading-none">Global Parts</p>
-          <h1 className="text-2xl font-black text-gp-text tracking-tight sm:text-3xl">Criar Sua Identidade</h1>
-          <p className="text-[13px] font-medium text-gp-text3 mt-2">Junte-se à maior rede de suprimentos aeronáuticos.</p>
+          <h1 className="text-xl font-bold text-gp-text tracking-tight">Criar Nova Conta</h1>
+          <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
+            Sistema de Compras · Registro Corporativo
+          </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleRegister} className="px-8 py-8 space-y-6">
           {error && (
-            <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-bold bg-gp-error/10 border border-gp-error/30 text-gp-error animate-shake">
-              <AlertCircle size={20} className="flex-shrink-0" />
-              <div className="flex-1">
-                <span className="block uppercase text-[10px] tracking-widest mb-0.5 opacity-70">Erro de validação</span>
-                {error}
-              </div>
+            <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-medium bg-gp-error/10 border border-gp-error/20 text-gp-error">
+              <AlertCircle size={16} className="flex-shrink-0" />
+              {error}
             </div>
           )}
 
