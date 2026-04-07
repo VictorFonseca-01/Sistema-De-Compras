@@ -69,8 +69,8 @@ export default function Login() {
               src="/logo-branca.png" 
               alt="Global Parts" 
               className={clsx(
-                "w-full h-full object-contain transition-all",
-                theme === 'light' && "invert brightness-0"
+                "w-full h-full object-contain transition-all duration-300",
+                theme === 'light' ? "invert brightness-0 opacity-100" : "opacity-90"
               )} 
             />
           </div>

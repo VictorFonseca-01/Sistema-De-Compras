@@ -387,14 +387,14 @@ export default function Dashboard() {
             {loading
               ? Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
               : requestStats.filter(s => s.group === 'pipeline').map((stat, i) => (
-                  <div key={i} className="gp-metric group !bg-gp-surface2/40">
+                  <div key={i} className="gp-metric group bg-gp-surface border border-gp-border">
                     <div className={clsx("gp-metric-icon", stat.bgClass, stat.colorClass)}>
-                      <stat.icon size={18} strokeWidth={2} />
+                      <stat.icon size={18} strokeWidth={2.5} />
                     </div>
                     <div className="mt-4">
                       <p className="text-[20px] font-black text-gp-text leading-tight">{stat.value}</p>
                       <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-wider mb-1">{stat.label}</p>
-                      <p className="text-[12px] font-bold text-gp-blue truncate">{stat.secondary}</p>
+                      <p className="text-[12px] font-black text-gp-blue truncate">{stat.secondary}</p>
                     </div>
                   </div>
                 ))

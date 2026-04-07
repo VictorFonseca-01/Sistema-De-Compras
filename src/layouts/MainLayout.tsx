@@ -30,23 +30,24 @@ export function MainLayout() {
 
   if (loading) {
     return (
-      <div
-        className={clsx("min-h-screen flex items-center justify-center", theme)}
-        style={{ background: 'var(--gp-bg)' }}
-      >
+      <div className={clsx("min-h-screen flex items-center justify-center bg-gp-bg", theme)}>
         <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--gp-surface2)' }}
-          >
-            <img src="/logo-branca.png" alt="GP" className="w-7 h-7 object-contain opacity-60" />
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gp-surface2">
+            <img 
+              src="/logo-branca.png" 
+              alt="GP" 
+              className={clsx(
+                "w-7 h-7 object-contain opacity-60 transition-all",
+                theme === 'light' && "invert brightness-0"
+              )} 
+            />
           </div>
           <div className="flex gap-1.5">
             {[0, 1, 2].map(i => (
               <div
                 key={i}
-                className="w-1.5 h-1.5 rounded-full animate-bounce"
-                style={{ background: 'var(--gp-blue)', animationDelay: `${i * 0.15}s` }}
+                className="w-1.5 h-1.5 rounded-full animate-bounce bg-gp-blue"
+                style={{ animationDelay: `${i * 0.15}s` }}
               />
             ))}
           </div>
@@ -62,10 +63,9 @@ export function MainLayout() {
   return (
     <div 
       className={clsx(
-        "flex h-screen overflow-hidden print:h-auto print:overflow-visible transition-colors duration-300", 
+        "flex h-screen overflow-hidden print:h-auto print:overflow-visible transition-colors duration-300 bg-gp-bg", 
         theme
       )} 
-      style={{ background: 'var(--gp-bg)' }}
       data-theme={theme}
     >
       <Toaster position="top-right" toastOptions={{
@@ -90,7 +90,6 @@ export function MainLayout() {
 
       <div className="print:hidden">
         <Sidebar 
-          theme={theme} 
           isOpen={isMobileMenuOpen} 
           onClose={() => setIsMobileMenuOpen(false)} 
         />
@@ -99,7 +98,7 @@ export function MainLayout() {
         <div className="print:hidden">
           <Header />
         </div>
-        <main className="flex-1 overflow-y-auto no-scrollbar pb-20 sm:pb-0 print:overflow-visible print:bg-white">
+        <main className="flex-1 overflow-y-auto no-scrollbar pb-20 sm:pb-0 print:overflow-visible print:bg-white bg-gp-bg">
           <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none min-w-0">
             <Outlet />
           </div>
