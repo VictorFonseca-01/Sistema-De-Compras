@@ -126,7 +126,7 @@ export default function Notifications() {
             onClick={markAllAsRead}
             className="flex-1 md:flex-none btn-premium-ghost px-5 py-2.5 rounded-xl border-gp-blue/20 text-gp-blue text-[11px] font-black"
           >
-            LIDAR COM TODAS
+            MARCAR TODAS COMO LIDAS
           </button>
         </div>
       </header>
