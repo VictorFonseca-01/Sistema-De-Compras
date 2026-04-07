@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# 📦 Global Parts — Sistema de Compras & Inventário
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é o sistema centralizado de gestão de ativos e solicitações de compras da **Global Parts**. Uma aplicação robusta, segura e moderna desenvolvida com foco em performance e escalabilidade.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Tecnologias e Ferramentas (Stack)
 
-## React Compiler
+O projeto foi desenvolvido utilizando o que há de mais moderno no ecossistema de desenvolvimento web:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Linguagem Principal**: [TypeScript](https://www.typescriptlang.org/) — Garantindo tipagem estrita e segurança em todo o fluxo de dados.
+- **Frontend**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/) — Interface rápida, reativa e otimizada.
+- **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/) — Design System customizado com foco em UX corporativa e modo escuro nativo.
+- **Backend / Database**: [Supabase](https://supabase.com/) & [PostgreSQL](https://www.postgresql.org/) — Persistência de dados com Row Level Security (RLS).
+- **Lógica de Banco**: [PL/pgSQL](https://www.postgresql.org/docs/current/plpgsql.html) — Triggers e funções automatizadas para auditoria e workflow.
+- **Ícones**: [Lucide React](https://lucide.dev/) — Conjunto de ícones consistentes e leves.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🏗️ Arquitetura e Inovações
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### **Identidade Sintética (Email Bypass)**
+Diferente de sistemas comuns, o Global Parts utiliza uma arquitetura de **E-mails Sintéticos** (`slug#email@globalp.com.br`) para permitir que múltiplos usuários compartilhem o mesmo e-mail corporativo sem conflitos de autenticação no Supabase.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### **Segurança de Dados (RLS)**
+Toda a segurança é aplicada diretamente na camada do banco de dados (PostgreSQL), garantindo que cada cargo (`master_admin`, `gestor`, `ti`, `usuario`) acesse apenas as informações permitidas pelo seu escopo organizacional.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### **Design System Premium**
+Interface visualmente rica baseada em **Glassmorphism**, com suporte total a **Dark Mode** e layout responsivo adaptativo para Mobile (Bottom Nav) e Desktop (Sidebar).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Como Iniciar
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Instalação**:
+    ```bash
+    npm install
+    ```
+
+2.  **Desenvolvimento**:
+    ```bash
+    npm run dev
+    ```
+
+3.  **Build**:
+    ```bash
+    npm run build
+    ```
+
+---
+
+## 📂 Estrutura de Pastas
+
+- `/src/components`: Componentes reutilizáveis de UI.
+- `/src/pages`: Páginas principais da aplicação.
+- `/src/context`: Gerenciamento de estado (Auth, Theme).
+- `/src/hooks`: Lógica de negócio e hooks personalizados.
+- `/supabase/migrations`: Scripts SQL versionados para o banco de dados.
+
+---
+*Desenvolvido e Auditado com Antigravity AI.*
