@@ -15,6 +15,7 @@ import AssetDetails from './pages/AssetDetails';
 import NewAsset from './pages/NewAsset';
 import AssetDelivery from './pages/AssetDelivery';
 import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="configuracoes" element={<Settings />} />
         <Route path="estoque" element={<Inventory />} />
         <Route path="estoque/:id" element={<AssetDetails />} />
+        <Route path="notificacoes" element={<Notifications />} />
         
         {/* Management Restricted Routes (IT/Purchasing/Board) */}
         <Route element={<ProtectedRoute allowedRoles={['master_admin', 'ti', 'compras', 'gestor', 'diretoria']} />}>

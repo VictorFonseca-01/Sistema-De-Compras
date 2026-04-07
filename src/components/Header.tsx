@@ -214,7 +214,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 ))}
               </div>
               <button 
-                onClick={() => navigate('/notificacoes')}
+                onClick={() => { navigate('/notificacoes'); setShowNotifications(false); }}
                 className="w-full py-4 bg-gp-surface2/80 hover:bg-gp-surface hover:text-gp-blue transition-all border-t border-gp-border text-[10px] font-black uppercase tracking-[0.3em] text-gp-muted"
               >
                  Ver Histórico Completo
