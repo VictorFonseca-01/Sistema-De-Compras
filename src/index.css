@@ -1,7 +1,20 @@
 @import "tailwindcss";
 
-@theme {
-  /* Primary scale (backward compat + GP Blue) */
+/* ================================================================
+   GLOBAL PARTS DESIGN SYSTEM — TOKEN LAYER
+   Corporate Dark Identity v3.1
+   Stack: Tailwind v4 + CSS Custom Properties
+   ================================================================ */
+
+@variant dark (&:where(.dark, .dark *));
+@variant light (&:where(.light, .light *));
+
+
+/* ================================================================
+   CSS CUSTOM PROPERTIES — Dual Theme (Dark First)
+   ================================================================ */
+:root {
+  /* Primary scale (Tailwind v4 automatic mapping via --color- prefix) */
   --color-primary-50:  #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
@@ -14,7 +27,7 @@
   --color-primary-900: #1e3a8a;
   --color-primary-950: #172554;
 
-  /* GP Dynamic Tokens (Linked to CSS Variables for Dual Theme) */
+  /* GP Dynamic Tokens (Tailwind v4 automatic mapping) */
   --color-gp-blue:        var(--gp-blue);
   --color-gp-blue-light:  var(--gp-blue-light);
   --color-gp-blue-dim:    var(--gp-blue-hover);
@@ -32,25 +45,7 @@
   --color-gp-warning:     var(--gp-warning);
   --color-gp-error:       var(--gp-error);
   --color-gp-info:        var(--gp-info);
-}
 
-@variant dark (&:where(.dark, .dark *));
-@variant light (&:where(.light, .light *));
-
-
-/* ================================================================
-   GLOBAL PARTS DESIGN SYSTEM — TOKEN LAYER
-   Corporate Dark Identity v3.1
-   Stack: Tailwind v4 + CSS Custom Properties
-   ================================================================ */
-
-/* ================================================================
-   CSS CUSTOM PROPERTIES — Dual Theme (Light/Dark adaptive)
-   ================================================================ */
-/* ================================================================
-   CSS CUSTOM PROPERTIES — Dual Theme (Dark First)
-   ================================================================ */
-:root {
   /* Backgrounds & Surfaces (Corporate Navy Dark) */
   --gp-bg:           #07111d;
   --gp-bg2:          #0c1828;
