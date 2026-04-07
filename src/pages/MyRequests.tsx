@@ -203,8 +203,8 @@ export default function MyRequests() {
 
       {/* Desktop/Tablet Table */}
       <div className="gp-table-wrap hidden sm:block">
-        <div className="overflow-x-auto">
-          <table className="gp-table">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="gp-table min-w-full">
             <thead>
               <tr>
                 <th>IDENTIDADE</th>

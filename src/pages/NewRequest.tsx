@@ -237,7 +237,7 @@ export default function NewRequest() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-fade-up">
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 pb-16 px-4 sm:px-0 animate-fade-up">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
            <button 
@@ -263,7 +263,7 @@ export default function NewRequest() {
 
         <div className="grid grid-cols-1 gap-6">
           {/* Seção 1: Identificação */}
-          <section className="gp-card p-8 sm:p-10 space-y-8">
+          <section className="gp-card p-6 sm:p-10 space-y-6 sm:space-y-8">
             <div className="flex items-center gap-4 py-2 border-b border-gp-border">
               <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
                 <Zap size={20} strokeWidth={2} />
@@ -305,7 +305,7 @@ export default function NewRequest() {
           </section>
 
           {/* Seção 2: Prioridade e Custo */}
-          <section className="gp-card p-8 sm:p-10 space-y-8">
+          <section className="gp-card p-6 sm:p-10 space-y-6 sm:space-y-8">
              <div className="flex items-center gap-4 py-2 border-b border-gp-border">
               <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center ring-4 ring-gp-warning/5">
                 <BadgeDollarSign size={20} strokeWidth={2.5} />
@@ -358,7 +358,7 @@ export default function NewRequest() {
           </section>
 
           {/* Seção 3: Justificativa */}
-          <section className="gp-card p-8 sm:p-10 space-y-8">
+          <section className="gp-card p-6 sm:p-10 space-y-6 sm:space-y-8">
             <div className="flex items-center gap-4 py-2 border-b border-gp-border">
               <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
                 <FileText size={20} strokeWidth={2} />
@@ -380,7 +380,7 @@ export default function NewRequest() {
 
           {/* Seção 4: Links */}
           <section className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2">
-            <div className="p-8 sm:p-10 space-y-8 relative z-10">
+            <div className="p-6 sm:p-10 space-y-6 sm:space-y-8 relative z-10">
               <div className="flex items-center gap-4 py-2 border-b border-gp-border">
                 <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
                   <LinkIcon size={20} strokeWidth={2} />

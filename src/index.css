@@ -183,6 +183,8 @@
 /* Body */
 body {
   margin: 0;
+  width: 100%;
+  max-width: 100%;
   min-width: 320px;
   min-height: 100vh;
   background: var(--gp-bg);
@@ -200,6 +202,32 @@ body {
 
 /* Autofill overrides */
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+
   select {
     color-scheme: light;
   }
@@ -321,6 +349,8 @@ body {
 
   /* ── Tables ── */
   .gp-table-wrap {
+    width: 100%;
+    min-width: 0;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--gp-border);

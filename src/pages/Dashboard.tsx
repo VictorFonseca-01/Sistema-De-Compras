@@ -321,10 +321,10 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="relative mt-8">
-                    <p className="text-3xl sm:text-4xl font-black text-gp-text tracking-tighter group-hover:translate-x-1 transition-transform duration-500">
+                    <p className="text-2xl xs:text-3xl sm:text-4xl font-black text-gp-text tracking-tighter group-hover:translate-x-1 transition-transform duration-500 break-all sm:break-normal">
                       {requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}
                     </p>
-                    <p className="text-[12px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-2 opacity-80">Patrimônio Gerenciado Aprovado</p>
+                    <p className="text-[11px] sm:text-[12px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-2 opacity-80">Patrimônio Gerenciado Aprovado</p>
                   </div>
                 </div>
               )}

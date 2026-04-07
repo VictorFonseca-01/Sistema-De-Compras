@@ -85,11 +85,11 @@ export function Sidebar({ theme, isOpen, onClose }: SidebarProps) {
             <div className="w-9 h-9 flex-shrink-0 flex items-center justify-center bg-gp-blue rounded-xl shadow-lg shadow-gp-blue/20 transform group-hover:rotate-6 transition-transform">
                <img src="/logo-branca.png" alt="Global Parts" className="w-5 h-5 object-contain" />
              </div>
-            <div className="min-w-0">
-               <p className="text-[14px] font-black leading-tight tracking-tight" style={{ color: theme === 'light' ? '#0f172a' : 'var(--gp-text)' }}>
-                 SITE <span className="text-gp-blue">PROCURE</span>
+            <div className="min-w-0 flex flex-col justify-center">
+               <p className="text-[12px] font-black leading-tight tracking-tight uppercase" style={{ color: theme === 'light' ? '#0f172a' : 'var(--gp-text)' }}>
+                 Sistema de <span className="text-gp-blue">Compras</span>
                </p>
-               <p className="text-[9px] font-black tracking-[0.25em] uppercase opacity-50" style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-text3)' }}>
+               <p className="text-[10px] font-bold tracking-[0.15em] uppercase opacity-60 mt-0.5" style={{ color: theme === 'light' ? '#64748b' : 'var(--gp-text3)' }}>
                  Global Parts
                </p>
             </div>

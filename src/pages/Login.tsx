@@ -47,7 +47,7 @@ export default function Login() {
           </div>
           <h1 className="text-xl font-bold text-gp-text tracking-tight">Sistema de Compras</h1>
           <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
-            Global Parts · Infraestrutura
+            Global Parts
           </p>
         </div>
 

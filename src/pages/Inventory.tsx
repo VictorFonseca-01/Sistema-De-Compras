@@ -279,7 +279,7 @@ export default function Inventory() {
              <select 
                value={statusFilter} 
                onChange={(e) => setStatusFilter(e.target.value)} 
-               className="bg-gp-surface2 border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[100px] hover:text-gp-blue transition-colors"
+               className="bg-gp-surface2 border-none outline-none text-xs font-bold text-gp-text cursor-pointer min-w-[80px] sm:min-w-[100px] hover:text-gp-blue transition-colors"
              >
                 {['todos', 'em_estoque', 'em_uso', 'manutencao', 'baixado'].map(st => (
                   <option key={st} value={st}>{st === 'todos' ? 'Todas' : statusLabels[st]}</option>
@@ -345,7 +345,7 @@ export default function Inventory() {
               <div 
                 key={asset.id} 
                 className={clsx(
-                  "relative group overflow-hidden bg-gp-surface border-l-4 rounded-2xl p-5 shadow-lg transition-all active:scale-[0.98] border-y border-r border-gp-border",
+                  "relative group overflow-hidden bg-gp-surface border-l-4 rounded-2xl p-4 sm:p-5 shadow-lg transition-all active:scale-[0.98] border-y border-r border-gp-border w-full",
                   isSelected ? "border-l-gp-blue bg-gp-blue/5" : "border-l-gp-border hover:border-l-gp-blue/40"
                 )}
                 onClick={() => navigate(`/estoque/${asset.id}`)}
@@ -410,7 +410,8 @@ export default function Inventory() {
 
       {/* Desktop/Tablet Table */}
       <div className="gp-table-wrap hidden sm:block">
-        <table className="gp-table">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="gp-table min-w-[900px] w-full">
           <thead>
             <tr>
               <th className="w-10">
@@ -540,6 +541,7 @@ export default function Inventory() {
           </tbody>
         </table>
       </div>
+    </div>
 
       {totalPages > 1 && (
         <div className="p-8 bg-gp-surface2 border-t border-gp-border flex items-center justify-between rounded-b-2xl">

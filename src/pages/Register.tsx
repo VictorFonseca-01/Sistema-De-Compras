@@ -102,7 +102,7 @@ export default function Register() {
           </div>
           <h1 className="text-xl font-bold text-gp-text tracking-tight">Criar Nova Conta</h1>
           <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
-            Sistema de Compras · Registro Corporativo
+            Global Parts
           </p>
         </div>
 

@@ -302,8 +302,8 @@ export default function AdminPanel() {
 
       {/* Users Table */}
       <div className="gp-table-wrap">
-        <div className="overflow-x-auto">
-          <table className="gp-table">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="gp-table min-w-[800px] w-full">
             <thead>
               <tr>
                 <th className="w-1/3">Perfil do Usuário</th>
