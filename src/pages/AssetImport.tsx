@@ -14,9 +14,11 @@ import {
   PackageCheck,
   FileSpreadsheet,
   Settings2,
-  Eye
+  Eye,
+  ChevronDown
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { toast } from 'react-hot-toast';
 
 interface ImportRow {
   [key: string]: any;
@@ -62,11 +64,13 @@ const fieldLabels: Record<string, string> = {
   esta_ativo_planilha: 'Status Ativo (Sim/Não)',
 };
 
+const labelClass = 'block text-[10px] font-black uppercase tracking-[0.2em] mb-2.5 text-gp-muted ml-0.5 leading-none';
+
 export default function AssetImport() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   
-  const [step, setStep] = useState(1); // 1: Upload, 2: Mapping, 3: Preview, 4: Results
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState('');
@@ -78,7 +82,6 @@ export default function AssetImport() {
   const [importMode, setImportMode] = useState<'inserir' | 'atualizar' | 'ignorar_duplicados'>('atualizar');
   const [results, setResults] = useState<{ success: number; updated: number; skipped: number; errors: any[] } | null>(null);
 
-  // --- STEP 1: UPLOAD & READ ---
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -88,65 +91,70 @@ export default function AssetImport() {
 
     const reader = new FileReader();
     reader.onload = (evt) => {
-      const bstr = evt.target?.result;
-      const wb = XLSX.read(bstr, { type: 'binary' });
-      const wsname = wb.SheetNames[0];
-      const ws = wb.Sheets[wsname];
-      
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
-      
-      if (rows.length > 0) {
-        let headerRowIndex = 0;
-        for (let i = 0; i < Math.min(rows.length, 10); i++) {
-          const row = rows[i];
-          const textCells = row.filter(c => typeof c === 'string' && c.length > 2);
-          if (textCells.length >= 3) {
-            headerRowIndex = i;
-            break;
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+        
+        if (rows.length > 0) {
+          let headerRowIndex = 0;
+          for (let i = 0; i < Math.min(rows.length, 10); i++) {
+            const row = rows[i];
+            const textCells = row.filter(c => typeof c === 'string' && c.length > 2);
+            if (textCells.length >= 3) {
+              headerRowIndex = i;
+              break;
+            }
           }
+
+          const headers = rows[headerRowIndex].map(h => String(h || '').trim()).filter(h => h !== '');
+          setColumns(headers);
+
+          const data = XLSX.utils.sheet_to_json(ws, { 
+            range: headerRowIndex,
+            defval: null
+          }) as ImportRow[];
+          
+          setRawData(data);
+          
+          const newMap = { ...DEFAULT_MAP };
+          headers.forEach(col => {
+            const c = col.toLowerCase();
+            if (c.includes('item') || c.includes('nome') || c === 'ativo' || c.includes('descrição')) {
+               if (!newMap.nome_item) newMap.nome_item = col;
+            }
+            if (c.includes('patrimonio') || c.includes('patrimônio') || c.includes('plaqueta') || c === 'patr' || c.includes('nº patrimônio')) newMap.numero_patrimonio = col;
+            if (c.includes('marca')) newMap.marca = col;
+            if (c.includes('modelo') || c === 'model') newMap.modelo = col;
+            if (c.includes('serie') || c.includes('série') || c === 'sn' || c === 's/n') newMap.numero_serie = col;
+            if (c.includes('categoria')) newMap.categoria = col;
+            if (c.includes('empresa')) newMap.empresa = col;
+            if (c.includes('departamento') || c.includes('depto')) newMap.departamento = col;
+            if (c.includes('valor') || c.includes('preço')) newMap.valor = col;
+            if (c.includes('local') || c.includes('unidade')) newMap.local = col;
+            if (c.includes('usuario') || c.includes('usuário') || c.includes('dono')) newMap.usuario_nome = col;
+            if (c.includes('ativ') || c === 'ativo' || c === 'active') {
+               if (c.length < 10) newMap.esta_ativo_planilha = col;
+            }
+            if (c.includes('obs') || c.includes('comentário')) newMap.observacoes = col;
+            if (c.includes('fornecedor')) newMap.fornecedor = col;
+          });
+          setMapping(newMap);
+          setStep(2);
+          toast.success('Planilha processada com sucesso.');
         }
-
-        const headers = rows[headerRowIndex].map(h => String(h || '').trim()).filter(h => h !== '');
-        setColumns(headers);
-
-        const data = XLSX.utils.sheet_to_json(ws, { 
-          range: headerRowIndex,
-          defval: null
-        }) as ImportRow[];
-        
-        setRawData(data);
-        
-        const newMap = { ...DEFAULT_MAP };
-        headers.forEach(col => {
-          const c = col.toLowerCase();
-          if (c.includes('item') || c.includes('nome') || c === 'ativo' || c.includes('descrição')) {
-             if (!newMap.nome_item) newMap.nome_item = col;
-          }
-          if (c.includes('patrimonio') || c.includes('patrimônio') || c.includes('plaqueta') || c === 'patr' || c.includes('nº patrimônio')) newMap.numero_patrimonio = col;
-          if (c.includes('marca')) newMap.marca = col;
-          if (c.includes('modelo') || c === 'model') newMap.modelo = col;
-          if (c.includes('serie') || c.includes('série') || c === 'sn' || c === 's/n') newMap.numero_serie = col;
-          if (c.includes('categoria')) newMap.categoria = col;
-          if (c.includes('empresa')) newMap.empresa = col;
-          if (c.includes('departamento') || c.includes('depto')) newMap.departamento = col;
-          if (c.includes('valor') || c.includes('preço')) newMap.valor = col;
-          if (c.includes('local') || c.includes('unidade')) newMap.local = col;
-          if (c.includes('usuario') || c.includes('usuário') || c.includes('dono')) newMap.usuario_nome = col;
-          if (c.includes('ativ') || c === 'ativo' || c === 'active') {
-             if (c.length < 10) newMap.esta_ativo_planilha = col; // Evita pegar "Descrição" se for coluna A: Ativ
-          }
-          if (c.includes('obs') || c.includes('comentário')) newMap.observacoes = col;
-          if (c.includes('fornecedor')) newMap.fornecedor = col;
-        });
-        setMapping(newMap);
-        setStep(2);
+      } catch (err) {
+        toast.error('Erro ao ler planilha.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     reader.readAsBinaryString(file);
   };
 
-  // --- STEP 2: PROCESS & PREVIEW ---
   const handleProcessPreview = () => {
     const processed = rawData.map((row, idx) => {
       const rawPatrimonio = row[mapping.numero_patrimonio];
@@ -179,6 +187,7 @@ export default function AssetImport() {
 
     setProcessedData(processed);
     setStep(3);
+    toast.success('Mapeamento concluído.');
   };
 
   const normalizeNull = (val: any): string | null => {
@@ -188,7 +197,6 @@ export default function AssetImport() {
     return String(val).trim();
   };
 
-  // --- STEP 3: EXECUTE IMPORT ---
   const handleExecuteImport = async () => {
     if (!profile) return;
     setLoading(true);
@@ -205,7 +213,7 @@ export default function AssetImport() {
       .single();
 
     if (batchErr) {
-       alert('Erro ao criar lote: ' + batchErr.message);
+       toast.error('Erro ao registrar lote: ' + batchErr.message);
        setLoading(false);
        return;
     }
@@ -240,17 +248,15 @@ export default function AssetImport() {
         status: 'em_estoque'
       }));
 
-      // --- Deduplicação de Planilha v4.5 (Filtro de Limpeza) ---
       const seenPatsInBatch = new Set<string>();
       const finalAssetsToProcess: typeof assetsToUpsertRaw = [];
       
-      // Processamos de trás para frente para garantir que a ÚLTIMA informação da planilha prevaleça
       for (let j = assetsToUpsertRaw.length - 1; j >= 0; j--) {
         const asset = assetsToUpsertRaw[j];
         const pat = asset.numero_patrimonio;
         
         if (pat && seenPatsInBatch.has(pat)) {
-          skippedCount++; // Contabilizamos como linha de planilha repetida
+          skippedCount++;
           continue;
         }
         
@@ -346,27 +352,28 @@ export default function AssetImport() {
     setResults({ success: successCount, updated: updatedCount, skipped: skippedCount, errors });
     setStep(4);
     setLoading(false);
+    toast.success('Tarefa concluída.');
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20 animate-fade-up">
-      <header className="flex flex-col gap-5">
+    <div className="max-w-6xl mx-auto space-y-8 pb-20 px-4 sm:px-0 animate-fade-up">
+      <header className="flex flex-col gap-6">
         <button 
           onClick={() => step > 1 ? setStep(step - 1) : navigate('/estoque')}
-          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[12px] uppercase tracking-wider"
+          className="flex items-center gap-2 text-gp-muted font-black hover:text-gp-blue transition-colors text-[10px] uppercase tracking-[0.2em] mb-2"
         >
-          <ArrowLeft size={16} /> {step > 1 ? 'Voltar Etapa' : 'Voltar ao Estoque'}
+          <ArrowLeft size={14} strokeWidth={3} /> {step > 1 ? 'Voltar Etapa' : 'Voltar ao Estoque'}
         </button>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 className="gp-page-title">Importação de Ativos</h1>
-            <p className="gp-page-subtitle">Suba planilhas em massa para organizar seu inventário dinamicamente.</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="min-w-0">
+            <h1 className="gp-page-title text-3xl">Importação de Ativos</h1>
+            <p className="gp-page-subtitle">Alimentação em massa do inventário via TurboImport™.</p>
           </div>
-          <div className="flex bg-gp-surface2 border border-gp-border p-1.5 rounded-2xl shadow-inner">
+          <div className="flex bg-gp-surface2 border border-gp-border p-1.5 rounded-2xl shadow-inner shrink-0">
              {[1,2,3,4].map(s => (
                 <div key={s} className={clsx(
-                  "w-9 h-9 rounded-[14px] flex items-center justify-center font-bold text-xs transition-all", 
-                  step === s ? "bg-gp-blue text-white shadow-lg shadow-gp-blue/20" : "text-gp-text3 opacity-50"
+                  "w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all", 
+                  step === s ? "bg-gp-blue text-white shadow-lg shadow-gp-blue/20" : "text-gp-muted opacity-40"
                 )}>
                   {s}
                 </div>
@@ -389,82 +396,84 @@ export default function AssetImport() {
             }
           }}
           className={clsx(
-            "gp-card p-16 sm:p-24 text-center space-y-10 transition-all duration-500 relative group overflow-hidden border-2 border-dashed",
+            "gp-card p-16 sm:p-32 text-center space-y-12 transition-all duration-500 relative group overflow-hidden border-3 border-dashed",
             isDragging 
-              ? "bg-gp-blue-muted border-gp-blue scale-[1.01] shadow-gp-blue/10" 
+              ? "bg-gp-blue/[0.03] border-gp-blue scale-[1.01] shadow-2xl shadow-gp-blue/10" 
               : loading 
                 ? "opacity-60 pointer-events-none" 
-                : "border-gp-border hover:border-gp-blue/40"
+                : "border-gp-border hover:border-gp-blue/30"
           )}
         >
             <div className={clsx(
-              "w-24 h-24 rounded-[32px] flex items-center justify-center mx-auto transition-all duration-500",
-              isDragging ? "bg-gp-blue text-white scale-125 rotate-[-6deg]" : "bg-gp-surface2 text-gp-text3 group-hover:bg-gp-blue group-hover:text-white group-hover:scale-110"
+              "w-24 h-24 rounded-[2.5rem] flex items-center justify-center mx-auto transition-all duration-700 shadow-inner border border-gp-border",
+              isDragging ? "bg-gp-blue text-white scale-110 rotate-6" : "bg-gp-surface2 text-gp-muted group-hover:bg-gp-blue group-hover:text-white group-hover:rotate-[-3deg]"
             )}>
-              <FileSpreadsheet size={48} strokeWidth={1.5} />
+              <FileSpreadsheet size={48} strokeWidth={1} />
             </div>
-            <div className="max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-gp-text">
-                {isDragging ? 'Solte para importar!' : 'Selecione sua Planilha'}
+            <div className="max-w-md mx-auto space-y-4">
+              <h3 className="text-3xl font-black text-gp-text uppercase tracking-tight">
+                {isDragging ? 'SOLTE O ARQUIVO' : 'SUBIR PLANILHA'}
               </h3>
-              <p className="text-gp-text3 font-medium mt-3 leading-relaxed">
-                Arraste seu arquivo Excel (.xlsx, .xls) ou CSV para processar os ativos automaticamente.
+              <p className="text-gp-text2 font-medium text-base leading-relaxed">
+                Importe dados de ativos (.xlsx, .csv) e synchronize unidades, usuários e patrimônios em segundos.
               </p>
             </div>
-            <div className="pt-6 relative z-10">
+            <div className="pt-8 relative z-10">
               <label className={clsx(
-                "btn-premium-primary px-12 py-4 rounded-xl cursor-pointer inline-flex",
+                "btn-premium-primary px-16 py-5 rounded-2xl cursor-pointer inline-flex font-black uppercase tracking-widest text-[11px] shadow-xl shadow-gp-blue/20",
                 loading && "opacity-80"
               )}>
                  {loading ? (
-                   <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3" /> PROCESSANDO...</>
+                   <><div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin mr-4" /> TRATANDO DADOS...</>
                  ) : (
-                   <><Upload size={20} strokeWidth={2} className="mr-3" /> ESCOLHER ARQUIVO</>
+                   <><Upload size={20} strokeWidth={3} className="mr-3" /> SELECIONAR ARQUIVO</>
                  )}
                  <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} disabled={loading} />
               </label>
             </div>
+            <div className="absolute top-0 left-0 w-40 h-40 bg-gp-blue/5 rounded-full blur-[80px] -translate-x-20 -translate-y-20 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
 
       {step === 2 && (
-        <div className="space-y-6 animate-fade-up">
-           <div className="bg-gp-blue/10 border border-gp-blue/20 p-6 rounded-2xl flex gap-4 items-center">
-              <div className="w-12 h-12 bg-gp-blue text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-gp-blue/20">
-                <Settings2 size={24} />
+        <div className="space-y-8 animate-fade-up">
+           <div className="bg-gp-blue/[0.03] border border-gp-blue/20 p-8 rounded-[2rem] flex flex-col md:flex-row gap-6 items-center shadow-inner">
+              <div className="w-16 h-16 bg-gp-blue text-white rounded-2xl flex items-center justify-center shrink-0 shadow-xl shadow-gp-blue/30">
+                <Settings2 size={32} strokeWidth={2.5} />
               </div>
-              <div>
-                 <h4 className="font-bold text-gp-text text-[15px] leading-tight">Mapeamento de Colunas</h4>
-                 <p className="text-gp-text3 font-medium text-[13px]">Vincule os campos do sistema com as colunas detectadas em sua planilha.</p>
+              <div className="text-center md:text-left">
+                 <h4 className="font-black text-gp-text text-xl uppercase tracking-tight leading-none mb-2">Engenharia de Mapeamento</h4>
+                 <p className="text-gp-muted font-medium text-[15px]">Associe as colunas da sua planilha aos campos do ecossistema Global Parts.</p>
               </div>
            </div>
 
-           <div className="gp-card p-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+           <div className="gp-card p-6 sm:p-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10">
                  {Object.keys(DEFAULT_MAP).map((field) => (
-                    <div key={field} className="space-y-2">
-                       <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
+                    <div key={field} className="space-y-3 group">
+                       <label className={labelClass}>
                           {fieldLabels[field] || field.replace('_', ' ')}
                        </label>
                        <div className="relative">
                         <select 
                           value={mapping[field]}
                           onChange={(e) => setMapping({ ...mapping, [field]: e.target.value })}
-                          className="gp-input pr-10 appearance-none py-3"
+                          className="gp-input pr-12 appearance-none h-14 font-black uppercase text-[11px] tracking-widest cursor-pointer"
                         >
-                           <option value="">-- Ignorar Coluna --</option>
+                           <option value="">-- Ignorar este campo --</option>
                            {columns.map(col => <option key={col} value={col}>{col}</option>)}
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gp-text3 opacity-40">
-                          <ChevronRight size={18} className="rotate-90" />
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gp-muted group-focus-within:text-gp-blue transition-colors">
+                          <ChevronDown size={20} strokeWidth={3} />
                         </div>
                        </div>
                     </div>
                  ))}
               </div>
-              <div className="mt-12 pt-8 border-t border-gp-border flex justify-end">
-                    <button onClick={handleProcessPreview} className="btn-premium-primary px-10 py-4 rounded-xl shadow-gp-blue/20">
-                      CONFIRMAR MAPEAMENTO <ChevronRight size={20} />
+              <div className="mt-16 pt-10 border-t border-gp-border flex flex-col sm:flex-row justify-end items-center gap-6">
+                    <p className="text-[11px] font-black text-gp-muted uppercase tracking-[0.2em] italic opacity-50">Confira todos os campos obrigatórios (*)</p>
+                    <button onClick={handleProcessPreview} className="w-full sm:w-auto btn-premium-primary px-12 py-5 rounded-2xl shadow-xl shadow-gp-blue/20 font-black uppercase text-[11px] tracking-[0.15em]">
+                      AVANÇAR PARA PREVIEW <ChevronRight size={18} strokeWidth={3} className="ml-2" />
                     </button>
               </div>
            </div>
@@ -472,32 +481,33 @@ export default function AssetImport() {
       )}
 
       {step === 3 && (
-        <div className="space-y-6 animate-fade-up">
+        <div className="space-y-8 animate-fade-up">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="gp-card p-8">
-                 <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-1.5 opacity-60">Total de Registros</p>
-                 <p className="text-4xl font-bold text-gp-text">{processedData.length}</p>
+              <div className="gp-card p-8 border-gp-blue/20 bg-gp-blue/[0.01]">
+                 <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.25em] mb-3 opacity-60">Registros em Lote</p>
+                 <p className="text-5xl font-black text-gp-text tracking-tighter">{processedData.length}</p>
               </div>
-              <div className="gp-card p-8 col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                 <div className="flex-1 space-y-2">
-                    <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">Configuração de Inteligência (v4.4)</p>
-                    <div className="flex flex-wrap gap-2 pt-1">
+              <div className="gp-card p-8 lg:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-8 border-gp-amber/20">
+                 <div className="flex-1 space-y-4">
+                    <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.25em] opacity-60">Configuração de Importação v4.6</p>
+                    <div className="flex flex-wrap gap-2.5">
                        {[
-                         {id: 'atualizar', label: '🚀 SINCRONIZAR TUDO (Recomendado)'}, 
-                         {id: 'inserir', label: 'SOMENTE NOVOS (Dá erro se existir)'}, 
-                         {id: 'ignorar_duplicados', label: 'PULAR EXISTENTES'}
+                         {id: 'atualizar', label: '🚀 SINCRONIZAR TUDO', desc: 'Atualiza o que já existe'}, 
+                         {id: 'inserir', label: 'INSERIR NOVOS', desc: 'Ignora conflitos'}, 
+                         {id: 'ignorar_duplicados', label: 'PULAR DUPLICATAS', desc: 'Apenas novos patrimônios'}
                        ].map(m => (
                           <button 
                             key={m.id} 
                             onClick={() => setImportMode(m.id as any)} 
                             className={clsx(
-                              "px-4 py-2.5 rounded-xl text-[10px] font-bold transition-all border", 
+                              "flex flex-col items-start px-6 py-4 rounded-2xl transition-all border shrink-0 text-left", 
                               importMode === m.id 
-                                ? "bg-gp-blue text-white border-gp-blue shadow-lg shadow-gp-blue/20" 
-                                : "bg-gp-surface3 border-gp-border text-gp-text3 hover:border-gp-blue/40"
+                                ? "bg-gp-blue text-white border-gp-blue shadow-xl shadow-gp-blue/20 scale-105" 
+                                : "bg-gp-surface3 border-gp-border text-gp-muted hover:border-gp-blue/30"
                             )}
                           >
-                            {m.label}
+                            <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-2">{m.label}</span>
+                            <span className={clsx("text-[9px] font-bold uppercase opacity-50", importMode === m.id ? "text-white" : "text-gp-muted")}>{m.desc}</span>
                           </button>
                        ))}
                     </div>
@@ -505,166 +515,155 @@ export default function AssetImport() {
               </div>
            </div>
 
-           <div className="bg-gp-blue/10 border border-gp-blue/20 p-5 rounded-2xl flex gap-4 items-center animate-fade-up">
-              <div className="w-10 h-10 bg-gp-blue/20 text-gp-blue rounded-xl flex items-center justify-center shrink-0 border border-gp-blue/30 shadow-sm shadow-gp-blue/10">
-                <Database size={20} />
-              </div>
-              <p className="text-gp-text font-medium text-[13px] leading-snug">
-                <strong className="text-gp-blue">Dica Profissional:</strong> O modo <strong className="font-bold">Sincronizar Tudo</strong> identifica itens existentes pelo número do patrimônio e atualiza local, usuário e status automaticamente.
-              </p>
-            </div>
-
            <div className="gp-card overflow-hidden">
-              <div className="p-8 border-b border-gp-border bg-gp-blue/5">
-                 <h3 className="font-bold text-lg text-gp-text flex items-center gap-3">
-                   <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center">
-                     <Eye size={20} strokeWidth={2} />
+              <div className="p-8 border-b border-gp-border flex items-center justify-between">
+                 <h3 className="font-black text-lg text-gp-text uppercase tracking-tight flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center ring-1 ring-gp-blue/20">
+                     <Eye size={22} strokeWidth={2.5} />
                    </div>
-                   Preview do Tratamento de Ativos
+                   Tratamento de Dados Post-Parsing
                  </h3>
+                 <span className="text-[11px] font-black text-gp-blue-light uppercase tracking-widest">{processedData.length} linhagens detectadas</span>
               </div>
               <div className="overflow-x-auto">
                  <table className="gp-table">
                     <thead>
                        <tr>
-                          <th>Dado na Planilha</th>
-                          <th>Identificação</th>
-                          <th>Patrimônio / GPS</th>
-                          <th>Equipamento</th>
-                          <th>Categoria</th>
-                          <th>Notas</th>
+                          <th>LINHA</th>
+                          <th>PROTOCOLO</th>
+                          <th>PATRIMÔNIO / ID</th>
+                          <th>NOME DO ATIVO</th>
+                          <th>CATEGORIA</th>
+                          <th>NOTAS DE SISTEMA</th>
                        </tr>
                     </thead>
                     <tbody>
-                       {processedData.slice(0, 10).map((item, idx) => (
-                          <tr key={idx}>
-                             <td className="font-bold opacity-50">{item.valor_original}</td>
+                       {processedData.slice(0, 15).map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gp-surface2/50 transition-colors">
+                             <td className="text-[10px] font-black text-gp-muted">#{item.row_idx}</td>
                              <td>
                                 <span className={clsx(
-                                  "gp-badge", 
+                                  "gp-badge gp-badge-sm font-black", 
                                   item.identificacao_tipo === 'patrimonio' ? "gp-badge-success" : 
                                   item.identificacao_tipo === 'gps' ? "gp-badge-blue" : 
-                                  item.identificacao_tipo === 'novo' ? "gp-badge-purple" : "gp-badge-gray"
+                                  "gp-badge-gray"
                                 )}>
                                   {item.identificacao_tipo.toUpperCase()}
                                 </span>
                              </td>
-                             <td className="font-bold text-gp-blue-light font-mono text-[13px]">{item.numero_patrimonio || item.codigo_gps || '-'}</td>
+                             <td className="font-black text-gp-blue-light font-mono text-[13px] tracking-widest">{item.numero_patrimonio || item.codigo_gps || '---'}</td>
                              <td>
                                 <div className="flex flex-col">
-                                  <span className="font-bold text-gp-text text-sm">{item.nome_item}</span>
-                                  <span className="text-[10px] font-bold text-gp-text3 opacity-60 uppercase">{item.marca} {item.modelo}</span>
+                                  <span className="font-black text-gp-text text-[15px] leading-tight mb-1">{item.nome_item}</span>
+                                  <span className="text-[10px] font-black text-gp-muted opacity-60 uppercase tracking-tighter">{item.marca} {item.modelo}</span>
                                 </div>
                              </td>
-                             <td className="font-bold text-xs">{item.categoria}</td>
-                             <td className="text-[11px] font-medium text-gp-text3 truncate max-w-[150px] italic">
-                                {item.observacoes || 'N/A'}
+                             <td className="font-black text-[11px] text-gp-muted uppercase tracking-widest">{item.categoria}</td>
+                             <td className="text-[11px] font-medium text-gp-text3 truncate max-w-[200px] italic opacity-60 uppercase">
+                                {item.observacoes || '--'}
                              </td>
                           </tr>
                        ))}
                     </tbody>
                  </table>
-                 {processedData.length > 10 && (
-                   <div className="p-5 text-center text-[11px] font-bold text-gp-text3 uppercase tracking-widest bg-gp-surface2/50 border-t border-gp-border">
-                     Visualizando as primeiras 10 de {processedData.length} linhas tratadas...
+                 {processedData.length > 15 && (
+                   <div className="p-6 text-center text-[11px] font-black text-gp-muted uppercase tracking-[0.2em] bg-gp-surface2/30 border-t border-gp-border opacity-50">
+                     Amostragem: Visualizando 15 de {processedData.length} registros...
                    </div>
                  )}
               </div>
            </div>
 
-           <div className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2 p-8 shadow-2xl">
-              {loading && (
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-3 border-gp-blue/30 border-t-gp-blue rounded-full animate-spin" />
-                    <span className="font-bold text-lg text-gp-text tracking-widest animate-pulse">IMPORTANDO ATIVOS...</span>
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
-                <div className="text-center md:text-left">
-                  <h4 className="font-bold text-xl text-gp-text">Executar Importação Final</h4>
-                  <p className="text-gp-text3 font-medium text-sm mt-1">Os dados serão processados e as movimentações de auditoria geradas.</p>
+           <div className="gp-card p-10 border-gp-blue/30 bg-gp-blue/[0.01] shadow-2xl relative overflow-hidden">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-10 relative z-10">
+                <div className="text-center md:text-left space-y-3">
+                  <h4 className="font-black text-2xl text-gp-text uppercase tracking-tight leading-none">Confirmar Processamento Global</h4>
+                  <p className="text-gp-muted font-medium text-base">Inicie a gravação atômica dos dados e logs de auditoria no servidor.</p>
                 </div>
                 <button 
                   onClick={handleExecuteImport} 
                   disabled={loading} 
-                  className="w-full md:w-auto btn-premium-primary px-16 py-4 rounded-xl shadow-gp-blue/30 text-lg"
+                  className="w-full md:w-auto btn-premium-primary px-16 py-6 rounded-2xl shadow-2xl shadow-gp-blue/30 text-[13px] font-black uppercase tracking-[0.2em] scale-105 active:scale-100 transition-transform"
                 >
-                  {loading ? 'PROCESSANDO...' : (<><Database size={22} strokeWidth={2.5} className="mr-3" /> INICIAR TurboImport</>)}
+                  {loading ? (
+                    <div className="flex items-center gap-4">
+                       <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                       OPERANDO...
+                    </div>
+                  ) : (<><Database size={24} strokeWidth={3} className="mr-3" /> EXECUTAR TurboImport</>)}
                 </button>
               </div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gp-blue/5 rounded-full blur-[100px] pointer-events-none" />
            </div>
         </div>
       )}
 
       {step === 4 && results && (
-        <div className="space-y-8 animate-fade-up">
-           <div className="gp-card p-16 text-center space-y-10">
-              <div className="w-24 h-24 bg-gp-success/10 text-gp-success rounded-[32px] flex items-center justify-center mx-auto shadow-inner shadow-gp-success/5">
-                <CheckCircle2 size={48} strokeWidth={2} />
+        <div className="space-y-10 animate-fade-up">
+           <div className="gp-card p-16 sm:p-24 text-center space-y-12">
+              <div className="w-28 h-28 bg-gp-success/10 text-gp-success rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner border border-gp-success/20">
+                <CheckCircle2 size={56} strokeWidth={2.5} />
               </div>
-              <div className="space-y-3">
-                <h2 className="text-3xl font-bold text-gp-text">Importação Finalizada</h2>
-                <p className="text-gp-text3 text-base font-medium max-w-md mx-auto">O processamento do lote TurboImport concluído com sucesso.</p>
+              <div className="space-y-4">
+                <h2 className="text-4xl font-black text-gp-text uppercase tracking-tight tracking-tighter">Tarefa Concluída</h2>
+                <p className="text-gp-text2 text-lg font-medium max-w-lg mx-auto">O lote de importação foi processado integralmente pelo núcleo de dados.</p>
               </div>
-              <div className="flex flex-wrap justify-center gap-12 pt-4">
+              <div className="flex flex-wrap justify-center gap-16 pt-6">
                  <div className="flex flex-col items-center">
-                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Inseridos</p>
-                   <p className="text-5xl font-bold text-gp-success">{results.success}</p>
+                    <p className="text-[11px] font-black text-gp-muted uppercase tracking-[0.3em] mb-4 opacity-70 leading-none">Inseridos</p>
+                    <p className="text-6xl font-black text-gp-success tracking-tighter">{results.success}</p>
                  </div>
                  <div className="flex flex-col items-center">
-                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Atualizados</p>
-                   <p className="text-5xl font-bold text-gp-blue">{results.updated}</p>
+                    <p className="text-[11px] font-black text-gp-muted uppercase tracking-[0.3em] mb-4 opacity-70 leading-none">Sincronizados</p>
+                    <p className="text-6xl font-black text-gp-blue-light tracking-tighter">{results.updated}</p>
                  </div>
                  {results.skipped > 0 && (
                    <div className="flex flex-col items-center">
-                     <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Pulados</p>
-                     <p className="text-5xl font-bold text-gp-text3">{results.skipped}</p>
+                     <p className="text-[11px] font-black text-gp-muted uppercase tracking-[0.3em] mb-4 opacity-70 leading-none">Pulsados</p>
+                     <p className="text-6xl font-black text-gp-muted/40 tracking-tighter">{results.skipped}</p>
                    </div>
                  )}
-                 <div className="flex flex-col items-center">
-                   <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest mb-3 opacity-60">Erros</p>
-                   <p className={clsx("text-5xl font-bold", results.errors.length > 0 ? "text-gp-red" : "text-gp-border")}>
-                    {results.errors.length}
-                   </p>
-                 </div>
               </div>
-              <div className="pt-10 flex flex-col sm:flex-row justify-center gap-4">
-                 <button onClick={() => navigate('/estoque')} className="btn-premium-primary px-12 py-4 rounded-xl shadow-gp-blue/20">
-                   <PackageCheck size={20} strokeWidth={2} className="mr-3" /> VER INVENTÁRIO ATUALIZADO
+              <div className="pt-12 flex flex-col sm:flex-row justify-center gap-5">
+                 <button onClick={() => navigate('/estoque')} className="btn-premium-primary px-16 py-5 rounded-2xl shadow-2xl shadow-gp-blue/20 font-black uppercase text-[11px] tracking-widest">
+                   <PackageCheck size={20} strokeWidth={3} className="mr-3" /> RETORNAR AO INVENTÁRIO
                  </button>
-                 <button onClick={() => setStep(1)} className="btn-premium-secondary px-10 py-4 rounded-xl font-bold">
-                   NOVA PLANILHA
+                 <button onClick={() => setStep(1)} className="btn-premium-ghost px-12 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest border-gp-border hover:bg-gp-surface2">
+                   IMPORTAR NOVO LOTE
                  </button>
               </div>
            </div>
 
            {results.errors.length > 0 && (
-             <div className="gp-card overflow-hidden">
-                <div className="p-8 border-b border-gp-red/20 bg-gp-red/5 flex items-center gap-4 text-gp-red">
-                  <AlertCircle size={24} />
-                  <h3 className="font-bold text-lg">Relatório de Inconsistências</h3>
+             <div className="gp-card overflow-hidden border-gp-error/20">
+                <div className="p-8 border-b border-gp-error/20 bg-gp-error/[0.03] flex items-center justify-between">
+                   <div className="flex items-center gap-5">
+                      <div className="w-12 h-12 bg-gp-error/10 text-gp-error rounded-xl flex items-center justify-center border border-gp-error/20">
+                        <AlertCircle size={24} strokeWidth={2.5} />
+                      </div>
+                      <h3 className="font-black text-xl text-gp-text uppercase tracking-tight">Relatório de Inconsistências</h3>
+                   </div>
+                   <span className="text-gp-error font-black uppercase text-xs px-3 py-1 bg-gp-error/10 rounded-lg">{results.errors.length} ERROS DETECTADOS</span>
                 </div>
-                <div className="overflow-x-auto max-h-[500px]">
-                  <table className="gp-table">
-                    <thead>
-                      <tr>
-                        <th>Linha</th>
-                        <th>Identificação Patrimonial</th>
-                        <th>Mensagem de Erro</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.errors.map((err, i) => (
-                        <tr key={i} className="bg-gp-red/5">
-                          <td className="font-bold opacity-50">#{err.row}</td>
-                          <td className="font-mono font-bold text-gp-text">{err.patrimonio || 'N/A'}</td>
-                          <td className="text-gp-red font-bold text-xs italic">{err.message}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="overflow-x-auto max-h-[600px] custom-scrollbar">
+                   <table className="gp-table">
+                     <thead>
+                       <tr>
+                         <th>LINHA</th>
+                         <th>IDENTIFICAÇÃO</th>
+                         <th>MOTIVO DA REJEIÇÃO</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-gp-error/5">
+                       {results.errors.map((err, i) => (
+                         <tr key={i} className="hover:bg-gp-error/[0.01] transition-colors">
+                           <td className="text-[11px] font-black text-gp-error opacity-40">#{err.row}</td>
+                           <td className="font-mono font-black text-gp-text tracking-widest uppercase">{err.patrimonio || '---'}</td>
+                           <td className="text-gp-error font-black text-xs italic uppercase opacity-80 leading-relaxed pr-8">{err.message}</td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
                 </div>
              </div>
            )}

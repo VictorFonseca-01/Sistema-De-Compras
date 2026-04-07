@@ -46,10 +46,10 @@ function KpiSkeleton() {
 function RowSkeleton() {
   return (
     <div className="flex items-center gap-4 px-5 py-4 animate-pulse">
-      <div className="w-9 h-9 rounded-lg gp-skeleton flex-shrink-0" />
+      <div className="w-10 h-10 rounded-xl gp-skeleton flex-shrink-0" />
       <div className="flex-1">
-        <div className="w-40 h-3.5 rounded gp-skeleton mb-2" />
-        <div className="w-24 h-2.5 rounded gp-skeleton" />
+        <div className="w-40 h-4 rounded gp-skeleton mb-2" />
+        <div className="w-24 h-3 rounded gp-skeleton" />
       </div>
     </div>
   );
@@ -118,12 +118,8 @@ export default function Dashboard() {
       if (!profile) return;
       setLoading(true);
 
-      let query = supabase.from('requests').select('*, profiles!inner(full_name)');
+      const { data: requests } = await supabase.from('requests').select('*, profiles!inner(full_name)');
       
-      // O RLS (Row Level Security) configurado no banco agora cuida da segurança.
-      // O Supabase só retornará os registros que o usuário tem permissão de ver.
-
-      const { data: requests } = await query;
       if (requests) {
         const getStats = (statusList: string[]) => {
           const filtered = requests.filter(r => statusList.includes(r.status));
@@ -151,7 +147,6 @@ export default function Dashboard() {
         const totalInvestment = stats_approved.sum;
 
         setRequestStats([
-          // Linha 1: Visão Geral Financeira
           { 
             group: 'financial',
             label: 'Investimento Total', 
@@ -162,23 +157,22 @@ export default function Dashboard() {
           },
           { 
             group: 'financial',
-            label: 'Pendentes (Custo Total)', 
+            label: 'Pendentes (Total)', 
             value: stats_pending_total.count,
             secondary: formatCurrency(stats_pending_total.sum),
             icon: Clock, 
-            colorClass: 'text-gp-warning', 
-            bgClass: 'bg-gp-warning/10' 
+            colorClass: 'text-gp-amber', 
+            bgClass: 'bg-gp-amber/10' 
           },
           { 
             group: 'financial',
-            label: 'Aprovadas (Custo Total)', 
+            label: 'Aprovadas (Total)', 
             value: stats_approved.count,
             secondary: formatCurrency(stats_approved.sum),
             icon: CheckCircle, 
             colorClass: 'text-gp-success', 
             bgClass: 'bg-gp-success/10' 
           },
-          // Linha 2: Fila de Aprovação
           { 
             group: 'pipeline',
             label: 'Fila Gestor', 
@@ -203,8 +197,8 @@ export default function Dashboard() {
             value: stats_pending_diretoria.count,
             secondary: formatCurrency(stats_pending_diretoria.sum),
             icon: Clock, 
-            colorClass: 'text-gp-warning', 
-            bgClass: 'bg-gp-warning/10' 
+            colorClass: 'text-gp-amber', 
+            bgClass: 'bg-gp-amber/10' 
           },
           { 
             group: 'pipeline',
@@ -254,40 +248,40 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 pb-16 animate-fade-up">
-      {/* Access Denied Toast/Banner */}
+      {/* Access Denied Banner */}
       {showAccessDenied && (
-        <div className="flex items-center justify-between p-4 bg-gp-error/10 border border-gp-error/30 text-gp-error rounded-xl animate-shake">
-          <div className="flex items-center gap-3">
-            <AlertCircle size={20} strokeWidth={2.5} />
-            <span className="text-[13px] font-bold uppercase tracking-wider">Acesso Negado: Sua função não possui permissão para esta rota.</span>
+        <div className="flex items-center justify-between p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-gp-error/10 rounded-xl flex items-center justify-center shrink-0">
+               <AlertCircle size={22} strokeWidth={2.5} />
+            </div>
+            <span className="text-[13px] font-black uppercase tracking-wider">Acesso Negado: Sua função não possui permissão para esta área.</span>
           </div>
-          <button onClick={() => setShowAccessDenied(false)} className="text-[11px] font-black opacity-60 hover:opacity-100">FECHAR</button>
+          <button onClick={() => setShowAccessDenied(false)} className="px-4 py-2 text-[10px] font-black opacity-60 hover:opacity-100 uppercase tracking-widest">FECHAR</button>
         </div>
       )}
 
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="gp-page-title text-2xl sm:text-3xl">
-            Dashboard
-          </h1>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="space-y-1">
+          <h1 className="gp-page-title">Dashboard</h1>
           <p className="gp-page-subtitle">
-            Olá, {profile?.full_name || 'usuário'}. O sistema está atualizado.
+            Olá, <span className="text-gp-blue font-black uppercase">{profile?.full_name?.split(' ')[0] || 'Usuário'}</span>. Visão geral do ecossistema Global Parts.
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full lg:w-auto">
           <button
             onClick={() => navigate('/relatorios')}
-            className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[11px] sm:text-[12px]"
+            className="btn-premium-secondary flex-1 lg:flex-none uppercase text-[10px] font-black tracking-widest"
           >
-            <FileBarChart size={16} strokeWidth={2} />
+            <FileBarChart size={16} strokeWidth={3} />
             Relatórios
           </button>
           <button
             onClick={() => navigate('/solicitacoes/nova')}
-            className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[11px] sm:text-[12px]"
+            className="btn-premium-primary flex-1 lg:flex-none uppercase text-[10px] font-black tracking-widest"
           >
-            <Plus size={16} strokeWidth={2.5} />
+            <Plus size={18} strokeWidth={3} />
             Novo Pedido
           </button>
         </div>
@@ -298,93 +292,88 @@ export default function Dashboard() {
         {/* Financial Summary */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em]">Balanço Financeiro</h3>
-            <span className="text-[10px] font-bold text-gp-blue-light uppercase tracking-widest bg-gp-blue/5 px-2 py-0.5 rounded border border-gp-blue/10">Controladoria Automática</span>
+            <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">Balanço Financeiro</h3>
+            <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-40 flex items-center gap-1.5">
+              <CheckCircle size={10} strokeWidth={3} /> Controladoria Global
+            </span>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main KPI: Investimento Total */}
-            <div className="sm:col-span-12 lg:col-span-5">
-              {loading ? (
-                <KpiSkeleton />
-              ) : (
-                <div className="relative group overflow-hidden bg-gp-surface border border-gp-blue/30 rounded-2xl p-5 sm:p-7 shadow-2xl transition-all duration-500 hover:border-gp-blue/50">
-                  {/* Premium Glow Effect */}
-                  <div className="absolute -right-20 -top-20 w-64 h-64 bg-gp-blue/10 rounded-full blur-[80px] group-hover:bg-gp-blue/20 transition-all duration-700" />
-                  <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-gp-purple/5 rounded-full blur-[60px]" />
-                  
-                  <div className="relative flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-gp-blue text-white shadow-xl shadow-gp-blue/40 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
-                      <BarChart3 size={24} strokeWidth={2.5} />
-                    </div>
-                    <div className="px-2 py-1 bg-gp-blue/10 text-gp-blue rounded-lg text-[9px] font-black uppercase tracking-tighter border border-gp-blue/20">Controladoria Global</div>
-                  </div>
-                  
-                  <div className="relative mt-8">
-                    <p className="text-2xl xs:text-3xl sm:text-4xl font-black text-gp-text tracking-tighter group-hover:translate-x-1 transition-transform duration-500 break-all sm:break-normal">
-                      {requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-2 opacity-80">Patrimônio Gerenciado Aprovado</p>
+            {loading ? (
+              <KpiSkeleton />
+            ) : (
+              <div className="gp-card group relative overflow-hidden p-6 sm:p-8 border-gp-blue/30 bg-gp-blue/[0.02]">
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-gp-blue/5 rounded-full blur-[60px] group-hover:bg-gp-blue/10 transition-colors" />
+                
+                <div className="relative flex items-start justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-gp-blue text-white shadow-xl shadow-gp-blue/30 flex items-center justify-center transform group-hover:rotate-6 transition-transform">
+                    <BarChart3 size={24} strokeWidth={2.5} />
                   </div>
                 </div>
-              )}
-            </div>
+                
+                <div className="relative mt-8">
+                  <p className="text-3xl sm:text-4xl font-black text-gp-text tracking-tighter">
+                    {requestStats.find(s => s.label === 'Investimento Total')?.value || 'R$ 0,00'}
+                  </p>
+                  <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mt-3 opacity-80">Investimento Total Aprovado</p>
+                </div>
+              </div>
+            )}
 
-            {/* Sub KPIs: Pendente e Aprovado */}
-            <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {loading ? (
-                <>
-                  <KpiSkeleton />
-                  <KpiSkeleton />
-                </>
-              ) : (
-                <>
-                  {/* Pendente */}
-                  <div className="relative group overflow-hidden bg-gp-surface border border-gp-warning/30 rounded-2xl p-5 shadow-lg hover:border-gp-warning/50 transition-all duration-300">
-                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-gp-warning/5 rounded-full blur-[40px]" />
-                    <div className="relative flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gp-warning/15 text-gp-warning flex items-center justify-center shrink-0 border border-gp-warning/20">
-                        <Clock size={20} strokeWidth={2.5} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate opacity-70">Aguardando Avaliação</p>
-                        <p className="text-xl font-black text-gp-text truncate tracking-tight">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.secondary || 'R$ 0,00'}</p>
-                      </div>
-                    </div>
-                    <div className="relative mt-5 pt-4 border-t border-gp-border flex items-center justify-between text-[11px]">
-                      <span className="text-gp-text3 font-medium">Processos em Fila:</span>
-                      <span className="font-black text-gp-warning bg-gp-warning/10 px-2 py-0.5 rounded-full">{requestStats.find(s => s.label === 'Pendentes (Custo Total)')?.value || 0} pendentes</span>
-                    </div>
+            {/* Sub KPI: Devolvida/Pendente */}
+            {loading ? (
+              <KpiSkeleton />
+            ) : (
+              <div className="gp-card group relative overflow-hidden p-6">
+                <div className="flex items-center gap-5">
+                  <div className="w-12 h-12 rounded-xl bg-gp-amber/10 text-gp-amber flex items-center justify-center border border-gp-amber/20 shadow-inner">
+                    <Clock size={22} strokeWidth={2.5} />
                   </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Potencial de Gasto (Fila)</p>
+                    <p className="text-xl font-black text-gp-text tracking-tight uppercase">
+                      {requestStats.find(s => s.label === 'Pendentes (Total)')?.secondary || 'R$ 0,00'}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-8 pt-5 border-t border-gp-border flex items-center justify-between">
+                  <span className="text-[10px] text-gp-muted font-black uppercase tracking-widest">Processos Ativos</span>
+                  <span className="text-[10px] font-black text-gp-amber uppercase bg-gp-amber/10 px-2 py-0.5 rounded leading-none">{requestStats.find(s => s.label === 'Pendentes (Total)')?.value || 0} ITEMS</span>
+                </div>
+              </div>
+            )}
 
-                  {/* Aprovado Unitário */}
-                  <div className="relative group overflow-hidden bg-gp-surface border border-gp-success/30 rounded-2xl p-5 shadow-lg hover:border-gp-success/50 transition-all duration-300">
-                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-gp-success/5 rounded-full blur-[40px]" />
-                    <div className="relative flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gp-success/15 text-gp-success flex items-center justify-center shrink-0 border border-gp-success/20">
-                        <CheckCircle size={20} strokeWidth={2.5} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest truncate opacity-70">Sucesso em Aquisição</p>
-                        <p className="text-xl font-black text-gp-text truncate tracking-tight">{requestStats.find(s => s.label === 'Aprovadas (Custo Total)')?.value || 0} Equipamentos</p>
-                      </div>
-                    </div>
-                    <div className="relative mt-5 pt-4 border-t border-gp-border flex items-center justify-between text-[11px]">
-                      <span className="text-gp-text3 font-medium">SLA de Conformidade:</span>
-                      <span className="font-black text-gp-success uppercase tracking-tighter">Ativo Protegido</span>
-                    </div>
+            {/* Sub KPI: Concluídas */}
+            {loading ? (
+              <KpiSkeleton />
+            ) : (
+              <div className="gp-card group relative overflow-hidden p-6">
+                <div className="flex items-center gap-5">
+                  <div className="w-12 h-12 rounded-xl bg-gp-success/10 text-gp-success flex items-center justify-center border border-gp-success/20 shadow-inner">
+                    <CheckCircle size={22} strokeWidth={2.5} />
                   </div>
-                </>
-              )}
-            </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Aquisições Capitalizadas</p>
+                    <p className="text-xl font-black text-gp-text tracking-tight uppercase">
+                      {requestStats.find(s => s.label === 'Aprovadas (Total)')?.value || 0} Equipamentos
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-8 pt-5 border-t border-gp-border flex items-center justify-between">
+                  <span className="text-[10px] text-gp-muted font-black uppercase tracking-widest">Conformidade Global</span>
+                  <span className="text-[10px] font-black text-gp-success uppercase bg-gp-success/10 px-2 py-0.5 rounded leading-none">ATIVO SALVO</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Approval Pipeline */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em]">Fila de Aprovação (Em Aberto)</h3>
-            <span className="text-[9px] font-black text-gp-blue uppercase tracking-tighter opacity-50 px-2 leading-none">Tempo médio: 4h</span>
+            <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">Fila de Auditoria (Em Fluxo)</h3>
+            <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-40 leading-none">SLA médio: 4.2h</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {loading
@@ -392,32 +381,24 @@ export default function Dashboard() {
               : requestStats.filter(s => s.group === 'pipeline').map((stat, i) => (
                   <div 
                     key={i} 
-                    className="gp-metric group bg-gp-surface/40 backdrop-blur-md border-gp-border/50 hover:bg-gp-surface transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl"
+                    className="gp-metric group bg-gp-surface/40 hover:bg-gp-surface border-gp-border/50 hover:border-gp-blue/30 transition-all duration-300"
                   >
-                    {/* Interior Glow */}
                     <div className={clsx(
-                      "absolute -right-8 -top-8 w-24 h-24 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-500",
-                      stat.bgClass
-                    )} />
-                    
-                    <div className={clsx(
-                      "w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg",
-                      stat.bgClass,
-                      stat.colorClass,
-                      "border border-gp-border/30"
+                      "w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-md group-hover:scale-110 group-hover:rotate-3",
+                      stat.bgClass, stat.colorClass, "border border-gp-border/20"
                     )}>
                       <stat.icon size={20} strokeWidth={2.5} />
                     </div>
                     <div className="mt-6 flex flex-col">
-                      <p className="text-2xl font-black text-gp-text leading-none tracking-tighter mb-1.5">
+                      <p className="text-2xl font-black text-gp-text leading-none tracking-tight mb-2">
                         {stat.value}
                       </p>
-                      <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest opacity-60">
+                      <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-60">
                         {stat.label}
                       </p>
                       {stat.secondary && (
-                        <div className="mt-3 pt-3 border-t border-gp-border/30">
-                          <p className="text-[11px] font-black text-gp-blue tracking-tighter">
+                        <div className="mt-4 pt-4 border-t border-gp-border/30">
+                          <p className="text-[11px] font-black text-gp-blue-light tracking-widest opacity-80 uppercase leading-none">
                             {stat.secondary}
                           </p>
                         </div>
@@ -431,28 +412,26 @@ export default function Dashboard() {
 
         {/* Inventory Brief */}
         <div className="space-y-4">
-          <h3 className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.2em] px-1">Estado do Inventário</h3>
+          <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] px-1">Integridade do Patrimônio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {loading
               ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
               : inventoryStats.map((stat, i) => (
                   <div 
                     key={i} 
-                    className="gp-metric group flex items-center gap-5 p-6 bg-gp-surface/40 backdrop-blur-md border-gp-border/50 hover:bg-gp-surface transition-all duration-300 hover:shadow-xl"
+                    className="gp-metric group flex items-center gap-5 p-6 bg-gp-surface/40 hover:bg-gp-surface transition-all duration-300"
                   >
                     <div className={clsx(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-105 shadow-md",
-                      stat.bgClass, 
-                      stat.colorClass,
-                      "border border-gp-border/20"
+                      "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform shadow-md border border-gp-border/20",
+                      stat.bgClass, stat.colorClass
                     )}>
                       <stat.icon size={26} strokeWidth={2.5} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-2xl font-black text-gp-text tracking-tighter leading-none mb-1">
+                      <p className="text-2xl font-black text-gp-text tracking-tighter leading-none mb-1.5 uppercase">
                         {stat.value}
                       </p>
-                      <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-[0.15em] opacity-60">
+                      <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest opacity-60 leading-none">
                         {stat.label}
                       </p>
                     </div>
@@ -466,19 +445,19 @@ export default function Dashboard() {
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Donut Chart */}
-        <div className="gp-card p-5 sm:p-8 flex flex-col">
-          <div className="flex items-center gap-3 mb-6 sm:mb-8">
+        <div className="gp-card p-6 sm:p-8 flex flex-col">
+          <div className="flex items-center gap-4 mb-8">
             <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
-              <BarChart3 size={20} strokeWidth={2} />
+              <BarChart3 size={20} strokeWidth={2.5} />
             </div>
-            <h3 className="text-[15px] font-bold text-gp-text">Situação do Inventário</h3>
+            <h3 className="text-[16px] font-black text-gp-text uppercase tracking-tight">Atividade Global</h3>
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center gap-10">
             {/* Donut */}
-            <div className="relative w-48 h-48">
+            <div className="relative w-48 h-48 group">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--gp-border)" strokeWidth="3" />
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--gp-border)" strokeWidth="3" className="opacity-30" />
                 {chartData.map((d, i) => {
                   if (d.percent <= 0) return null;
                   const offset = chartData.slice(0, i).reduce((acc, curr) => acc + curr.percent, 0);
@@ -493,30 +472,30 @@ export default function Dashboard() {
                       strokeDasharray={`${(d.percent / 100) * circumference} ${circumference}`}
                       strokeDashoffset={-((offset / 100) * circumference)}
                       strokeLinecap="round"
-                      className="transition-all duration-1000 ease-out"
+                      className="transition-all duration-1000 ease-in-out hover:opacity-80 cursor-pointer"
                     />
                   );
                 })}
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-3xl font-black text-gp-text">
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-3xl font-black text-gp-text tracking-tighter leading-none">
                   {chartData.reduce((acc, d) => acc + d.count, 0)}
                 </p>
-                <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-[0.2em] mt-1 opacity-70">Ativos</p>
+                <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mt-2 leading-none">Unidades</p>
               </div>
             </div>
 
             {/* Legend */}
             <div className="w-full space-y-3">
               {chartData.map((d, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                <div key={i} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border group hover:border-gp-blue/30 transition-colors rounded-2xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: d.color }} />
-                    <span className="text-[13px] font-bold text-gp-text2">{d.label}</span>
+                    <div className="w-2.5 h-2.5 rounded-full shadow-lg" style={{ background: d.color }} />
+                    <span className="text-[12px] font-black text-gp-text2 uppercase tracking-wide">{d.label}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-bold text-gp-text3 opacity-60">{d.count} un</span>
-                    <span className="text-[13px] font-black text-gp-text">
+                  <div className="flex items-center gap-4">
+                    <span className="text-[11px] font-bold text-gp-muted uppercase tracking-tighter opacity-70 leading-none">{d.count} UN</span>
+                    <span className="text-[14px] font-black text-gp-text leading-none">
                       {Math.round(d.percent)}%
                     </span>
                   </div>
@@ -530,18 +509,18 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-6">
           {/* Recent Requests */}
           <div className="gp-card overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gp-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gp-warning/10 text-gp-warning flex items-center justify-center">
-                  <FileText size={20} strokeWidth={2} />
+            <div className="flex items-center justify-between p-6 sm:px-8 border-b border-gp-border">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-gp-amber/10 text-gp-amber flex items-center justify-center">
+                  <FileText size={20} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-[15px] font-bold text-gp-text">Solicitações Recentes</h3>
+                <h3 className="text-[16px] font-black text-gp-text uppercase tracking-tight">Solicitações Recentes</h3>
               </div>
               <Link
                 to="/solicitacoes"
-                className="btn-premium-ghost px-4 py-2 text-[11px] hover:bg-gp-surface2"
+                className="btn-premium-ghost px-5 py-2 text-[10px] font-black uppercase tracking-widest"
               >
-                Ver todas <ArrowRight size={14} className="ml-2" />
+                Auditar Todos <ArrowRight size={14} className="ml-2" />
               </Link>
             </div>
 
@@ -560,23 +539,23 @@ export default function Dashboard() {
                       <Link
                         key={req.id}
                         to={`/solicitacoes/${req.id}`}
-                        className="flex items-center gap-4 px-6 py-4 transition-all hover:bg-gp-surface2 border-b border-gp-border last:border-0 group"
+                        className="flex items-center gap-5 px-6 sm:px-8 py-5 transition-all hover:bg-gp-surface2 border-b border-gp-border last:border-0 group"
                       >
-                        <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">
-                          <FileText size={18} className="text-gp-text3" />
+                        <div className="w-11 h-11 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 group-hover:bg-gp-blue/5 transition-all shadow-sm">
+                          <FileText size={20} className="text-gp-muted group-hover:text-gp-blue" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-bold text-gp-text truncate mb-0.5">{req.title}</p>
-                          <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-tighter opacity-60">
+                          <p className="text-[15px] font-black text-gp-text truncate mb-1 leading-none transition-colors group-hover:text-gp-blue">{req.title}</p>
+                          <p className="text-[11px] font-black text-gp-muted uppercase tracking-tighter opacity-60 leading-none mt-1.5">
                             {req.profiles?.full_name} · {new Date(req.created_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                         {s && (
                           <span
-                            className="gp-badge text-[9px] h-6"
-                            style={{ background: `${s.color}15`, color: s.color, borderColor: `${s.color}25` }}
+                             className="gp-badge gp-badge-sm font-black text-[9px] uppercase tracking-widest px-2.5 h-6 shrink-0"
+                             style={{ background: `${s.color}15`, color: s.color, borderColor: `${s.color}25` }}
                           >
-                            {s.label}
+                             {s.label}
                           </span>
                         )}
                       </Link>
@@ -587,23 +566,23 @@ export default function Dashboard() {
 
           {/* Recent Movements */}
           <div className="gp-card overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gp-border">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between p-6 sm:px-8 border-b border-gp-border">
+              <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
-                  <Activity size={20} strokeWidth={2} />
+                  <Activity size={20} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-[15px] font-bold text-gp-text">Movimentações do Estoque</h3>
+                <h3 className="text-[16px] font-black text-gp-text uppercase tracking-tight">Log de Movimentações</h3>
               </div>
               <Link
                 to="/estoque"
-                className="btn-premium-ghost px-4 py-2 text-[11px] hover:bg-gp-surface2"
+                className="btn-premium-ghost px-5 py-2 text-[10px] font-black uppercase tracking-widest"
               >
-                Ver estoque <ArrowRight size={14} className="ml-2" />
+                Ver Estoque <ArrowRight size={14} className="ml-2" />
               </Link>
             </div>
 
             {loading
-              ? [1, 2, 3].map(i => <RowSkeleton key={i} />)
+              ? [1, 2, 3, 4].map(i => <RowSkeleton key={i} />)
               : recentMovements.length === 0
                 ? (
                   <div className="gp-empty py-16">
@@ -614,20 +593,20 @@ export default function Dashboard() {
                 : recentMovements.map(move => (
                     <div
                       key={move.id}
-                      className="flex items-center gap-4 px-6 py-4 border-b border-gp-border last:border-0 transition-colors hover:bg-gp-surface2 group"
+                      className="flex items-center gap-5 px-6 sm:px-8 py-5 border-b border-gp-border last:border-0 transition-all hover:bg-gp-surface2 group"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 transition-colors">
-                        <Activity size={18} className="text-gp-blue" />
+                      <div className="w-11 h-11 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center group-hover:border-gp-blue/40 group-hover:bg-gp-blue/5 transition-all shadow-sm">
+                        <Activity size={20} className="text-gp-blue" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-bold text-gp-text truncate mb-0.5">
+                        <p className="text-[15px] font-black text-gp-text truncate mb-1 leading-none group-hover:text-gp-blue transition-colors">
                           {move.assets?.nome_item}
                         </p>
-                        <p className="text-[11px] font-bold text-gp-text3 uppercase tracking-tighter opacity-60">
+                        <p className="text-[11px] font-black text-gp-muted uppercase tracking-tighter opacity-60 leading-none mt-1.5">
                           Patr: {move.assets?.numero_patrimonio} · {new Date(move.created_at).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
-                      <span className="gp-badge gp-badge-blue text-[9px] h-6">
+                      <span className="gp-badge gp-badge-blue gp-badge-sm font-black text-[9px] uppercase tracking-widest px-2.5 h-6 shrink-0">
                         {move.tipo.toUpperCase()}
                       </span>
                     </div>

@@ -110,14 +110,14 @@ export default function AssetDelivery() {
      return (
        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-fade-up">
          <div className="gp-card p-12 max-w-lg flex flex-col items-center">
-           <div className="w-20 h-20 bg-gp-blue/10 text-gp-blue rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-             <Truck size={40} strokeWidth={2} />
+           <div className="w-20 h-20 bg-gp-success/10 text-gp-success rounded-2xl flex items-center justify-center mb-8 shadow-inner">
+             <Truck size={40} strokeWidth={2.5} />
            </div>
-           <h2 className="text-2xl font-bold text-gp-text mb-3">Entrega Realizada!</h2>
-           <p className="text-gp-text3 text-base leading-relaxed">
-             O ativo foi vinculado ao colaborador e o histórico de movimentação foi registrado com sucesso.
+           <h2 className="text-2xl font-black text-gp-text mb-3 uppercase tracking-tight">Entrega Realizada!</h2>
+           <p className="text-gp-text2 text-[15px] font-medium leading-relaxed">
+             O ativo foi vinculado ao colaborador e o histórico de movimentação foi registrado com sucesso no banco de dados.
            </p>
-           <div className="mt-10 flex items-center gap-3 py-3 px-6 bg-gp-surface2 rounded-xl border border-gp-border">
+           <div className="mt-10 flex items-center gap-3 py-3.5 px-6 bg-gp-surface2 rounded-xl border border-gp-border">
               <div className="w-4 h-4 border-2 border-gp-border2 border-t-gp-blue rounded-full animate-spin" />
               <span className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest">Atualizando inventário...</span>
            </div>
@@ -131,16 +131,16 @@ export default function AssetDelivery() {
       <header className="flex flex-col gap-5">
         <button 
           onClick={() => navigate('/estoque')}
-          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[12px] uppercase tracking-wider"
+          className="flex items-center gap-2 text-gp-text3 font-bold hover:text-gp-blue transition-colors text-[10px] uppercase tracking-widest"
         >
-          <ArrowLeft size={16} /> Voltar ao Inventário
+          <ArrowLeft size={14} strokeWidth={3} /> Voltar ao Inventário
         </button>
         <div className="flex items-center gap-5">
-           <div className="w-14 h-14 bg-gp-blue text-white rounded-2xl flex items-center justify-center shadow-lg shadow-gp-blue/20">
-             <Send size={30} strokeWidth={2} />
+           <div className="w-16 h-16 bg-gp-blue text-white rounded-2xl flex items-center justify-center shadow-lg shadow-gp-blue/20">
+             <Send size={32} strokeWidth={2.5} />
            </div>
            <div>
-             <h1 className="gp-page-title text-3xl">Entrega de Ativo</h1>
+             <h1 className="gp-page-title">Entrega de Ativo</h1>
              <p className="gp-page-subtitle">Vincule um equipamento do estoque a um colaborador corporativo.</p>
            </div>
         </div>
@@ -150,7 +150,7 @@ export default function AssetDelivery() {
         {error && (
           <div className="flex items-center gap-4 p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
             <div className="w-10 h-10 bg-gp-error/10 rounded-xl flex items-center justify-center shrink-0">
-              <AlertCircle size={24} />
+              <AlertCircle size={24} strokeWidth={2.5} />
             </div>
             <p className="font-bold text-[14px]">{error}</p>
           </div>
@@ -158,19 +158,19 @@ export default function AssetDelivery() {
 
         <div className="grid grid-cols-1 gap-6">
           {/* Seção 1: Equipamento */}
-          <section className="gp-card p-8 sm:p-10 space-y-8">
+          <section className="gp-card p-6 sm:p-10 space-y-8">
             <div className="flex items-center gap-4 py-2 border-b border-gp-border">
-              <div className="w-10 h-10 rounded-xl bg-gp-blue-muted text-gp-blue-light flex items-center justify-center">
-                <Package size={20} strokeWidth={2} />
+              <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
+                <Package size={20} strokeWidth={2.5} />
               </div>
-              <h3 className="text-lg font-bold text-gp-text tracking-tight">Equipamento Selecionado</h3>
+              <h3 className="text-[16px] font-black text-gp-text tracking-tight uppercase">Equipamento Selecionado</h3>
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex-1 w-full space-y-2">
-                <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Ativo Disponível</label>
+                <label className="block text-[11px] font-bold text-gp-muted uppercase tracking-widest ml-1">Ativo Disponível</label>
                 {loading && !assets.length ? (
-                  <div className="h-14 w-full bg-gp-surface2 animate-pulse rounded-xl" />
+                  <div className="gp-skeleton h-12 w-full" />
                 ) : (
                   <SearchableSelect 
                     options={assetOptions}
@@ -184,13 +184,13 @@ export default function AssetDelivery() {
                 type="button"
                 onClick={() => setShowScanner(true)}
                 disabled={loading}
-                className="w-full md:w-auto h-14 px-8 bg-gp-surface2 border border-gp-border text-gp-text rounded-xl flex items-center justify-center gap-3 font-bold uppercase text-[11px] tracking-widest transition-all hover:bg-gp-surface3 active:scale-95 disabled:opacity-50"
+                className="w-full md:w-auto h-12 px-8 btn-premium-secondary rounded-xl"
               >
-                <Barcode size={22} className="text-gp-blue-light" />
+                <Barcode size={20} strokeWidth={2.5} />
                 Escanear
               </button>
             </div>
-            <p className="text-[11px] text-gp-text3 opacity-60 font-bold italic">Somente itens com status <span className="text-gp-success">"Em Estoque"</span> são listados.</p>
+            <p className="text-[11px] text-gp-text3 font-bold italic opacity-60">Somente itens com status <span className="text-gp-success font-black uppercase">"Em Estoque"</span> são listados.</p>
 
             {showScanner && (
               <BarcodeScanner 
@@ -201,17 +201,17 @@ export default function AssetDelivery() {
           </section>
 
           {/* Seção 2: Colaborador */}
-          <section className="gp-card p-8 sm:p-10 space-y-8">
+          <section className="gp-card p-6 sm:p-10 space-y-8">
             <div className="flex items-center gap-4 py-2 border-b border-gp-border">
               <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
-                <User size={20} strokeWidth={2} />
+                <User size={20} strokeWidth={2.5} />
               </div>
-              <h3 className="text-lg font-bold text-gp-text tracking-tight">Colaborador de Destino</h3>
+              <h3 className="text-[16px] font-black text-gp-text tracking-tight uppercase">Colaborador de Destino</h3>
             </div>
             <div className="space-y-2">
-              <label className="block text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Funcionário Recebedor</label>
+              <label className="block text-[11px] font-bold text-gp-muted uppercase tracking-widest ml-1">Funcionário Recebedor</label>
               {loading && !users.length ? (
-                <div className="h-14 w-full bg-gp-surface2 animate-pulse rounded-xl" />
+                <div className="gp-skeleton h-12 w-full" />
               ) : (
                 <SearchableSelect 
                   options={userOptions}
@@ -225,23 +225,23 @@ export default function AssetDelivery() {
 
           {/* Seção 3: Observações */}
           <section className="gp-card bg-gp-surface overflow-hidden relative border-gp-blue/30 border-2">
-            <div className="p-8 sm:p-10 space-y-8 relative z-10">
+            <div className="p-6 sm:p-10 space-y-8 relative z-10">
               <div className="flex items-center gap-4 py-2 border-b border-gp-border">
                 <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
-                  <FileText size={20} strokeWidth={2} />
+                  <FileText size={20} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-lg font-bold text-gp-text tracking-tight">Observações de Entrega</h3>
+                <h3 className="text-[16px] font-black text-gp-text tracking-tight uppercase">Observações de Entrega</h3>
               </div>
               
               <textarea
                 rows={4}
                 placeholder="Ex: Entregue com carregador, mochila e mouse. Equipamento em excelente estado."
-                className="gp-input px-6 py-4 min-h-[120px] resize-none"
+                className="gp-input px-6 py-4 min-h-[140px] resize-none"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               />
             </div>
-            <Truck size={160} className="absolute -right-16 -bottom-16 text-gp-blue opacity-[0.03] -rotate-12 pointer-events-none" />
+            <Truck size={180} className="absolute -right-20 -bottom-20 text-gp-blue opacity-[0.03] -rotate-12 pointer-events-none" />
           </section>
         </div>
 
@@ -249,20 +249,20 @@ export default function AssetDelivery() {
            <button
              type="button"
              onClick={() => navigate('/estoque')}
-             className="w-full sm:w-auto px-10 py-3.5 btn-premium-secondary rounded-xl text-[12px] font-bold order-2 sm:order-1"
+             className="w-full sm:w-auto px-10 py-3.5 btn-premium-ghost rounded-xl order-2 sm:order-1"
            >
              CANCELAR
            </button>
            <button
              type="submit"
              disabled={loading || !selectedAssetId || !selectedUserId}
-             className="w-full sm:w-auto px-12 py-3.5 btn-premium-primary rounded-xl text-[12px] font-bold order-1 sm:order-2 shadow-gp-blue/20"
+             className="w-full sm:w-auto px-12 py-3.5 btn-premium-primary rounded-xl order-1 sm:order-2 shadow-gp-blue/20"
            >
              {loading ? (
                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
              ) : (
                <>
-                 <CheckCircle size={18} strokeWidth={2} />
+                 <CheckCircle size={18} strokeWidth={3} />
                  CONFIRMAR ENTREGA
                </>
              )}

@@ -23,13 +23,12 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="solicitacoes" element={<MyRequests />} />
         <Route path="solicitacoes/nova" element={<NewRequest />} />
-        <Route path="solicitacoes/nova" element={<NewRequest />} />
         <Route path="solicitacoes/:id" element={<RequestDetails />} />
         <Route path="configuracoes" element={<Settings />} />
         <Route path="estoque" element={<Inventory />} />
         <Route path="estoque/:id" element={<AssetDetails />} />
         
-        {/* Rotas de Gestão Restrita (TI/Compras/Diretoria) */}
+        {/* Management Restricted Routes (IT/Purchasing/Board) */}
         <Route element={<ProtectedRoute allowedRoles={['master_admin', 'ti', 'compras', 'gestor', 'diretoria']} />}>
           <Route path="novo-ativo" element={<NewAsset />} />
           <Route path="entrega-ativo" element={<AssetDelivery />} />

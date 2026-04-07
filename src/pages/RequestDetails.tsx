@@ -24,6 +24,7 @@ import {
   File as FileIcon
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { toast } from 'react-hot-toast';
 
 interface Request {
   id: string;
@@ -72,7 +73,7 @@ const statusMap: Record<string, { label: string; badge: string; icon: React.Comp
   pending_ti:        { label: 'Em Análise TI',        badge: 'gp-badge-blue',   icon: FileText },
   pending_compras:   { label: 'Em Compras',           badge: 'gp-badge-purple', icon: Clock },
   pending_diretoria: { label: 'Aguardando Diretoria', badge: 'gp-badge-purple', icon: Clock },
-  approved:          { label: 'Aprovado Final',       badge: 'gp-badge-green',  icon: CheckCircle2 },
+  approved:          { label: 'Aprovado Final',       badge: 'gp-badge-success',  icon: CheckCircle2 },
   rejected:          { label: 'Recusado',             badge: 'gp-badge-red',    icon: XCircle },
   adjustment_needed: { label: 'Ajuste Necessário',    badge: 'gp-badge-amber',  icon: AlertCircle },
 };
@@ -98,7 +99,6 @@ export default function RequestDetails() {
   const [actionLoading, setActionLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   
-  // States para edição técnica (TI/Compras)
   const [editValue, setEditValue] = useState('');
   const [newLink, setNewLink] = useState({ label: '', url: '' });
   const [history, setHistory] = useState<RequestHistory[]>([]);
@@ -117,13 +117,6 @@ export default function RequestDetails() {
           console.error("Erro ao buscar pedido:", error);
           navigate('/solicitacoes');
       }
-      return;
-    }
-
-    // O RLS agora cuida da segurança no banco de dados.
-    // Para a UI, apenas validamos se o dado retornou.
-    if (!data) {
-      navigate('/solicitacoes');
       return;
     }
 
@@ -173,9 +166,10 @@ export default function RequestDetails() {
 
       if (dbError) throw dbError;
 
+      toast.success('Arquivo enviado com sucesso!');
       fetchRequest();
     } catch (err: any) {
-      alert('Erro no upload: ' + err.message);
+      toast.error('Erro no upload: ' + err.message);
     } finally {
       setUploading(false);
     }
@@ -187,9 +181,10 @@ export default function RequestDetails() {
     try {
       await supabase.storage.from('request-attachments').remove([attachment.file_path]);
       await supabase.from('request_attachments').delete().eq('id', attachment.id);
+      toast.success('Arquivo removido.');
       fetchRequest();
     } catch (err: any) {
-      alert('Erro ao excluir: ' + err.message);
+      toast.error('Erro ao excluir: ' + err.message);
     }
   };
 
@@ -206,6 +201,7 @@ export default function RequestDetails() {
 
     if (!error) {
       setNewLink({ label: '', url: '' });
+      toast.success('Link adicionado.');
       fetchRequest();
     }
   };
@@ -218,18 +214,15 @@ export default function RequestDetails() {
       .eq('id', id);
 
     if (!error) {
-      alert('Valor atualizado com sucesso!');
+      toast.success('Valor orçamentário atualizado.');
       fetchRequest();
     }
   };
-
-
 
   const handleAction = async (nextStatus: string, nextStep: string, actionComment?: string) => {
     if (!request || !profile) return;
     setActionLoading(true);
     
-    // 1. Atualizar o status da solicitação
     const { error: updateError } = await supabase
       .from('requests')
       .update({ 
@@ -239,7 +232,6 @@ export default function RequestDetails() {
       .eq('id', request.id);
 
     if (!updateError) {
-      // 2. Registrar no histórico de auditoria
       await supabase.from('request_status_history').insert([{
         request_id: request.id,
         old_status: request.status,
@@ -248,10 +240,7 @@ export default function RequestDetails() {
         comment: actionComment || comment || 'Status atualizado pela central de decisão.'
       }]);
 
-      // 3. Notificações Inteligentes
       const notifications = [];
-
-      // A. Notificar o Solicitante sempre
       notifications.push({
         user_id: request.user_id,
         title: `Pedido ${nextStatus === 'rejected' ? 'Recusado' : 'Atualizado'}`,
@@ -259,18 +248,17 @@ export default function RequestDetails() {
         link: `/solicitacoes/${request.id}`
       });
 
-      // B. Notificar o próximo Time de Aprovação
       if (['pending_ti', 'pending_compras', 'pending_diretoria'].includes(nextStatus)) {
-        const targetRole = nextStep; // 'ti', 'compras', ou 'diretoria'
+        const targetRole = nextStep;
         const { data: team } = await supabase.from('profiles').select('id').eq('role', targetRole);
         
         if (team) {
           team.forEach(member => {
-            if (member.id !== profile.id) { // Não notificar quem acabou de aprovar
+            if (member.id !== profile.id) {
               notifications.push({
                 user_id: member.id,
-                title: 'Ação Necessária: Pendência',
-                message: `Há uma solicitação de "${request.title}" aguardando sua análise técnica/financeira.`,
+                title: 'Pendência de Aprovação',
+                message: `Há uma solicitação de "${request.title}" aguardando sua análise.`,
                 link: `/solicitacoes/${request.id}`
               });
             }
@@ -283,33 +271,35 @@ export default function RequestDetails() {
       }
 
       setComment('');
+      toast.success(`Pedido ${nextStatus === 'rejected' ? 'recusado' : 'aprovado'} com sucesso.`);
       fetchRequest();
     } else {
-      alert('Erro ao processar ação: ' + updateError.message);
+      toast.error('Erro ao processar ação: ' + updateError.message);
     }
     setActionLoading(false);
   };
 
   if (loading) return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-pulse pb-20">
-      <div className="h-4 w-48 bg-gp-surface2 rounded mb-6" />
+    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+      <div className="gp-skeleton h-4 w-48 mb-6" />
       <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1 gp-card p-10 h-[600px]" />
+        <div className="flex-1 gp-card p-10 h-[600px] animate-pulse" />
         <div className="w-full lg:w-96 space-y-8">
-           <div className="gp-card p-8 h-64" />
-           <div className="gp-card p-8 h-96" />
+           <div className="gp-card p-8 h-64 animate-pulse" />
+           <div className="gp-card p-8 h-96 animate-pulse" />
         </div>
       </div>
     </div>
   );
+
   if (!request) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-up">
-      <div className="w-20 h-20 bg-gp-surface2 text-gp-text3 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
-        <AlertCircle size={40} />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-fade-up px-6">
+      <div className="w-20 h-20 bg-gp-surface2 text-gp-text3 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner border border-gp-border">
+        <AlertCircle size={40} strokeWidth={2.5} />
       </div>
-      <h2 className="text-2xl font-bold text-gp-text mb-2">Solicitação não encontrada</h2>
-      <p className="text-gp-text3 font-medium">Você não tem permissão para acessar este item ou ele foi removido ou arquivado.</p>
-      <button onClick={() => navigate('/solicitacoes')} className="mt-8 btn-premium-secondary px-8 py-3 rounded-xl">Voltar à Lista</button>
+      <h2 className="text-2xl font-black text-gp-text mb-2 uppercase tracking-tight">Solicitação não encontrada</h2>
+      <p className="text-gp-text2 font-medium max-w-sm">Você não tem permissão para acessar este item ou ele foi removido dos nossos servidores.</p>
+      <button onClick={() => navigate('/solicitacoes')} className="mt-8 btn-premium-secondary px-10 py-3.5 rounded-xl font-black uppercase text-[11px] tracking-widest">Voltar à Lista</button>
     </div>
   );
 
@@ -319,29 +309,29 @@ export default function RequestDetails() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
-      <nav className="flex items-center gap-2 text-[12px] font-bold text-gp-text3 uppercase tracking-wider">
+      <nav className="flex items-center gap-2 text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">
         <button onClick={() => navigate('/solicitacoes')} className="hover:text-gp-blue transition-colors">Solicitações</button>
-        <ChevronRight size={14} className="opacity-40" />
+        <ChevronRight size={14} className="opacity-30" />
         <span className="text-gp-text truncate max-w-xs">{request.title}</span>
       </nav>
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* LADO ESQUERDO: Dados Principais */}
         <div className="flex-1 space-y-6 w-full">
-          <div className="gp-card p-8 sm:p-10">
-             <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10 overflow-hidden">
-                <div className="flex-1 space-y-4">
-                   <div className={clsx("gp-badge", currentStatus.badge)}>
-                     <currentStatus.icon size={13} strokeWidth={3} />
+          <div className="gp-card p-6 sm:p-10">
+             <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10">
+                <div className="flex-1 space-y-5">
+                   <div className={clsx("gp-badge font-black", currentStatus.badge)}>
+                     <currentStatus.icon size={12} strokeWidth={3} />
                      {currentStatus.label.toUpperCase()}
                    </div>
-                   <h1 className="gp-page-title text-3xl leading-tight">
+                   <h1 className="gp-page-title text-3xl leading-none">
                      {request.title}
                    </h1>
                 </div>
-                <div className="bg-gp-blue/5 border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group">
-                   <p className="text-[10px] font-bold text-gp-text3 uppercase tracking-widest mb-1 shadow-sm px-2 py-0.5 bg-gp-surface2 rounded-md">VALOR ESTIMADO</p>
-                   <p className="text-3xl font-black text-gp-blue group-hover:scale-105 transition-transform">
+                <div className="bg-gp-blue/[0.03] border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group w-full md:w-auto">
+                   <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-blue/10 pb-2 w-full text-right">ORÇAMENTO ESTIMADO</p>
+                   <p className="text-3xl font-black text-gp-text group-hover:text-gp-blue transition-colors duration-500">
                      R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                    </p>
                 </div>
@@ -349,78 +339,77 @@ export default function RequestDetails() {
 
              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-gp-border">
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
-                    <User size={12} strokeWidth={2.5} /> Solicitante
+                  <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                    <User size={12} strokeWidth={3} /> Requerente
                   </p>
-                  <p className="font-bold text-gp-text ml-1 text-sm">{request.profiles?.full_name}</p>
+                  <p className="font-bold text-gp-text text-[15px]">{request.profiles?.full_name}</p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
-                    <Tag size={12} strokeWidth={2.5} /> Categoria
+                  <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                    <Tag size={12} strokeWidth={3} /> Categoria
                   </p>
-                  <p className="font-bold text-gp-text ml-1 text-sm">{request.category}</p>
+                  <p className="font-bold text-gp-text text-[15px]">{request.category}</p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
-                    <Calendar size={12} strokeWidth={2.5} /> Aberto em
+                  <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                    <Calendar size={12} strokeWidth={3} /> Criação
                   </p>
-                  <p className="font-bold text-gp-text ml-1 text-sm">
+                  <p className="font-bold text-gp-text text-[15px]">
                     {new Date(request.created_at).toLocaleDateString('pt-BR')}
                   </p>
                </div>
                <div className="space-y-2">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-gp-text3 uppercase tracking-widest ml-1">
-                    <Hash size={12} strokeWidth={2.5} /> Protocolo
+                  <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                    <Hash size={12} strokeWidth={3} /> Protocolo
                   </p>
-                  <p className="font-bold text-gp-text3 tracking-wider ml-1 text-xs select-all">#{request.id.slice(0, 8).toUpperCase()}</p>
+                  <p className="font-black text-gp-blue-light tracking-widest text-[12px] select-all">#{request.id.slice(0, 8).toUpperCase()}</p>
                </div>
              </div>
 
-             <div className="py-10 space-y-4">
-                <h3 className="text-[17px] font-bold flex items-center gap-3 text-gp-text tracking-tight">
-                  <FileText size={20} className="text-gp-blue" strokeWidth={2} />
-                  Contexto e Justificativa
+             <div className="py-10 space-y-5">
+                <h3 className="text-[16px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                  <FileText size={20} className="text-gp-blue" strokeWidth={2.5} />
+                  Detalhamento da Necessidade
                 </h3>
-                <div className="bg-gp-surface2/50 p-8 rounded-2xl border border-gp-border leading-relaxed text-gp-text2 text-[15px] font-medium whitespace-pre-wrap shadow-inner">
+                <div className="bg-gp-surface2 p-6 sm:p-8 rounded-2xl border border-gp-border leading-relaxed text-gp-text2 text-[15px] font-medium whitespace-pre-wrap shadow-inner min-h-[120px]">
                   {request.description}
-                  {/* Seções de links e anexos removidas daqui para serem consolidadas no painel lateral */}
                 </div>
              </div>
           </div>
         </div>
 
-        {/* LADO DIREITO: Timeline e Ações */}
-        <div className="w-full lg:w-96 space-y-6 lg:sticky lg:top-24">
+        {/* LADO DIREITO: Assets y Timeline */}
+        <div className="w-full lg:w-[400px] space-y-6 lg:sticky lg:top-24">
           
-          {/* PAINEL CONSOLIDADO DE ATIVOS (NOVO) */}
-          <div className="gp-card overflow-hidden border-gp-blue/30 border-2 shadow-2xl">
+          {/* PAINEL DE ATIVOS E MÍDIAS */}
+          <div className="gp-card overflow-hidden border-gp-blue/20 shadow-xl">
             <div className="p-6 bg-gp-surface2 border-b border-gp-border flex items-center justify-between">
                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gp-blue text-white flex items-center justify-center">
-                    <Paperclip size={16} strokeWidth={2.5} />
+                  <div className="w-9 h-9 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
+                    <Paperclip size={18} strokeWidth={2.5} />
                   </div>
-                  <h4 className="font-bold text-[14px] text-gp-text uppercase tracking-tight">Ativos e Mídias</h4>
+                  <h4 className="font-black text-[13px] text-gp-text uppercase tracking-widest">Ativos e Mídias</h4>
                </div>
                {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin' || (profile?.id === request.user_id && request.status === 'adjustment_needed')) && (
-                  <label className="w-8 h-8 rounded-lg bg-gp-surface border border-gp-border flex items-center justify-center text-gp-blue hover:bg-gp-blue hover:text-white cursor-pointer transition-all shadow-sm">
-                    <Plus size={16} strokeWidth={3} />
+                  <label className="w-9 h-9 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center text-gp-blue hover:bg-gp-blue hover:text-white cursor-pointer transition-all shadow-sm">
+                    {uploading ? <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full" /> : <Plus size={18} strokeWidth={3} />}
                     <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
                   </label>
                )}
             </div>
             
-            <div className="p-5 space-y-5 max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="p-4 sm:p-6 space-y-6 max-h-[450px] overflow-y-auto custom-scrollbar">
                {/* Links */}
                {links.length > 0 && (
                  <div className="space-y-3">
-                   <p className="text-[10px] font-black text-gp-text3 uppercase tracking-widest flex items-center gap-2">
-                     <ExternalLink size={12} /> Referências Web
+                   <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest flex items-center gap-2 mb-4 leading-none">
+                     <ExternalLink size={12} strokeWidth={3} /> Referências Externas
                    </p>
                    <div className="space-y-2">
                      {links.map((link, i) => (
-                       <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-gp-surface border border-gp-border rounded-lg hover:border-gp-blue transition-all group">
-                          <span className="font-bold text-[12px] text-gp-text truncate pr-2">{link.label}</span>
-                          <ChevronRight size={14} className="text-gp-text3 group-hover:text-gp-blue transition-all" />
+                       <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue hover:bg-gp-blue/[0.02] transition-all group shadow-sm">
+                          <span className="font-bold text-[13px] text-gp-text truncate pr-2">{link.label}</span>
+                          <ChevronRight size={16} className="text-gp-muted group-hover:text-gp-blue transition-all" />
                        </a>
                      ))}
                    </div>
@@ -429,21 +418,22 @@ export default function RequestDetails() {
 
                {/* Arquivos */}
                {attachments.length > 0 && (
-                 <div className="space-y-3 pt-2 border-t border-gp-border">
-                   <p className="text-[10px] font-black text-gp-text3 uppercase tracking-widest flex items-center gap-2">
-                     <FileIcon size={12} /> Documentos & Fotos
+                 <div className="space-y-3 pt-6 border-t border-gp-border">
+                   <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest flex items-center gap-2 mb-4 leading-none">
+                     <FileIcon size={12} strokeWidth={3} /> Documentos Anexados
                    </p>
                    <div className="space-y-2">
                      {attachments.map((file) => {
                        const isImage = file.file_type?.startsWith('image/');
                        return (
-                         <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-lg group hover:border-gp-blue/40 transition-all">
+                         <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-text3">
-                                {isImage ? <ImageIcon size={16} /> : <FileIcon size={16} />}
+                              <div className="w-10 h-10 rounded-xl bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted shadow-inner">
+                                {isImage ? <ImageIcon size={20} /> : <FileIcon size={20} />}
                               </div>
                               <div className="truncate">
-                                <p className="font-bold text-[11px] text-gp-text truncate">{file.file_name}</p>
+                                <p className="font-black text-[12px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                                <p className="text-[9px] font-bold text-gp-muted uppercase mt-1">{(file.file_type || 'file').split('/')[1]}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1">
@@ -451,18 +441,18 @@ export default function RequestDetails() {
                                 href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl}
                                 target="_blank"
                                 download={file.file_name}
-                                className="p-1.5 text-gp-text3 hover:text-gp-blue transition-colors"
-                                title="Visualizar / Baixar"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-gp-muted hover:text-gp-blue transition-colors hover:bg-gp-blue/10"
+                                title="Abrir / Baixar"
                               >
-                                {isImage ? <ImageIcon size={14} /> : <Download size={14} />}
+                                {isImage ? <ImageIcon size={16} /> : <Download size={16} />}
                               </a>
                               {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && (
                                 <button 
                                   onClick={() => handleDeleteAttachment(file)}
-                                  className="p-1.5 text-gp-text3 hover:text-gp-error transition-colors"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gp-muted hover:text-gp-error transition-colors hover:bg-gp-error/10"
                                   title="Excluir"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={16} />
                                 </button>
                               )}
                             </div>
@@ -474,54 +464,54 @@ export default function RequestDetails() {
                )}
 
                {links.length === 0 && attachments.length === 0 && (
-                 <div className="py-6 text-center opacity-40">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-gp-text3">Nenhum ativo vinculado</p>
+                 <div className="py-10 text-center opacity-40">
+                    <div className="gp-empty-icon mb-4"><Paperclip size={24} /></div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gp-muted leading-none">Nenhuma mídia vinculada</p>
                  </div>
                )}
             </div>
           </div>
           
-          {/* Central de Enriquecimento (TI e Compras) */}
+          {/* EDICÃO TÉCNICA (TI/COMPRAS) */}
           {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (
-            <div className="gp-card p-8 border-gp-blue/20 shadow-lg space-y-6">
-              <div className="flex items-center gap-3">
+            <div className="gp-card p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-gp-blue/10 text-gp-blue flex items-center justify-center">
-                  <Activity size={20} strokeWidth={2} />
+                  <Activity size={20} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-[15px] text-gp-text">Edição Técnica</h4>
-                  <p className="text-[10px] uppercase font-bold text-gp-text3 tracking-widest">Ajuste de Valor e Links</p>
+                  <h4 className="font-black text-[15px] text-gp-text leading-none uppercase tracking-tight">Enriquecimento</h4>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Atualizar Valor (R$)</label>
+                  <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] ml-1">Preço Atualizado (R$)</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <div className="absolute left-4 top-3.5 font-bold text-gp-text3 text-sm">R$</div>
+                      <div className="absolute left-4 top-3.5 font-black text-gp-muted text-sm leading-none">R$</div>
                       <input 
                         type="number" 
-                        className="gp-input pl-10 h-11"
+                        className="gp-input pl-10 h-12"
                         value={editValue}
                         onChange={e => setEditValue(e.target.value)}
                       />
                     </div>
                     <button 
                       onClick={handleUpdateValue}
-                      className="btn-premium-primary px-5 rounded-xl text-[11px] h-11"
+                      className="btn-premium-primary px-6 rounded-xl text-[11px] h-12 font-black uppercase tracking-widest"
                     >
-                      OK
+                      SALVAR
                     </button>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gp-border space-y-3">
-                  <label className="text-[11px] font-bold text-gp-text3 uppercase tracking-widest ml-1">Novo Link de Referência</label>
+                <div className="pt-5 border-t border-gp-border space-y-4">
+                  <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] ml-1">Novo Link de Referência</label>
                   <input 
                     type="text" 
-                    placeholder="Título (ex: Amazon)"
-                    className="gp-input h-11 px-4 py-3"
+                    placeholder="Título (ex: Mercado Livre)"
+                    className="gp-input h-11 px-5"
                     value={newLink.label}
                     onChange={e => setNewLink({ ...newLink, label: e.target.value })}
                   />
@@ -529,15 +519,15 @@ export default function RequestDetails() {
                     <input 
                       type="url" 
                       placeholder="URL do Produto"
-                      className="flex-1 gp-input h-11 px-4 py-3"
+                      className="flex-1 gp-input h-11 px-5"
                       value={newLink.url}
                       onChange={e => setNewLink({ ...newLink, url: e.target.value })}
                     />
                     <button 
                       onClick={handleAddLink}
-                      className="btn-premium-dark px-4 rounded-xl h-11"
+                      className="w-11 h-11 btn-premium-secondary flex items-center justify-center p-0 rounded-xl"
                     >
-                      <Plus size={18} strokeWidth={3} />
+                      <Plus size={20} strokeWidth={4} />
                     </button>
                   </div>
                 </div>
@@ -545,68 +535,64 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* Caixa de Decisão (Apenas p/ Aprovador) */}
+          {/* CENTRAL DE DECISÃO */}
           {isApprover && !isFinalized && (
-            <div className="bg-gp-surface text-gp-text rounded-2xl p-8 shadow-2xl border-2 border-gp-blue/40 space-y-6 relative overflow-hidden">
-               <div className="flex items-center gap-3 relative z-10">
-                  <div className="w-10 h-10 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/20">
-                    <ShieldCheck size={20} strokeWidth={2} />
+            <div className="gp-card p-6 sm:p-8 border-gp-blue/40 bg-gp-blue/[0.01] space-y-6 relative overflow-hidden shadow-2xl">
+               <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/30 scale-105">
+                    <ShieldCheck size={24} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[17px] tracking-tight">Central de Decisão</h4>
-                    <p className="text-[10px] uppercase font-bold text-gp-blue-light tracking-widest">Pendente sua ação</p>
+                    <h4 className="font-black text-[18px] tracking-tighter uppercase leading-none">Decisão Regional</h4>
+                    <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">Aguardando seu veredito</p>
                   </div>
                </div>
                
-               <div className="space-y-3 pt-2 relative z-10">
+               <div className="space-y-4 pt-2 relative z-10">
                   <textarea 
-                    placeholder="Adicionar observação (opcional)..."
-                    className="gp-input px-4 py-3 h-20 resize-none text-[13px] font-medium"
+                    placeholder="Parecer técnico ou justificativa (opcional)..."
+                    className="gp-input px-5 py-4 h-24 resize-none text-[14px] font-medium leading-relaxed"
                     value={comment}
                     onChange={e => setComment(e.target.value)}
-                    rows={2}
                   />
-                  <button 
-                    disabled={actionLoading}
-                    onClick={() => {
-                      let nextStatus = ''; let nextStep = '';
-                      if (request.status === 'pending_gestor') { nextStatus = 'pending_ti'; nextStep = 'ti'; }
-                      else if (request.status === 'pending_ti') { nextStatus = 'pending_diretoria'; nextStep = 'diretoria'; }
-                      else if (request.status === 'pending_diretoria') { nextStatus = 'pending_compras'; nextStep = 'compras'; }
-                      else if (request.status === 'pending_compras') { nextStatus = 'approved'; nextStep = 'compras'; }
-                      handleAction(nextStatus, nextStep);
-                    }}
-                    className="w-full btn-premium-primary py-4 rounded-xl text-[12px] shadow-lg"
-                  >
-                    {actionLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : ( <CheckCircle2 size={18} strokeWidth={3} className="mr-2" /> )} APROVAR ETAPA
-                  </button>
-                  <button 
-                    disabled={actionLoading}
-                    onClick={() => handleAction('rejected', request.current_step)}
-                    className="w-full bg-gp-surface2 hover:bg-gp-error hover:text-white border border-gp-border font-bold text-[12px] py-4 rounded-xl transition-all flex items-center justify-center gap-2"
-                  >
-                    {actionLoading ? (
-                       <div className="w-5 h-5 border-2 border-gp-error/30 border-t-gp-error rounded-full animate-spin" />
-                    ) : ( <XCircle size={18} className="mr-2" /> )} REPROVAR TOTAL
-                  </button>
+                  <div className="grid grid-cols-1 gap-3">
+                    <button 
+                      disabled={actionLoading}
+                      onClick={() => {
+                        let ns = ''; let nst = '';
+                        if (request.status === 'pending_gestor') { ns = 'pending_ti'; nst = 'ti'; }
+                        else if (request.status === 'pending_ti') { ns = 'pending_diretoria'; nst = 'diretoria'; }
+                        else if (request.status === 'pending_diretoria') { ns = 'pending_compras'; nst = 'compras'; }
+                        else if (request.status === 'pending_compras') { ns = 'approved'; nst = 'compras'; }
+                        handleAction(ns, nst);
+                      }}
+                      className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
+                    >
+                      {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Confirmar Aprovação'}
+                    </button>
+                    <button 
+                      disabled={actionLoading}
+                      onClick={() => handleAction('rejected', request.current_step)}
+                      className="w-full btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
+                    >
+                      Recusar Solicitação
+                    </button>
+                  </div>
                </div>
-               <div className="absolute top-0 right-0 w-32 h-32 bg-gp-blue opacity-[0.03] rounded-full -translate-y-12 translate-x-12" />
             </div>
           )}
 
-          {/* Timeline Vertical do Fluxo */}
-          <div className="gp-card p-8 shadow-sm">
-             <h4 className="font-bold text-[11px] uppercase tracking-widest text-gp-text3 mb-8 flex items-center gap-2.5">
-                <Activity size={18} strokeWidth={2} /> Fluxo de Processo
+          {/* TIMELINE DE PROCESSO */}
+          <div className="gp-card p-6 sm:p-8">
+             <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-gp-muted mb-10 flex items-center gap-3 leading-none underline decoration-gp-blue/30 underline-offset-8">
+                <Activity size={18} strokeWidth={3} /> Pipeline de Aprovação
              </h4>
              <div className="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gp-border">
                 {[
-                  { step: 'gestor', label: 'Gestor Imediato', desc: 'Validação de necessidade' },
-                  { step: 'ti', label: 'Análise de TI', desc: 'Viabilidade técnica' },
-                  { step: 'diretoria', label: 'Diretoria Executiva', desc: 'Aprovação orçamentária' },
-                  { step: 'compras', label: 'Cotação Compras', desc: 'Melhor custo/benefício' },
+                  { step: 'gestor', label: 'Gestor Imediato', desc: 'SLA: 2h' },
+                  { step: 'ti', label: 'Auditoria TI', desc: 'SLA: 4h' },
+                  { step: 'diretoria', label: 'Conselho VIP', desc: 'Orçamentário' },
+                  { step: 'compras', label: 'Dept. Compras', desc: 'Aquisição' },
                 ].map((s, idx) => {
                   const isActive = request.current_step === s.step && !isFinalized;
                   const isPast = ['pending_ti', 'pending_diretoria', 'pending_compras', 'approved'].indexOf(request.status) >= idx;
@@ -615,25 +601,25 @@ export default function RequestDetails() {
                   return (
                     <div key={idx} className="relative pl-10 group">
                       <div className={clsx(
-                        "absolute left-0 top-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500 z-10",
-                        isRejected ? "bg-gp-error border-gp-error shadow-lg shadow-gp-error/20 text-white" :
-                        isPast ? "bg-gp-success border-gp-success text-white shadow-lg shadow-gp-success/10" : 
-                        isActive ? "bg-gp-blue border-gp-blue text-white scale-110 shadow-lg shadow-gp-blue/20" : 
-                        "bg-gp-surface border-gp-border text-gp-text3"
+                        "absolute left-0 top-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500 z-10 shadow-sm",
+                        isRejected ? "bg-gp-error border-gp-error text-white" :
+                        isPast ? "bg-gp-success border-gp-success text-white" : 
+                        isActive ? "bg-gp-blue border-gp-blue text-white ring-4 ring-gp-blue/10" : 
+                        "bg-gp-surface border-gp-border text-gp-muted"
                       )}>
                         {isPast ? <CheckCircle2 size={12} strokeWidth={3} /> : 
                          isRejected ? <XCircle size={12} strokeWidth={3} /> :
                          <div className="w-1.5 h-1.5 rounded-full bg-current" />}
                       </div>
                       <div className="flex flex-col">
-                        <span className={clsx("font-bold text-[13px]", 
+                        <span className={clsx("font-black text-[13px] uppercase tracking-wide leading-none", 
                           isActive ? "text-gp-blue" : 
                           isPast ? "text-gp-text" : 
-                          isRejected ? "text-gp-error" : "text-gp-text3"
+                          isRejected ? "text-gp-error" : "text-gp-muted"
                         )}>
                           {s.label}
                         </span>
-                        <span className="text-[10px] font-bold text-gp-text3 opacity-60 uppercase tracking-tighter">{s.desc}</span>
+                        <span className="text-[10px] font-bold text-gp-muted opacity-60 uppercase mt-1 tracking-tighter leading-none">{s.desc}</span>
                       </div>
                     </div>
                   );
@@ -641,34 +627,34 @@ export default function RequestDetails() {
              </div>
           </div>
 
-          {/* Histórico de Auditoria Real */}
+          {/* LOG DE AUDITORIA */}
           {history.length > 0 && (
-            <div className="gp-card p-8 shadow-sm">
-               <h4 className="font-bold text-[11px] uppercase tracking-widest text-gp-text3 mb-8 flex items-center gap-2.5">
-                  <Clock size={18} strokeWidth={2} /> Auditoria do Sistema
+            <div className="gp-card p-6 sm:p-8">
+               <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-gp-muted mb-10 flex items-center gap-3 leading-none">
+                  <Clock size={18} strokeWidth={3} /> Histórico de Ações
                </h4>
-               <div className="space-y-6">
+               <div className="space-y-8">
                   {history.map((h, i) => (
                     <div key={i} className="flex gap-4 items-start border-l-2 border-gp-border pl-6 relative">
-                       <div className="absolute left-[-5px] top-1.5 w-2 h-2 rounded-full bg-gp-border"></div>
-                       <div className="space-y-1.5 w-full">
-                          <p className="text-[11px] font-bold text-gp-text leading-tight uppercase tracking-tight">
+                       <div className="absolute left-[-5.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-gp-border border-2 border-gp-surface"></div>
+                       <div className="space-y-2 w-full">
+                          <p className="text-[11px] font-black text-gp-text uppercase tracking-tight leading-none">
                             {statusLabels[h.new_status] || h.new_status}
                           </p>
-                          <p className="text-[12px] font-medium text-gp-text2 italic leading-relaxed bg-gp-surface2/50 p-3 rounded-lg border border-gp-border">
-                            "{h.comment || 'Sem observação registrada.'}"
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                             <div className="flex items-center gap-1.5">
-                               <div className="w-4 h-4 bg-gp-blue/10 rounded-full flex items-center justify-center">
-                                 <User size={8} className="text-gp-blue" />
-                               </div>
-                               <span className="text-[9px] font-bold text-gp-text3 uppercase">
-                                  {h.profiles?.full_name?.split(' ')[0] || 'Sistema'}
-                               </span>
+                          <div className="bg-gp-surface2 p-4 rounded-xl border border-gp-border shadow-inner">
+                            <p className="text-[13px] font-medium text-gp-text2 italic leading-relaxed">
+                              "{h.comment || 'Sem observação registrada.'}"
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between mt-3 text-[9px] font-black text-gp-muted uppercase tracking-widest px-1">
+                             <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 bg-gp-blue/10 rounded-full flex items-center justify-center border border-gp-blue/20">
+                                  <User size={10} className="text-gp-blue" strokeWidth={3} />
+                                </div>
+                                <span>{h.profiles?.full_name || 'Sistema'}</span>
                              </div>
-                             <span className="text-[9px] font-bold text-gp-text3 opacity-40">
-                                {new Date(h.created_at).toLocaleDateString('pt-BR')} {new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                             <span className="opacity-50">
+                                {new Date(h.created_at).toLocaleDateString()} · {new Date(h.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                              </span>
                           </div>
                        </div>

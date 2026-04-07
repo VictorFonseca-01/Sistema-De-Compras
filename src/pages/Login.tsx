@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, AlertCircle, ArrowRight, User } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight, User, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
-
 import { formatSyntheticEmail } from '../lib/auth-utils';
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const [name, setName] = useState('');
@@ -21,12 +21,12 @@ export default function Login() {
     setError(null);
     
     if (!name.trim()) {
-      setError('Por favor, insira seu nome completo.');
+      setError('Identificação obrigatória: Insira seu nome completo.');
       return;
     }
 
     if (!email.endsWith('@globalp.com.br')) {
-      setError('Apenas e-mails @globalp.com.br são permitidos.');
+      setError('Acesso restrito: Use seu e-mail @globalp.com.br.');
       return;
     }
 
@@ -40,147 +40,167 @@ export default function Login() {
     });
 
     if (!syntheticError) {
+      toast.success('Autenticação bem-sucedida.');
       navigate('/');
       return;
     }
 
     // 2. Fallback: Se falhou, tenta login com E-mail Real (Contas Legado)
-    // Isso é necessário para quem já tinha conta antes da migração para suporte a e-mails compartilhados
     const { error: legacyError } = await supabase.auth.signInWithPassword({ 
       email: email.toLowerCase().trim(), 
       password 
     });
 
     if (legacyError) {
-      setError('Credenciais inválidas. Verifique seu nome, e-mail e senha.');
+      setError('Credenciais inválidas. Verifique nome, e-mail e senha.');
+      toast.error('Falha na autenticação.');
       setLoading(false);
     } else {
+      toast.success('Acesso concedido (Legado).');
       navigate('/');
     }
   };
 
+  const labelClass = 'block text-[10px] font-black uppercase tracking-[0.2em] mb-2.5 text-gp-muted ml-0.5 leading-none';
+
   return (
-    <div className="min-h-screen flex items-start md:items-center justify-center p-4 bg-gp-bg overflow-y-auto">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gp-surface border border-gp-border shadow-gp-shadow-lg my-auto">
-        {/* Card Header */}
-        <div className="px-8 pt-10 pb-8 text-center bg-gp-surface2 border-b border-gp-border">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-xl flex items-center justify-center p-3 bg-gp-blue/10 border border-gp-blue/20">
-            <img 
-              src="/logo-branca.png" 
-              alt="Global Parts" 
-              className={clsx(
-                "w-full h-full object-contain transition-all duration-300",
-                theme === 'light' ? "invert brightness-0 opacity-100" : "opacity-90"
-              )} 
-            />
-          </div>
-          <h1 className="text-xl font-bold text-gp-text tracking-tight">Sistema de Compras</h1>
-          <p className="text-[11px] font-bold uppercase tracking-widest mt-1.5 text-gp-blue">
-            Global Parts
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleLogin} className="px-8 py-8 space-y-6">
-          {error && (
-            <div className="flex items-center gap-3 p-4 rounded-xl text-[13px] font-medium bg-gp-error/10 border border-gp-error/20 text-gp-error">
-              <AlertCircle size={16} className="flex-shrink-0" />
-              {error}
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gp-bg relative overflow-hidden">
+      {/* Elementos Decorativos de Fundo */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gp-blue/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gp-blue/5 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="w-full max-w-[440px] animate-fade-up">
+        <div className="gp-card overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border-gp-blue/20">
+          {/* Brand Identity */}
+          <div className="px-10 pt-12 pb-10 text-center bg-gp-surface2/50 border-b border-gp-border relative overflow-hidden">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center p-5 bg-gp-surface border border-gp-border shadow-2xl relative z-10 group hover:scale-105 transition-transform duration-500">
+              <img 
+                src="/logo-branca.png" 
+                alt="Global Parts" 
+                className={clsx(
+                  "w-full h-full object-contain transition-all duration-300",
+                  theme === 'light' ? "invert" : "brightness-110"
+                )} 
+              />
             </div>
-          )}
-
-          <div className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
-                Nome Completo
-              </label>
-              <div className="relative">
-                <User
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
-                />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="Seu nome completo"
-                  required
-                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
-                />
-              </div>
+            <div className="relative z-10 space-y-2">
+               <h1 className="text-2xl font-black text-gp-text tracking-tight uppercase">Autenticação</h1>
+               <div className="flex items-center justify-center gap-3">
+                  <div className="h-px w-8 bg-gp-blue/30" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gp-blue-light opacity-80">
+                    Sistema de Compras
+                  </p>
+                  <div className="h-px w-8 bg-gp-blue/30" />
+               </div>
             </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
-                E-mail Corporativo
-              </label>
-              <div className="relative">
-                <Mail
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="usuario@globalp.com.br"
-                  required
-                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
-                Senha de Acesso
-              </label>
-              <div className="relative">
-                <Lock
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
-                />
-              </div>
-            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gp-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-premium-primary w-full py-3.5 rounded-xl text-[13px]"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                Entrar no Sistema
-                <ArrowRight size={18} strokeWidth={2.5} />
-              </>
+          {/* Interaction Area */}
+          <form onSubmit={handleLogin} className="px-10 py-10 space-y-8">
+            {error && (
+              <div className="flex items-center gap-4 p-5 rounded-2xl text-[13px] font-black uppercase tracking-tight bg-gp-error/10 border border-gp-error/20 text-gp-error animate-shake">
+                <AlertCircle size={20} strokeWidth={3} className="shrink-0" />
+                {error}
+              </div>
             )}
-          </button>
 
-          <div className="pt-5 border-t border-gp-border text-center space-y-4">
-            <p className="text-[12px] text-gp-text3">
-              Não possui acesso?{' '}
-              <Link
-                to="/cadastro"
-                className="font-bold text-gp-blue hover:text-gp-blue/80 transition-colors"
+            <div className="space-y-6">
+              {/* Identity Name */}
+              <div className="space-y-1 group">
+                <label className={labelClass}>Identidade (Nome Completo)</label>
+                <div className="relative">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gp-muted group-focus-within:text-gp-blue transition-colors">
+                    <User size={18} strokeWidth={2.5} />
+                  </div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="DIGITE SEU NOME PARA VALIDAÇÃO"
+                    required
+                    className="gp-input pl-14 pr-6 py-4 text-[14px] font-bold tracking-tight"
+                  />
+                </div>
+              </div>
+
+              {/* Corporate Email */}
+              <div className="space-y-1 group">
+                <label className={labelClass}>E-mail Corporativo</label>
+                <div className="relative">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gp-muted group-focus-within:text-gp-blue transition-colors">
+                    <Mail size={18} strokeWidth={2.5} />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="USUARIO@GLOBALP.COM.BR"
+                    required
+                    className="gp-input pl-14 pr-6 py-4 text-[14px] font-black tracking-tight"
+                  />
+                </div>
+              </div>
+
+              {/* Secure Password */}
+              <div className="space-y-1 group">
+                <label className={labelClass}>Senha de Acesso</label>
+                <div className="relative">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gp-muted group-focus-within:text-gp-blue transition-colors">
+                    <Lock size={18} strokeWidth={2.5} />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="gp-input pl-14 pr-6 py-4 text-[14px]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-premium-primary w-full py-5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-gp-blue/20 active:scale-[0.98] transition-transform"
               >
-                Cadastrar conta
-              </Link>
-            </p>
-          </div>
-        </form>
+                {loading ? (
+                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    ENTRAR NO AMBIENTE
+                    <ArrowRight size={18} strokeWidth={3} className="ml-2" />
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center justify-center gap-3 py-3 px-5 bg-gp-surface2 rounded-xl border border-gp-border/50">
+                 <ShieldCheck size={14} className="text-gp-success" strokeWidth={3} />
+                 <span className="text-[10px] font-black text-gp-muted uppercase tracking-[0.15em]">Conexão Protegida pela Global Parts Inc.</span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-gp-border/50 text-center">
+              <p className="text-[11px] font-black text-gp-muted uppercase tracking-widest">
+                NOVO NA PLATAFORMA?{' '}
+                <Link
+                  to="/cadastro"
+                  className="text-gp-blue hover:text-gp-blue-light transition-all underline decoration-2 underline-offset-4"
+                >
+                  SOLICITAR CADASTRO
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
+        
+        {/* Footer info */}
+        <p className="mt-10 text-center text-[10px] font-black text-gp-muted uppercase tracking-[0.3em] opacity-40">
+          © 2026 GLOBAL PARTS • SUPPLY CHAIN INTELLIGENCE
+        </p>
       </div>
     </div>
   );

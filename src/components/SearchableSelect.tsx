@@ -105,7 +105,7 @@ export function SearchableSelect({
         className={clsx(
           'w-full px-4 py-2.5 rounded-[10px] flex justify-between items-center transition-all outline-none text-[14px]',
           'bg-gp-surface2 border-[1.5px] border-gp-border',
-          isOpen ? 'border-gp-blue ring-3 ring-gp-focus-ring bg-gp-surface shadow-lg' : 'hover:border-gp-border2',
+          isOpen ? 'border-gp-blue ring-4 ring-gp-focus-ring bg-gp-surface shadow-lg' : 'hover:border-gp-border2',
           value ? 'text-gp-text font-medium' : 'text-gp-text3',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-[0.99] transform'
         )}
@@ -126,14 +126,14 @@ export function SearchableSelect({
           id="select-dropdown"
           role="listbox"
           className={clsx(
-            'absolute z-[100] w-full mt-1.5 rounded-xl overflow-hidden animate-fade-up',
+            'absolute z-[100] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
             'bg-gp-surface border-[1.5px] border-gp-border shadow-2xl'
           )}
         >
           {/* Search */}
           <div className="p-2 border-b border-gp-border bg-gp-surface2">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3" />
+            <div className="relative group">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
               <input
                 ref={inputRef}
                 type="text"
@@ -146,7 +146,7 @@ export function SearchableSelect({
           </div>
 
           {/* Options */}
-          <div className="overflow-y-auto max-h-52 p-1 custom-scrollbar">
+          <div className="overflow-y-auto max-h-52 p-1 no-scrollbar">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, idx) => {
                 const isSelected = option.value === value;
@@ -170,7 +170,7 @@ export function SearchableSelect({
                     )}
                   >
                     <span>{option.label}</span>
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-gp-blue shadow-sm animate-pulse" />}
+                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-gp-blue shadow-[0_0_8px_rgba(59,130,246,0.6)]" />}
                   </div>
                 );
               })

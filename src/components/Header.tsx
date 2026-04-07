@@ -5,14 +5,21 @@ import {
   User as UserIcon,
   Sun,
   Moon,
-  Settings
+  Settings,
+  ChevronDown,
+  ShieldCheck,
+  Zap,
+  Menu
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { clsx } from 'clsx';
+import { toast } from 'react-hot-toast';
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -24,7 +31,6 @@ export function Header() {
     if (profile) fetchNotifications();
   }, [profile]);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -38,8 +44,11 @@ export function Header() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      toast.success('Sessão encerrada.');
+      window.location.href = '/login';
+    }
   };
 
   const fetchNotifications = async () => {
@@ -64,144 +73,204 @@ export function Header() {
     }
   };
 
-  const getRelativeTime = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    if (mins < 60) return `${mins}m atrás`;
-    if (hours < 24) return `${hours}h atrás`;
-    return `${days}d atrás`;
-  };
-
   const roleLabels: Record<string, string> = {
-    master_admin: 'Admin Master',
-    diretoria: 'Diretoria',
-    gestor: 'Gestor',
-    ti: 'TI / Tecnologia',
-    compras: 'Compras',
-    usuario: 'Funcionário'
+    master_admin: 'SUPREME ADMIN',
+    diretoria: 'EXECUTIVE BOARD',
+    gestor: 'REGIONAL MANAGER',
+    ti: 'IT ARCHITECT',
+    compras: 'SUPPLY CHAIN',
+    usuario: 'COLLABORATOR'
   };
 
-  const iconBtn = 'w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-150 cursor-pointer relative';
+  const actionBtn = 'w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 relative group border border-transparent';
 
   return (
-    <header className="h-14 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-30 bg-gp-header/80 backdrop-blur-md border-b border-gp-border">
-      {/* Left — breadcrumb / page context (future use) */}
-      <div className="flex-1" />
+    <header className="h-20 flex items-center justify-between px-6 lg:px-10 flex-shrink-0 sticky top-0 z-50 bg-gp-bg/60 backdrop-blur-xl border-b border-gp-border/50">
+      
+      {/* Mobile Menu Trigger & Logo */}
+      <div className="flex items-center gap-4 lg:hidden">
+        <button 
+          onClick={onMenuClick}
+          className="p-2.5 rounded-xl bg-gp-surface border border-gp-border text-gp-text shadow-sm active:scale-95 transition-all"
+        >
+          <Menu size={20} strokeWidth={3} />
+        </button>
+        <div className="flex items-center gap-2">
+           <img src="/logo-branca.png" alt="GP" className="w-6 h-6 object-contain invert dark:invert-0" />
+           <span className="font-black text-[12px] uppercase tracking-widest text-gp-text">GLOBALP</span>
+        </div>
+      </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-1">
-        {/* Theme Toggle */}
+      {/* Breadcrumb / Status Indicator (Desktop) */}
+      <div className="hidden lg:flex items-center gap-6">
+         <div className="flex items-center gap-2 px-4 py-1.5 bg-gp-surface2/50 rounded-full border border-gp-border/50">
+            <div className="w-1.5 h-1.5 rounded-full bg-gp-success animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+            <span className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-80 leading-none">Rede Sincronizada</span>
+         </div>
+      </div>
+
+      {/* Global Actions */}
+      <div className="flex items-center gap-2.5 lg:gap-4">
+        
+        {/* Theme Intelligence */}
         <button
           onClick={toggleTheme}
-          className={clsx(iconBtn, "text-gp-text3 hover:bg-gp-hover hover:text-gp-text2")}
-          title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+          className={clsx(actionBtn, "hover:bg-gp-surface hover:border-gp-border text-gp-muted hover:text-gp-blue active:scale-95")}
+          title="Alternar Identidade Visual"
         >
-          {theme === 'dark'
-            ? <Sun size={17} strokeWidth={2} />
-            : <Moon size={17} strokeWidth={2} />
-          }
+          {theme === 'dark' ? <Sun size={18} strokeWidth={3} /> : <Moon size={18} strokeWidth={3} />}
+          <div className="absolute inset-0 bg-gp-blue opacity-0 group-hover:opacity-[0.03] rounded-xl transition-opacity" />
         </button>
 
-        {/* Notifications */}
+        {/* Neural Notifications */}
         <div className="relative" data-dropdown>
           <button
             onClick={() => { if (!showNotifications) fetchNotifications(); setShowNotifications(!showNotifications); setShowUserMenu(false); }}
-            className={clsx(iconBtn, "text-gp-text3 hover:bg-gp-hover hover:text-gp-text2")}
+            className={clsx(actionBtn, "hover:bg-gp-surface hover:border-gp-border text-gp-muted hover:text-gp-blue active:scale-95")}
           >
-            <Bell size={16} strokeWidth={2} />
+            <Bell size={18} strokeWidth={3} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-gp-blue rounded-full text-[10px] font-black text-white flex items-center justify-center px-1.5 shadow-xl shadow-gp-blue/30 border-2 border-gp-bg">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-80 rounded-xl overflow-hidden z-50 animate-fade-up bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
-              <div className="px-5 py-3.5 border-b border-gp-border">
+            <div className="absolute right-0 top-full mt-4 w-[360px] rounded-2xl overflow-hidden z-[100] animate-fade-zoom bg-gp-surface border border-gp-border shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)]">
+              <div className="px-6 py-5 border-b border-gp-border bg-gp-surface2/80 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-gp-text3">Notificações</span>
+                  <div className="flex items-center gap-2">
+                     <Zap size={14} className="text-gp-blue" strokeWidth={3} />
+                     <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gp-text">Central de Protocolos</span>
+                  </div>
                   {unreadCount > 0 && (
-                    <span className="gp-badge gp-badge-blue">{unreadCount} novas</span>
+                    <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest bg-gp-blue/10 px-2 py-0.5 rounded-md">
+                       {unreadCount} PENDENTES
+                    </span>
                   )}
                 </div>
               </div>
-              <div className="max-h-64 overflow-y-auto">
+              <div className="max-h-[400px] overflow-y-auto no-scrollbar bg-gp-surface/50">
                 {notifications.length === 0 ? (
-                  <div className="gp-empty py-10 text-gp-text3">
-                    <p className="text-[13px]">Nenhuma notificação</p>
+                  <div className="py-16 text-center px-8 border-b border-gp-border/30">
+                    <div className="w-16 h-16 bg-gp-surface2 rounded-2xl flex items-center justify-center mx-auto mb-6 text-gp-muted shadow-inner">
+                       <Bell size={24} strokeWidth={1} />
+                    </div>
+                    <p className="text-[11px] font-black uppercase text-gp-muted tracking-widest opacity-40">Feed Limpo: Sem novas entradas.</p>
                   </div>
                 ) : notifications.map(n => (
                   <div
                     key={n.id}
-                    onClick={() => { markAsRead(n.id); if (n.link) window.location.href = n.link; setShowNotifications(false); }}
+                    onClick={() => { markAsRead(n.id); if (n.link) navigate(n.link); setShowNotifications(false); }}
                     className={clsx(
-                      "px-5 py-3.5 cursor-pointer transition-colors border-b border-gp-border last:border-0 hover:bg-gp-hover",
-                      !n.is_read ? 'border-l-2 border-l-gp-blue' : 'border-l-2 border-l-transparent',
-                      n.is_read && 'opacity-60'
+                      "px-6 py-5 cursor-pointer transition-all border-b border-gp-border/30 hover:bg-gp-blue/[0.02] relative group",
+                      !n.is_read && 'bg-gp-blue/[0.01]'
                     )}
                   >
-                    <p className="text-[13px] font-semibold truncate text-gp-text">{n.title}</p>
-                    <p className="text-[12px] mt-0.5 truncate text-gp-text3">{n.message}</p>
-                    <p className="text-[10px] mt-1 font-bold uppercase text-gp-blue-light">{getRelativeTime(n.created_at)}</p>
+                    {!n.is_read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-gp-blue" />}
+                    <div className="flex justify-between items-start mb-1.5">
+                       <p className={clsx("text-[13px] tracking-tight group-hover:text-gp-blue transition-colors", n.is_read ? 'text-gp-muted font-bold' : 'text-gp-text font-black')}>
+                          {n.title}
+                       </p>
+                       {!n.is_read && <div className="w-2 h-2 rounded-full bg-gp-blue shadow-lg shadow-gp-blue/30 mt-1.5" />}
+                    </div>
+                    <p className="text-[12px] font-medium text-gp-muted line-clamp-2 leading-relaxed opacity-80">{n.message}</p>
+                    <div className="flex items-center gap-2 mt-4">
+                       <ShieldCheck size={10} className="text-gp-blue-light" />
+                       <span className="text-[9px] font-black uppercase text-gp-blue-light tracking-[0.2em] opacity-60">SISTEMA GP • {new Date(n.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 ))}
               </div>
+              <button 
+                onClick={() => navigate('/notificacoes')}
+                className="w-full py-4 bg-gp-surface2/80 hover:bg-gp-surface hover:text-gp-blue transition-all border-t border-gp-border text-[10px] font-black uppercase tracking-[0.3em] text-gp-muted"
+              >
+                 Ver Histórico Completo
+              </button>
             </div>
           )}
         </div>
 
-        {/* Divider */}
-        <div className="mx-2 h-5 w-px bg-gp-border" />
+        {/* Separation Divider */}
+        <div className="mx-2 h-6 w-px bg-gp-border/50 hidden sm:block" />
 
-        {/* User Menu */}
-        <div className="relative flex items-center gap-2.5" data-dropdown>
-          {/* User info */}
-          <div className="text-right hidden sm:block">
-            <p className="text-[13px] font-semibold leading-none text-gp-text">
-              {profile?.full_name || 'Usuário'}
+        {/* User Identity Matrix */}
+        <div className="relative flex items-center gap-4" data-dropdown>
+          <div className="text-right hidden md:block">
+            <p className="text-[14px] font-black leading-tight text-gp-text uppercase tracking-tight">
+              {profile?.full_name?.split(' ')[0] || 'Acesso'} {profile?.full_name?.split(' ').length! > 1 ? profile?.full_name?.split(' ').pop() : ''}
             </p>
-            <p className="text-[10px] font-semibold mt-0.5 uppercase tracking-wide text-gp-blue-light">
-              {profile ? roleLabels[profile.role] : 'Acesso Geral'}
-            </p>
+            <div className="flex items-center justify-end gap-2 mt-1.5">
+               <div className="w-1 h-1 rounded-full bg-gp-blue shadow-lg shadow-gp-blue/40" />
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gp-blue-light opacity-80 leading-none">
+                 {profile ? roleLabels[profile.role] : 'GUEST SESSION'}
+               </p>
+            </div>
           </div>
 
           <button
             onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 transition-all duration-300 shadow-lg shadow-gp-blue/20 hover:scale-105 active:scale-95 group/avatar overflow-hidden relative bg-gp-blue"
+            className="w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white flex-shrink-0 transition-all duration-500 shadow-2xl shadow-gp-blue/30 active:scale-95 group/avatar overflow-hidden relative bg-gp-blue border-2 border-transparent hover:border-white/20"
           >
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
-            <UserIcon size={18} strokeWidth={2.5} className="relative z-10" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
+            <UserIcon size={20} strokeWidth={3} className="relative z-10" />
+            
+            {/* Visual Feedback of Active Action */}
+            {showUserMenu && <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />}
+            {showUserMenu && <ChevronDown size={14} className="relative z-20 text-white animate-bounce-short" />}
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-52 rounded-xl overflow-hidden z-50 animate-fade-up bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
-              <div className="px-4 py-3 border-b border-gp-border">
-                <p className="text-[11px] font-medium text-gp-text3">Logado como</p>
-                <p className="text-[13px] font-semibold truncate mt-0.5 text-gp-text">{profile?.email}</p>
+            <div className="absolute right-0 top-full mt-4 w-64 rounded-2xl overflow-hidden z-[100] animate-fade-zoom bg-gp-surface border border-gp-border shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)]">
+              <div className="px-6 py-6 border-b border-gp-border bg-gp-surface2/80 backdrop-blur-md">
+                <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.3em] opacity-40 mb-3">Sustentação de Acesso</p>
+                <div className="flex flex-col gap-1.5">
+                   <p className="text-[13px] font-black truncate text-gp-text uppercase tracking-tight">{profile?.full_name}</p>
+                   <p className="text-[11px] font-bold text-gp-blue-light opacity-80 truncate">{profile?.email}</p>
+                </div>
               </div>
-              <div className="py-1">
-                <a
-                  href="/configuracoes"
-                  className={clsx(iconBtn, 'w-full rounded-none justify-start gap-3 px-4 py-2.5 h-auto text-[13px] font-medium text-gp-text2 hover:bg-gp-hover')}
-                >
-                  <Settings size={15} strokeWidth={2} />
-                  Configurações
-                </a>
-                <button
+              <div className="p-3 space-y-1">
+                <SidebarMenuBtn 
+                  onClick={() => { navigate('/configuracoes'); setShowUserMenu(false); }}
+                  icon={Settings}
+                  label="Parametrização"
+                  badge="SYS"
+                />
+                <SidebarMenuBtn 
                   onClick={handleSignOut}
-                  className={clsx(iconBtn, 'w-full rounded-none justify-start gap-3 px-4 py-2.5 h-auto text-[13px] font-medium text-red-500 hover:bg-red-500/10')}
-                >
-                  <LogOut size={15} strokeWidth={2} />
-                  Sair do Sistema
-                </button>
+                  icon={LogOut}
+                  label="Encerrar Sessão"
+                  variant="danger"
+                />
               </div>
             </div>
           )}
         </div>
       </div>
     </header>
+  );
+}
+
+function SidebarMenuBtn({ icon: Icon, label, onClick, variant = 'default', badge }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-black text-[11px] uppercase tracking-widest group relative overflow-hidden",
+        variant === 'danger' ? "text-gp-error hover:bg-gp-error/10" : "text-gp-muted hover:bg-gp-surface2 hover:text-gp-blue"
+      )}
+    >
+      <Icon size={18} strokeWidth={3} className="shrink-0" />
+      <span className="flex-1 text-left">{label}</span>
+      {badge && (
+         <span className="text-[9px] bg-gp-blue/10 text-gp-blue px-1.5 py-0.5 rounded font-black opacity-60 group-hover:opacity-100 transition-opacity">{badge}</span>
+      )}
+      <div className={clsx(
+         "absolute right-2 w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100",
+         variant === 'danger' ? "bg-gp-error" : "bg-gp-blue"
+      )} />
+    </button>
   );
 }
