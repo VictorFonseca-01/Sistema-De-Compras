@@ -12,7 +12,8 @@ import {
   AlertCircle,
   XCircle,
   BarChart3,
-  FileBarChart
+  FileBarChart,
+  ShieldCheck
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -20,13 +21,14 @@ import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
 const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
-  pending_gestor:    { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
-  pending_ti:        { label: 'Em Análise TI', color: 'var(--gp-blue)',    icon: FileText },
-  pending_diretoria: { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
-  pending_compras:   { label: 'Em Compras',    color: 'var(--gp-purple)',  icon: TrendingUp },
-  approved:          { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
-  rejected:          { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
+  pending_gestor:        { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
+  pending_ti:            { label: 'Analise TI',    color: 'var(--gp-blue)',    icon: FileText },
+  pending_compras:       { label: 'Cotacao',       color: 'var(--gp-purple)',  icon: TrendingUp },
+  pending_diretoria:     { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
+  pending_compras_final: { label: 'Finalizacao',    color: 'var(--gp-blue)',    icon: ShieldCheck },
+  approved:              { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
+  rejected:              { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
+  adjustment_needed:     { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
 };
 
 function KpiSkeleton() {
@@ -134,7 +136,7 @@ export default function Dashboard() {
 
         const stats_pending_gestor = getStats(['pending_gestor']);
         const stats_pending_ti = getStats(['pending_ti']);
-        const stats_pending_compras = getStats(['pending_compras']);
+        const stats_pending_compras = getStats(['pending_compras', 'pending_compras_final']);
         const stats_pending_diretoria = getStats(['pending_diretoria']);
         const stats_approved = getStats(['approved']);
         const stats_pending_total = requests.filter(r => r.status.startsWith('pending')).reduce((acc, r) => {

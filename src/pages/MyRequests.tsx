@@ -9,7 +9,8 @@ import {
   Plus,
   Search,
   Filter,
-  ArrowUpRight
+  ArrowUpRight,
+  ShieldCheck
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -33,8 +34,9 @@ interface Request {
 const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-amber', icon: Clock },
   pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
-  pending_diretoria: { label: 'Aut. Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
-  pending_compras: { label: 'Em Compras', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_compras: { label: 'Fila de Orçamentos', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_diretoria: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_compras_final: { label: 'Finalização Compra', badgeClass: 'gp-badge-blue', icon: ShieldCheck },
   approved: { label: 'Aprovado Final', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
   rejected: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
   adjustment_needed: { label: 'Ajuste Necessário', badgeClass: 'gp-badge-amber', icon: Clock },

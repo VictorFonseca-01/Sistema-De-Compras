@@ -73,6 +73,36 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     }
   };
 
+  useEffect(() => {
+    if (!profile) return;
+
+    // Supabase Real-time Listener for notifications
+    const channel = supabase
+      .channel('realtime_notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`
+        },
+        (payload) => {
+          setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+          setUnreadCount(prev => prev + 1);
+          toast.success(payload.new.title || 'Nova Notificação Recebida', {
+            icon: '🔔',
+            duration: 4000
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile]);
+
   const roleLabels: Record<string, string> = {
     master_admin: 'SUPREME ADMIN',
     diretoria: 'EXECUTIVE BOARD',
@@ -105,7 +135,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="hidden lg:flex items-center gap-6">
          <div className="flex items-center gap-2 px-4 py-1.5 bg-gp-surface2/50 rounded-full border border-gp-border/50">
             <div className="w-1.5 h-1.5 rounded-full bg-gp-success animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-            <span className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-80 leading-none">Rede Sincronizada</span>
+            <span className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-80 leading-none">Sistema de Compras</span>
          </div>
       </div>
 

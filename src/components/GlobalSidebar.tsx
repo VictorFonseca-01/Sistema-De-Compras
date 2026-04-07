@@ -22,17 +22,17 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: ListOrdered, label: 'Ordens de Serviço', path: '/solicitacoes' }, // Renomeado para tom mais corporativo
-    { icon: Warehouse, label: 'Asset Management', path: '/estoque' }, // Renomeado para tom mais corporativo
+    { icon: ListOrdered, label: 'Solicitações de Compras', path: '/solicitacoes' }, 
+    { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' }, 
   ];
 
   if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'diretoria' || profile?.role === 'compras' || profile?.role === 'ti') {
-    navItems.push({ icon: UserCheck, label: 'Fila de Auditoria', path: '/solicitacoes' });
+    navItems.push({ icon: UserCheck, label: 'Solicitações Pendentes', path: '/solicitacoes' });
   }
 
   const adminItems: { icon: any; label: string; path: string }[] = [];
   if (profile?.role === 'master_admin') {
-    adminItems.push({ icon: Users, label: 'Gente e Performance', path: '/admin' });
+    adminItems.push({ icon: Users, label: 'Usuários e Empresas', path: '/admin' });
     adminItems.push({ icon: FileText, label: 'Relatórios BI', path: '/relatorios' });
   }
 
@@ -81,9 +81,9 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
                <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text">
                  GLOBAL<span className="text-gp-blue">PARTS</span>
                </p>
-               <p className="text-[9px] font-black tracking-[0.3em] uppercase text-gp-blue-light mt-1.5 opacity-80 leading-none">
-                 Intelligence
-               </p>
+                <p className="text-[9px] font-black tracking-[0.3em] uppercase text-gp-blue-light mt-1.5 opacity-80 leading-none">
+                  Sistema de Compras
+                </p>
             </div>
           </div>
         )}

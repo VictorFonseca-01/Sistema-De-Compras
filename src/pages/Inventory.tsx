@@ -523,35 +523,51 @@ export default function Inventory() {
       </div>
 
       {totalPages > 1 && (
-        <div className="p-6 bg-gp-surface2 border-t border-gp-border flex items-center justify-between rounded-b-2xl">
-          <p className="text-[10px] font-black text-gp-text3 uppercase tracking-widest">
-            {filteredAssets.length} registros no sistema
-          </p>
-          <div className="flex gap-1.5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-8 bg-gp-surface2 border border-gp-border rounded-2xl shadow-inner mt-10">
+          <div className="flex items-center gap-3">
+             <div className="w-2 h-2 rounded-full bg-gp-blue shadow-[0_0_10px_rgba(59,130,246,0.3)] animate-pulse" />
+             <p className="text-[11px] font-black text-gp-text uppercase tracking-widest leading-none">
+               {filteredAssets.length} <span className="text-gp-muted opacity-60 ml-1">Ativos catalogados</span>
+             </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
             <button 
               disabled={currentPage === 1} 
               onClick={() => setCurrentPage(prev => prev - 1)} 
-              className="gp-page-btn w-auto px-4"
+              className={clsx(
+                "h-11 px-5 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all",
+                currentPage === 1 ? "opacity-20 cursor-not-allowed border-gp-border text-gp-muted" : "border-gp-border bg-gp-surface text-gp-text hover:border-gp-blue hover:text-gp-blue active:scale-95 shadow-sm"
+              )}
             >
               Anterior
             </button>
-            {getPaginationGroup().map((page, i) => (
-              <button 
-                key={i} 
-                disabled={page === '...'} 
-                onClick={() => typeof page === 'number' && setCurrentPage(page)} 
-                className={clsx(
-                  "gp-page-btn", 
-                  currentPage === page && "active"
-                )}
-              >
-                {page}
-              </button>
-            ))}
+            
+            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-gp-surface3/30 rounded-xl border border-gp-border/50">
+              {getPaginationGroup().map((page, i) => (
+                <button 
+                  key={i} 
+                  disabled={page === '...'} 
+                  onClick={() => typeof page === 'number' && setCurrentPage(page)} 
+                  className={clsx(
+                    "w-10 h-10 rounded-lg font-black text-[11px] transition-all duration-300",
+                    currentPage === page 
+                      ? "bg-gp-blue text-white shadow-lg shadow-gp-blue/20 scale-110 z-10" 
+                      : page === '...' ? "text-gp-muted opacity-40 cursor-default" : "text-gp-muted hover:text-gp-text hover:bg-gp-surface border border-transparent hover:border-gp-border"
+                  )}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
             <button 
               disabled={currentPage === totalPages} 
               onClick={() => setCurrentPage(prev => prev + 1)} 
-              className="gp-page-btn w-auto px-4"
+              className={clsx(
+                "h-11 px-5 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all",
+                currentPage === totalPages ? "opacity-20 cursor-not-allowed border-gp-border text-gp-muted" : "border-gp-border bg-gp-surface text-gp-text hover:border-gp-blue hover:text-gp-blue active:scale-95 shadow-sm"
+              )}
             >
               Próxima
             </button>
