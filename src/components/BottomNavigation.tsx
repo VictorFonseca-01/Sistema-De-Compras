@@ -1,4 +1,4 @@
-import { Home, ClipboardList, PlusCircle, Box, Menu, Settings, Zap } from 'lucide-react';
+import { Home, ClipboardList, PlusCircle, Box, Menu } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 

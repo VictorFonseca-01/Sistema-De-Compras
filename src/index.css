@@ -6,7 +6,7 @@
 */
 
 @theme {
-  /* Tailwind v4 Mappings */
+  /* Tailwind v4 Mappings - Centralized Design Tokens */
   --color-gp-blue: var(--gp-blue);
   --color-gp-blue-hover: var(--gp-blue-hover);
   --color-gp-blue-active: var(--gp-blue-active);
@@ -22,6 +22,7 @@
   --color-gp-text: var(--gp-text);
   --color-gp-text2: var(--gp-text2);
   --color-gp-text3: var(--gp-text3);
+  --color-gp-muted: var(--gp-muted);
   
   --color-gp-border: var(--gp-border);
   --color-gp-border2: var(--gp-border2);
@@ -33,11 +34,15 @@
   --color-gp-purple: var(--gp-purple);
   --color-gp-amber: #F59E0B;
   
+  --color-gp-sidebar: var(--gp-sidebar);
+  --color-gp-sidebar-border: var(--gp-sidebar-border);
+  --color-gp-navy2: #0B0F19;
+
   --shadow-gp-blue: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
 }
 
 :root {
-  /* Brand Colors */
+  /* Brand Identity Variables */
   --gp-blue: #3B82F6;
   --gp-blue-hover: #2563EB;
   --gp-blue-active: #1D4ED8;
@@ -54,8 +59,6 @@
   /* Sidebar Specific */
   --gp-sidebar: #FFFFFF;
   --gp-sidebar-border: #E5E7EB;
-  --gp-sidebar-text: #4B5563;
-  --gp-sidebar-hover: #F3F4F6;
   
   /* Theme Text (Light Mode) */
   --gp-text: #111827;
@@ -75,11 +78,7 @@
   --gp-info: #3B82F6;
   --gp-purple: #8B5CF6;
 
-  /* Shadows */
-  --gp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --gp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --gp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --gp-shadow-blue: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+  /* Shadows & Rings */
   --gp-focus-ring: rgba(59, 130, 246, 0.15);
 }
 
@@ -93,8 +92,6 @@
   
   --gp-sidebar: #111827;
   --gp-sidebar-border: #1F2937;
-  --gp-sidebar-text: #9CA3AF;
-  --gp-sidebar-hover: #1F2937;
   
   --gp-text: #F9FAFB;
   --gp-text2: #9CA3AF;
@@ -105,7 +102,6 @@
   --gp-border2: #4B5563;
   --gp-hover: #1F2937;
   --gp-focus-ring: rgba(59, 130, 246, 0.2);
-  --gp-navy2: #0B0F19;
 }
 
 /* Base Styles */
@@ -128,7 +124,7 @@
     @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[12px] font-black uppercase transition-all duration-300 select-none;
     background-color: var(--gp-blue);
     color: #FFFFFF;
-    box-shadow: var(--gp-shadow-blue);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
   }
   .btn-premium-primary:hover:not(:disabled) {
     background-color: var(--gp-blue-hover);
@@ -176,7 +172,7 @@
     background-color: var(--gp-surface);
     border: 1px solid var(--gp-border);
     border-radius: 1.25rem;
-    box-shadow: var(--gp-shadow-sm);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     @apply transition-all duration-300;
   }
   .gp-card:hover {
@@ -187,7 +183,7 @@
     background-color: var(--gp-surface);
     border: 1px solid var(--gp-border);
     border-radius: 1.5rem;
-    box-shadow: var(--gp-shadow-md);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .gp-card-premium:hover {
@@ -240,14 +236,6 @@
   .gp-badge-purple { background-color: rgba(139, 92, 246, 0.1); color: #8B5CF6; border-color: rgba(139, 92, 246, 0.2); }
   .gp-badge-gray { background-color: rgba(75, 85, 99, 0.1); color: var(--gp-text2); border-color: var(--gp-border); }
 
-  /* Page Headers */
-  .gp-page-title {
-    @apply text-2xl sm:text-4xl font-black text-gp-text tracking-tight;
-  }
-  .gp-page-subtitle {
-    @apply text-[14px] font-medium text-gp-muted mt-2 opacity-80 leading-relaxed;
-  }
-
   /* Table Standards */
   .gp-table-wrap {
     @apply overflow-hidden rounded-2xl border bg-gp-surface shadow-xl;
@@ -263,39 +251,17 @@
   .gp-table tbody td {
     @apply px-6 py-5 text-[14px] border-b text-gp-text border-gp-border/30;
   }
-
-  /* Modals */
-  .gp-modal-overlay {
-    @apply fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gp-bg/80 backdrop-blur-md;
-  }
-  .gp-modal {
-    @apply w-full bg-gp-surface rounded-3xl border shadow-3xl overflow-hidden;
-    border-color: var(--gp-border);
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
-  }
-
-  /* Loading States */
-  .gp-skeleton {
-    @apply animate-pulse bg-gp-surface2 rounded-xl;
-  }
-
-  /* Empty States */
-  .gp-empty {
-    @apply flex flex-col items-center justify-center text-center p-20;
-  }
-  .gp-empty-icon {
-    @apply w-20 h-20 rounded-3xl bg-gp-surface2 flex items-center justify-center text-gp-muted mb-6 shadow-inner;
-  }
 }
 
-/* Utilities */
-.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gp-border); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--gp-blue); }
+/* Base Typography Utilities */
+.gp-page-title {
+  @apply text-2xl sm:text-4xl font-black text-gp-text tracking-tight;
+}
+.gp-page-subtitle {
+  @apply text-[14px] font-medium text-gp-muted mt-2 opacity-80 leading-relaxed;
+}
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
+/* Animations & Transitions */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -323,3 +289,10 @@
 .shadow-3xl {
    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.5);
 }
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gp-border); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--gp-blue); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

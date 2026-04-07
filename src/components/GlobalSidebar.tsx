@@ -11,8 +11,7 @@ import {
   Warehouse,
   X,
   FileText,
-  ShieldCheck,
-  Menu
+  ShieldCheck
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
@@ -194,10 +193,14 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
               : 'text-gp-muted hover:text-gp-text hover:bg-gp-surface2/30'
           )}
         >
-          <Settings size={20} strokeWidth={isActive ? 3 : 2.5} className={clsx(isActive && "text-gp-blue")} />
-          {!isCollapsed && <span className="text-[13px] font-black uppercase tracking-widest truncate">Ajustes</span>}
-          {!isCollapsed && (
-             <ChevronRight size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+          {({ isActive }) => (
+            <>
+              <Settings size={20} strokeWidth={isActive ? 3 : 2.5} className={clsx(isActive && "text-gp-blue")} />
+              {!isCollapsed && <span className="text-[13px] font-black uppercase tracking-widest truncate">Ajustes</span>}
+              {!isCollapsed && (
+                 <ChevronRight size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+              )}
+            </>
           )}
         </NavLink>
       </div>

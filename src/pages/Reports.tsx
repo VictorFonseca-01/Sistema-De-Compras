@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { 
-  TrendingUp, 
   Printer, 
   ChevronLeft,
   Calendar,

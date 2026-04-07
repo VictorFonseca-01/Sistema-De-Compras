@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, AlertCircle, User, ArrowRight, Building2, ShieldCheck, Zap } from 'lucide-react';
+import { Mail, Lock, AlertCircle, User, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
 import { useTheme } from '../context/ThemeContext';

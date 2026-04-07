@@ -18,13 +18,14 @@ import {
   Cpu,
   X,
   CheckCircle2,
-  AlertTriangle,
-  FileText
+  AlertTriangle
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useProfile } from '../hooks/useProfile';
 import { assetService } from '../services/assetService';
 import { toast } from 'react-hot-toast';
+
+const labelClass = "text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] ml-1 leading-none";
 
 export default function AssetDetails() {
   const { id } = useParams();

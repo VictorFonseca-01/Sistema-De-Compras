@@ -14,10 +14,11 @@ import {
   Plus,
   Info,
   Image as ImageIcon,
-  File as FileIcon
+  File as FileIcon,
+  Paperclip
 } from 'lucide-react';
 
-import { clsx } from 'clsx';
+
 import { useProfile } from '../hooks/useProfile';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { toast } from 'react-hot-toast';
