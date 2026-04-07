@@ -27,13 +27,10 @@ export function Sidebar({ theme, isOpen, onClose }: SidebarProps) {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: ListOrdered, label: 'Minhas Solicitações', path: '/solicitacoes' },
+    { icon: Warehouse, label: 'Estoque', path: '/estoque' },
   ];
 
-  if (profile?.role === 'master_admin' || profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'gestor' || profile?.role === 'diretoria') {
-    navItems.push({ icon: Warehouse, label: 'Estoque', path: '/estoque' });
-  }
-
-  if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'ti' || profile?.role === 'diretoria') {
+  if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'diretoria' || profile?.role === 'compras' || profile?.role === 'ti') {
     navItems.push({ icon: UserCheck, label: 'Fila de Aprovação', path: '/solicitacoes' });
   }
 

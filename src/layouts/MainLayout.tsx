@@ -60,7 +60,14 @@ export function MainLayout() {
   }
 
   return (
-    <div className={clsx("flex h-screen overflow-hidden print:h-auto print:overflow-visible", theme)} style={{ background: 'var(--gp-bg)' }}>
+    <div 
+      className={clsx(
+        "flex h-screen overflow-hidden print:h-auto print:overflow-visible transition-colors duration-300", 
+        theme
+      )} 
+      style={{ background: 'var(--gp-bg)' }}
+      data-theme={theme}
+    >
       <Toaster position="top-right" toastOptions={{
         className: 'gp-toast',
         style: {

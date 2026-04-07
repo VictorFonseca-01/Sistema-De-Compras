@@ -215,24 +215,28 @@ export default function Inventory() {
           <p className="gp-page-subtitle">Controle centralizado de ativos e hardware.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          {profile?.role === 'master_admin' && assets.length > 0 && (
-            <button 
-              onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
-              className="btn-premium-danger flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]"
-            >
-              <Trash2 size={16} />
-              {isDeleting ? '...' : 'ZERAR'}
-            </button>
+          {['master_admin', 'ti', 'compras', 'gestor', 'diretoria'].includes(profile?.role || '') && (
+            <>
+              {profile?.role === 'master_admin' && assets.length > 0 && (
+                <button 
+                  onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
+                  className="btn-premium-danger flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]"
+                >
+                  <Trash2 size={16} />
+                  {isDeleting ? '...' : 'ZERAR'}
+                </button>
+              )}
+              <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+                <Plus size={16} strokeWidth={3} /> NOVO
+              </button>
+              <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+                <TableIcon size={16} /> IMPORTAR
+              </button>
+              <button onClick={() => setShowScanner(true)} className="btn-premium-dark flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
+                <Barcode size={16} strokeWidth={3} /> SCAN
+              </button>
+            </>
           )}
-          <button onClick={() => navigate('/novo-ativo')} className="btn-premium-primary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-            <Plus size={16} strokeWidth={3} /> NOVO
-          </button>
-          <button onClick={() => navigate('/importar-estoque')} className="btn-premium-secondary flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-            <TableIcon size={16} /> IMPORTAR
-          </button>
-          <button onClick={() => setShowScanner(true)} className="btn-premium-dark flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px]">
-            <Barcode size={16} strokeWidth={3} /> SCAN
-          </button>
         </div>
       </header>
 
@@ -633,7 +637,7 @@ export default function Inventory() {
       )}
 
       {/* Barra de Ações em Massa v5.5 */}
-      {selectedAssetIds.size > 0 && (
+      {selectedAssetIds.size > 0 && ['master_admin', 'ti', 'compras', 'gestor', 'diretoria'].includes(profile?.role || '') && (
         <div className="fixed bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-slide-up w-[90%] sm:w-auto">
            <div className="bg-gp-navy2 border border-gp-blue/30 shadow-2xl shadow-gp-blue/20 rounded-2xl px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between sm:justify-start gap-4 sm:gap-8 backdrop-blur-md">
               <div className="flex items-center gap-3 sm:gap-4 sm:border-r sm:border-gp-border sm:pr-8">

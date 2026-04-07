@@ -118,6 +118,18 @@
 }
 
 .light {
+  /* Dynamic Token Overrides for v4 utility mapping */
+  --color-gp-blue:        #2563eb;
+  --color-gp-navy:        #f8fafc;
+  --color-gp-navy2:       #f1f5f9;
+  --color-gp-surface:     #ffffff;
+  --color-gp-surface2:    #f8fafc;
+  --color-gp-surface3:    #f1f5f9;
+  --color-gp-border:      #e2e8f0;
+  --color-gp-border2:     #cbd5e1;
+  --color-gp-text:        #0f172a;
+  --color-gp-muted:       #64748b;
+
   /* Backgrounds & Surfaces */
   --gp-bg:           #f8fafc;
   --gp-bg2:          #f1f5f9;
