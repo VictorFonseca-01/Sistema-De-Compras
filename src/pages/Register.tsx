@@ -6,6 +6,8 @@ import { SearchableSelect } from '../components/SearchableSelect';
 import { clsx } from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 
+import { formatSyntheticEmail } from '../lib/auth-utils';
+
 const roleOptions = [
   { value: 'usuario', label: 'Funcionário' },
   { value: 'gestor', label: 'Gestor' },
@@ -60,9 +62,12 @@ export default function Register() {
     setLoading(true);
     
     const selectedDept = departments.find(d => d.id === departmentId)?.name;
+    
+    // Identidade Sintética: Nome + E-mail para permitir e-mails compartilhados
+    const authEmail = formatSyntheticEmail(name, email);
 
     const { error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: authEmail,
       password,
       options: { 
         data: { 

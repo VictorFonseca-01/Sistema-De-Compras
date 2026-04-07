@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight, User } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { clsx } from 'clsx';
 
+import { formatSyntheticEmail } from '../lib/auth-utils';
+
 export default function Login() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -16,14 +19,40 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    if (!name.trim()) {
+      setError('Por favor, insira seu nome completo.');
+      return;
+    }
+
     if (!email.endsWith('@globalp.com.br')) {
       setError('Apenas e-mails @globalp.com.br são permitidos.');
       return;
     }
+
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError('Credenciais inválidas ou erro ao conectar.');
+
+    // 1. Tenta login com Identidade Sintética (Nome + E-mail)
+    const authEmail = formatSyntheticEmail(name, email);
+    const { error: syntheticError } = await supabase.auth.signInWithPassword({ 
+      email: authEmail, 
+      password 
+    });
+
+    if (!syntheticError) {
+      navigate('/');
+      return;
+    }
+
+    // 2. Fallback: Se falhou, tenta login com E-mail Real (Contas Legado)
+    // Isso é necessário para quem já tinha conta antes da migração para suporte a e-mails compartilhados
+    const { error: legacyError } = await supabase.auth.signInWithPassword({ 
+      email: email.toLowerCase().trim(), 
+      password 
+    });
+
+    if (legacyError) {
+      setError('Credenciais inválidas. Verifique seu nome, e-mail e senha.');
       setLoading(false);
     } else {
       navigate('/');
@@ -31,8 +60,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gp-bg">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gp-surface border border-gp-border shadow-gp-shadow-lg">
+    <div className="min-h-screen flex items-start md:items-center justify-center p-4 bg-gp-bg overflow-y-auto">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-gp-surface border border-gp-border shadow-gp-shadow-lg my-auto">
         {/* Card Header */}
         <div className="px-8 pt-10 pb-8 text-center bg-gp-surface2 border-b border-gp-border">
           <div className="w-14 h-14 mx-auto mb-5 rounded-xl flex items-center justify-center p-3 bg-gp-blue/10 border border-gp-blue/20">
@@ -61,6 +90,27 @@ export default function Login() {
           )}
 
           <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">
+                Nome Completo
+              </label>
+              <div className="relative">
+                <User
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3"
+                />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Seu nome completo"
+                  required
+                  className="gp-input pl-11 pr-4 py-3 text-[14px]"
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest mb-2 text-gp-text3">

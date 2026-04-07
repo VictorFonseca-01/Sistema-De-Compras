@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { clsx } from 'clsx';
+import { formatSyntheticEmail } from '../lib/auth-utils';
 
 interface Company {
   id: string;
@@ -216,8 +217,11 @@ export default function AdminPanel() {
       return;
     }
 
+    // Identidade Sintética na criação administrativa
+    const authEmail = formatSyntheticEmail(addForm.name, addForm.email);
+
     const { data: newUser, error: signUpError } = await supabaseAdminAuth.auth.signUp({
-      email: addForm.email,
+      email: authEmail,
       password: addForm.password,
       options: { data: { 
         full_name: addForm.name, 
