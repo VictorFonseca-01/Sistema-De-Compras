@@ -100,7 +100,7 @@ export default function Reports() {
       <div className="gp-card p-8 sm:p-16 print:shadow-none print:border-none print:p-0 bg-gp-surface relative overflow-hidden">
         
         {/* Marca d'água de fundo */}
-        <BarChart3 className="absolute -right-20 -top-20 text-gp-blue opacity-[0.02] -rotate-12 pointer-events-none" size={400} />
+        <BarChart3 className="absolute -right-20 -top-20 text-gp-blue opacity-[0.02] -rotate-12 pointer-events-none print:hidden" size={400} />
 
         {/* Report Brand Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gp-border pb-12 mb-16 relative z-10">
