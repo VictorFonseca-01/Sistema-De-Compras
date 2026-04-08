@@ -653,8 +653,8 @@ export default function RequestDetails() {
             )}
           </div>
 
-          {/* 2. VALIDAÇÃO — GESTOR */}
-          {(history.some(h => h.new_status === 'PENDING_TI') || request.current_step === 'gestor') && (
+          {/* 2. VALIDAÇÃO — GESTOR (Visibility: Past Gestor step or Admin) */}
+          {(currentIdx >= 1 || request.current_step === 'gestor' || isAdmin) && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               request.current_step === 'gestor' ? "border-gp-amber/30 ring-1 ring-gp-amber/5" : "opacity-80"
@@ -679,7 +679,7 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* 3. ANÁLISE TÉCNICA — TI (Visibility: TI step or past TI) */}
+          {/* 3. ANÁLISE TÉCNICA — TI (Visibility: Past TI step or Admin) */}
           {(currentIdx >= 2 || request.current_step === 'ti' || isTI || isAdmin) && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
@@ -811,7 +811,7 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (Visibility: Compras step or past Compras) */}
+          {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (Visibility: Past Compras step or Admin) */}
           {(currentIdx >= 3 || request.current_step === 'compras' || profile?.role === 'compras' || isAdmin) && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
