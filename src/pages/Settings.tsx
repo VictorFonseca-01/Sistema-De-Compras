@@ -45,8 +45,8 @@ export default function Settings() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ full_name: '', department: '' });
 
-  // Estados de Liquidação (Danger Zone)
   const [showEmptyConfirm, setShowEmptyConfirm] = useState(false);
+  const [emptyType, setEmptyType] = useState<'inventory' | 'requests'>('inventory');
   const [emptyConfirmStep, setEmptyConfirmStep] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -81,12 +81,18 @@ export default function Settings() {
   async function executeEmptyInventory() {
     setIsDeleting(true);
     try {
-      const { error } = await supabase.rpc('empty_asset_inventory');
-      if (error) throw error;
+      if (emptyType === 'inventory') {
+        const { error } = await supabase.rpc('empty_asset_inventory');
+        if (error) throw error;
+        toast.success('Inventário limpo com sucesso.');
+      } else {
+        const { error } = await supabase.rpc('empty_requests_workflow');
+        if (error) throw error;
+        toast.success('Fluxo de solicitações zerado.');
+      }
       setEmptyConfirmStep(3);
-      toast.success('Inventário limpo com sucesso.');
     } catch (err: any) {
-      toast.error('Erro ao esvaziar estoque: ' + err.message);
+      toast.error('Erro na operação: ' + err.message);
       setShowEmptyConfirm(false);
     } finally {
       setIsDeleting(false);
@@ -273,21 +279,37 @@ export default function Settings() {
                  </div>
                </div>
 
-               <div className="p-5 rounded-2xl bg-gp-surface2 border border-gp-error/10 space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="space-y-4">
+                  {/* Zerar Estoque */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 rounded-2xl bg-gp-surface2 border border-gp-error/10">
                     <div>
                       <h4 className="text-[14px] font-bold text-gp-text">Zerar Inventário Global</h4>
                       <p className="text-[12px] mt-0.5 text-gp-text3 font-medium">Remove permanentemente todos os ativos do banco de dados.</p>
                     </div>
                     <button 
-                      onClick={() => { setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
+                      onClick={() => { setEmptyType('inventory'); setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
                       className="btn-premium-danger px-6 py-2.5 rounded-xl text-[11px] w-full sm:w-auto"
                     >
                       <Trash2 size={16} strokeWidth={2.5} />
                       EXECUTAR LIMPEZA
                     </button>
                   </div>
-               </div>
+
+                  {/* Zerar Solicitações */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 rounded-2xl bg-gp-surface2 border border-gp-error/10">
+                    <div>
+                      <h4 className="text-[14px] font-bold text-gp-text">Zerar Todas as Solicitações</h4>
+                      <p className="text-[12px] mt-0.5 text-gp-text3 font-medium">Apaga todos os pedidos, orçamentos, anexos e notificações.</p>
+                    </div>
+                    <button 
+                      onClick={() => { setEmptyType('requests'); setShowEmptyConfirm(true); setEmptyConfirmStep(1); }}
+                      className="btn-premium-danger px-6 py-2.5 rounded-xl text-[11px] w-full sm:w-auto"
+                    >
+                      <Trash2 size={16} strokeWidth={2.5} />
+                      LIMPAR FLUXOS
+                    </button>
+                  </div>
+                </div>
              </div>
           )}
         </div>
@@ -310,10 +332,14 @@ export default function Settings() {
               {emptyConfirmStep === 1 && (
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-black text-gp-text tracking-tight uppercase leading-none">Liquidação Total?</h3>
+                    <h3 className="text-2xl font-black text-gp-text tracking-tight uppercase leading-none">
+                      {emptyType === 'inventory' ? 'Liquidação Total?' : 'Zerar Fluxo Global?'}
+                    </h3>
                     <p className="text-gp-text3 font-medium text-[14px] uppercase tracking-wider">Passo 1 de 2</p>
                   </div>
-                  <p className="text-gp-text2 font-medium text-[15px] leading-relaxed">Você está prestes a apagar <strong className="text-gp-text font-bold">todos os registros</strong> de patrimônio. Esta ação é monitorada e deixará logs de auditoria.</p>
+                  <p className="text-gp-text2 font-medium text-[15px] leading-relaxed">
+                    Você está prestes a apagar <strong className="text-gp-text font-bold">todos os registros</strong> de {emptyType === 'inventory' ? 'patrimônio' : 'solicitacoes e notificações'}. Esta ação é monitorada e deixará logs de auditoria.
+                  </p>
                   <div className="pt-6 space-y-3">
                     <button onClick={() => setEmptyConfirmStep(2)} className="w-full btn-premium-danger py-4 rounded-xl shadow-lg">PROSSEGUIR COM CAUTELA</button>
                     <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-ghost py-3 rounded-xl text-gp-text3 font-black">ABORTAR MISSÃO</button>
@@ -327,7 +353,12 @@ export default function Settings() {
                     <h3 className="text-2xl font-black text-gp-error tracking-tight uppercase leading-none">Confirmação Final</h3>
                     <p className="text-gp-error/60 font-medium text-[14px] uppercase tracking-wider">Passo 2 de 2</p>
                   </div>
-                  <p className="text-gp-text2 font-medium text-[15px] leading-relaxed italic">"Eu entendo que todos os equipamentos e históricos vinculados serão removidos instantaneamente."</p>
+                  <p className="text-gp-text2 font-medium text-[15px] leading-relaxed italic">
+                    {emptyType === 'inventory' 
+                      ? '"Eu entendo que todos os equipamentos e históricos vinculados serão removidos instantaneamente."'
+                      : '"Eu entendo que todos os pedidos, anexos e fluxos de aprovação serão deletados permanentemente."'
+                    }
+                  </p>
                   <div className="pt-6 space-y-3">
                     <button onClick={executeEmptyInventory} disabled={isDeleting} className="w-full btn-premium-danger py-4 rounded-xl shadow-xl flex items-center justify-center">
                       {isDeleting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'SIM, DELETAR TUDO AGORA'}
@@ -339,8 +370,15 @@ export default function Settings() {
 
               {emptyConfirmStep === 3 && (
                 <div className="space-y-6">
-                  <h3 className="text-2xl font-black text-gp-success tracking-tight uppercase leading-none">Base Geral Limpa</h3>
-                  <p className="text-gp-text3 font-medium text-[15px]">O inventário global foi reiniciado com sucesso via servidor.</p>
+                  <h3 className="text-2xl font-black text-gp-success tracking-tight uppercase leading-none">
+                    {emptyType === 'inventory' ? 'Base Geral Limpa' : 'Solicitações Zeradas'}
+                  </h3>
+                  <p className="text-gp-text3 font-medium text-[15px]">
+                    {emptyType === 'inventory' 
+                      ? 'O inventário global foi reiniciado com sucesso via servidor.'
+                      : 'Todas as solicitações e notificações foram removidas com sucesso.'
+                    }
+                  </p>
                   <div className="pt-6">
                     <button onClick={() => setShowEmptyConfirm(false)} className="w-full btn-premium-dark py-4 rounded-xl shadow-lg font-black uppercase tracking-widest text-[12px]">CONCLUÍDO</button>
                   </div>

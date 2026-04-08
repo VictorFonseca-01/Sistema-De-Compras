@@ -532,8 +532,8 @@ export default function AdminPanel() {
                        </div>
                     </div>
 
-                    {(editForm.role === 'gestor' || editForm.role === 'usuario') && (
-                       <div className="pt-12 space-y-8 border-t border-gp-border">
+                    {/* REMOVIDA RESTRIÇÃO DE ROLE PARA GESTÃO DE ESCOPOS */}
+                    <div className="pt-12 space-y-8 border-t border-gp-border">
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-gp-amber/5 p-6 rounded-2xl border border-gp-amber/10">
                              <div>
                                 <h4 className="font-black text-gp-text text-[15px] flex items-center gap-3 uppercase tracking-tight">
@@ -656,8 +656,7 @@ export default function AdminPanel() {
                                 );
                              })}
                           </div>
-                       </div>
-                    )}
+                    </div>
 
                     <div className="pt-10 flex flex-col sm:flex-row justify-end items-center gap-4 border-t border-gp-border sticky -bottom-1 bg-gp-surface py-6">
                        <button type="button" onClick={() => setEditingUser(null)} className="w-full sm:w-auto px-10 py-4 btn-premium-ghost rounded-xl text-[11px] font-black uppercase tracking-widest">DESCARTAR</button>
