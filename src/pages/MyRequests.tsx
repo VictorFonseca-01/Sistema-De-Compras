@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
@@ -53,6 +53,7 @@ export default function MyRequests() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isPending, startTransition] = useTransition();
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -84,17 +85,19 @@ export default function MyRequests() {
   }, [profile]);
 
   useEffect(() => {
-    let result = requests;
-    if (searchTerm) {
-      result = result.filter(r => 
-        r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.profiles?.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (statusFilter !== 'all') {
-      result = result.filter(r => r.status === statusFilter);
-    }
-    setFilteredRequests(result);
+    startTransition(() => {
+      let result = requests;
+      if (searchTerm) {
+        result = result.filter(r => 
+          r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.profiles?.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      if (statusFilter !== 'all') {
+        result = result.filter(r => r.status === statusFilter);
+      }
+      setFilteredRequests(result);
+    });
   }, [searchTerm, statusFilter, requests]);
 
   return (
@@ -114,7 +117,10 @@ export default function MyRequests() {
       </header>
 
       {/* Filters Bar */}
-      <div className="gp-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-center">
+      <div className={clsx(
+        "gp-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-center transition-opacity",
+        isPending && "opacity-60 pointer-events-none"
+      )}>
         <div className="relative flex-1 w-full group">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
           <input 

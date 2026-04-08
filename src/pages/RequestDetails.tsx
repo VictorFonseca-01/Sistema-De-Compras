@@ -172,17 +172,18 @@ export default function RequestDetails() {
     });
     setLoading(false);
 
-    const { data: attachData } = await supabase.from('request_attachments').select('*').eq('request_id', id);
-    if (attachData) setAttachments(attachData);
-
-    const { data: historyData } = await supabase.from('request_status_history').select('*, profiles(full_name)').eq('request_id', id).order('created_at', { ascending: false });
-    if (historyData) setHistory(historyData);
-
-    const { data: quoteData } = await supabase.from('request_quotes').select('*').eq('request_id', id).order('price', { ascending: true });
-    if (quoteData) setQuotes(quoteData);
-
-    const { data: linkData } = await supabase.from('request_links').select('*').eq('request_id', id);
-    if (linkData) setLinks(linkData || []);
+    // Parallel fetch for associated data
+    Promise.all([
+      supabase.from('request_attachments').select('*').eq('request_id', id),
+      supabase.from('request_status_history').select('*, profiles(full_name)').eq('request_id', id).order('created_at', { ascending: false }),
+      supabase.from('request_quotes').select('*').eq('request_id', id).order('price', { ascending: true }),
+      supabase.from('request_links').select('*').eq('request_id', id)
+    ]).then(([attachRes, historyRes, quoteRes, linkRes]) => {
+      if (attachRes.data) setAttachments(attachRes.data);
+      if (historyRes.data) setHistory(historyRes.data);
+      if (quoteRes.data) setQuotes(quoteRes.data);
+      if (linkRes.data) setLinks(linkRes.data || []);
+    });
   };
 
   useEffect(() => {
@@ -262,6 +263,14 @@ export default function RequestDetails() {
       .from('requests')
       .update(updatePayload)
       .eq('id', request.id);
+
+    // OPTIMISTIC UI: Update local state immediately for instant feedback
+    setRequest({
+      ...request,
+      status: nextStatus,
+      current_step: nextStep,
+      ...updatePayload
+    });
 
     if (!updateError) {
       await supabase.from('request_status_history').insert([{
