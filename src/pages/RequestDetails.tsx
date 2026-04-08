@@ -421,6 +421,9 @@ export default function RequestDetails() {
   const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
   const isAdjustment = request.status === 'ADJUSTMENT_NEEDED';
 
+  const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
+  const currentIdx = flowMap.indexOf(request.status);
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
       {/* Breadcrumbs */}
@@ -450,7 +453,7 @@ export default function RequestDetails() {
              <div className="flex flex-col lg:flex-row gap-10 lg:gap-0 lg:items-start relative">
                 {/* Vertical line for mobile */}
                 <div className="lg:hidden absolute top-0 bottom-0 left-[21px] w-0.5 bg-gp-border z-0" />
-                {/* Horizontal line for desktop */}
+                 {/* Horizontal line for desktop */}
                 <div className="hidden lg:block absolute top-[22px] left-0 right-0 h-0.5 bg-gp-border z-0" />
                 
                 {[
@@ -461,8 +464,6 @@ export default function RequestDetails() {
                   { step: 'diretoria', label: 'Diretoria', desc: 'Aprovação Boards', status: 'PENDING_COMPRAS_FINAL' },
                   { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'COMPLETED' },
                 ].map((stage, idx) => {
-                  const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
-                  
                   // Refined Status Logic
                   let state: 'past' | 'current' | 'future' | 'refused' | 'warning' = 'future';
                   const currentIdx = flowMap.indexOf(request.status);
@@ -678,8 +679,8 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* 3. ANÁLISE TÉCNICA — TI (ONLY TI/ADMIN/AFTER GESTOR) */}
-          {(history.some(h => h.new_status === 'PENDING_COMPRAS') || request.current_step === 'ti' || profile?.role === 'ti') && (
+          {/* 3. ANÁLISE TÉCNICA — TI (Visibility: TI step or past TI) */}
+          {(currentIdx >= 2 || request.current_step === 'ti' || isTI || isAdmin) && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               (request.current_step === 'ti' && !isFinalized) ? "border-gp-blue/30 ring-1 ring-gp-blue/5 shadow-lg" : "opacity-80"
@@ -810,8 +811,8 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (ONLY COMPRAS/ADMIN/AFTER TI) */}
-          {(history.some(h => h.new_status === 'PENDING_DIRETORIA') || request.current_step === 'compras' || profile?.role === 'compras') && (
+          {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (Visibility: Compras step or past Compras) */}
+          {(currentIdx >= 3 || request.current_step === 'compras' || profile?.role === 'compras' || isAdmin) && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               (request.current_step === 'compras' && request.status === 'PENDING_COMPRAS') ? "border-gp-purple/30 ring-1 ring-gp-purple/5 shadow-lg" : "opacity-80"
