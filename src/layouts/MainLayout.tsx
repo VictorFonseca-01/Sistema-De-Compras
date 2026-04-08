@@ -129,14 +129,6 @@ export function MainLayout() {
             <Outlet />
           </div>
           
-          {/* Footer Meta info on large screens */}
-          <footer className="hidden lg:flex items-center justify-between px-12 py-10 opacity-20 border-t border-gp-border/30 mt-12 mb-8">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em]">© 2026 Global Parts Supply Chain</span>
-             <div className="flex gap-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Privacy</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Compliance</span>
-             </div>
-          </footer>
         </main>
         
         {/* Mobile Ecosystem Navigation */}
