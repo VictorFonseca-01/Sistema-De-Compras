@@ -113,7 +113,18 @@ export default function Dashboard() {
   const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
   const [recentMovements, setRecentMovements] = useState<RecentMovement[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [categoryStats, setCategoryStats] = useState<{ label: string; count: number; investment: number; color: string }[]>([]);
+  const [subcategoryStats, setSubcategoryStats] = useState<{ label: string; count: number }[]>([]);
   const [showAccessDenied, setShowAccessDenied] = useState(!!location.state?.accessDenied);
+
+  const categoryColors: Record<string, string> = {
+    "TI / Tecnologia": "var(--gp-blue)",
+    "Mobiliário": "var(--gp-amber)",
+    "Infraestrutura": "var(--gp-purple)",
+    "Administrativo": "var(--gp-success)",
+    "Serviços": "var(--gp-text)",
+    "Outros": "var(--gp-muted)"
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -221,6 +232,34 @@ export default function Dashboard() {
           setRecentRequests(
             [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
           );
+
+          // Agregar por Categoria
+          const cats: Record<string, { count: number; investment: number }> = {};
+          const subs: Record<string, number> = {};
+
+          requests.forEach(r => {
+            const cat = r.category || 'Outros';
+            const sub = r.subcategoria_solicitacao || 'Não Categorizado';
+            const cost = Number(r.estimated_cost) || 0;
+
+            if (!cats[cat]) cats[cat] = { count: 0, investment: 0 };
+            cats[cat].count++;
+            cats[cat].investment += cost;
+
+            if (!subs[sub]) subs[sub] = 0;
+            subs[sub]++;
+          });
+
+          setCategoryStats(Object.entries(cats).map(([label, data]) => ({
+            label,
+            ...data,
+            color: categoryColors[label] || categoryColors["Outros"]
+          })).sort((a, b) => b.count - a.count));
+
+          setSubcategoryStats(Object.entries(subs).map(([label, count]) => ({
+            label,
+            count
+          })).sort((a, b) => b.count - a.count).slice(0, 6));
         }
 
         const { data: assets } = await supabase.from('assets').select('*');
@@ -450,6 +489,35 @@ export default function Dashboard() {
             }
           </div>
         </div>
+
+        {/* Category Breakdown */}
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] px-1">Distribuição Criativa por Categoria</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading 
+              ? Array.from({ length: 3 }).map((_, i) => <KpiSkeleton key={i} />)
+              : categoryStats.map((cat, i) => (
+                  <div key={i} className="gp-card group p-5 bg-gp-surface/40 hover:bg-gp-surface transition-all flex flex-col justify-between border-gp-border/30 hover:border-gp-blue/20">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: cat.color }} />
+                        <span className="text-[12px] font-black text-gp-text uppercase tracking-tight">{cat.label}</span>
+                      </div>
+                      <span className="text-[10px] font-black text-gp-muted uppercase tracking-widest bg-gp-surface2 px-2 py-0.5 rounded border border-gp-border/30 shadow-inner">
+                        {cat.count} PEDIDOS
+                      </span>
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-bold text-gp-muted uppercase tracking-widest opacity-60 leading-none mb-1.5">Investimento Setorial</p>
+                        <p className="text-xl font-black text-gp-text tracking-tight uppercase">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cat.investment)}
+                        </p>
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
       </div>
 
       {/* Main content grid */}
@@ -511,6 +579,22 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gp-border/30">
+            <h4 className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-4 opacity-70">Top Subcategorias (Volume)</h4>
+            <div className="space-y-2">
+              {loading ? (
+                 Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-8 w-full bg-gp-surface2 animate-pulse rounded-lg" />)
+              ) : (
+                subcategoryStats.map((sub, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-gp-surface2/50 border border-gp-border/30 rounded-xl">
+                    <span className="text-[11px] font-black text-gp-text truncate max-w-[140px] uppercase tracking-tighter">{sub.label}</span>
+                    <span className="text-[11px] font-black text-gp-blue bg-gp-blue/10 px-2 py-0.5 rounded leading-none">{sub.count}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

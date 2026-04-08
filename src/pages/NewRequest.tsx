@@ -45,6 +45,29 @@ const subcategoriaMapping: Record<string, string[]> = {
   "Outros": ["Outros"]
 };
 
+const suggestionDictionary: { keywords: string[], category: string, subcategory: string }[] = [
+  { keywords: ["celular", "iphone", "android", "mobile", "smartphone"], category: "TI / Tecnologia", subcategory: "Celular" },
+  { keywords: ["notebook", "laptop", "macbook", "dell", "hp", "lenovo"], category: "TI / Tecnologia", subcategory: "Notebook" },
+  { keywords: ["computador", "desktop", "pc", "estação", "cpu"], category: "TI / Tecnologia", subcategory: "Computador" },
+  { keywords: ["monitor", "tela", "display", "monitorado"], category: "TI / Tecnologia", subcategory: "Monitor" },
+  { keywords: ["teclado", "mouse", "headset", "fone", "camera", "webcam", "periférico"], category: "TI / Tecnologia", subcategory: "Periféricos" },
+  { keywords: ["software", "office", "adobe", "erp", "windows", "sistema", "linux"], category: "TI / Tecnologia", subcategory: "Software" },
+  { keywords: ["licença", "contrato", "key", "anuidade"], category: "TI / Tecnologia", subcategory: "Licenças" },
+  { keywords: ["rede", "wi-fi", "wifi", "internet", "roteador", "switch", "servidor", "cabo de rede", "patch cord"], category: "TI / Tecnologia", subcategory: "Infraestrutura de TI" },
+  { keywords: ["cadeira", "ergonomica", "mocho"], category: "Mobiliário", subcategory: "Cadeira" },
+  { keywords: ["mesa", "escrivaninha", "estação de trabalho"], category: "Mobiliário", subcategory: "Mesa" },
+  { keywords: ["armário", "arquivo", "gaveteiro"], category: "Mobiliário", subcategory: "Armário" },
+  { keywords: ["papel", "folha", "resma", "caneta", "grampo", "grampeador", "lapiseira", "pasta", "clipe", "borracha"], category: "Administrativo", subcategory: "Material de escritório" },
+  { keywords: ["toner", "cartucho", "tinta", "suprimento"], category: "Administrativo", subcategory: "Suprimentos" },
+  { keywords: ["café", "copo", "açúcar", "limpeza", "detergente", "papel toalha"], category: "Administrativo", subcategory: "Itens de consumo" },
+  { keywords: ["elétrica", "tomada", "disjuntor", "fio", "energia", "luz", "iluminação", "lâmpada"], category: "Infraestrutura", subcategory: "Elétrica" },
+  { keywords: ["canaleta", "passagem", "conduíte"], category: "Infraestrutura", subcategory: "Canaletas" },
+  { keywords: ["reforma", "obra", "pintura", "pedreiro", "gesso"], category: "Infraestrutura", subcategory: "Reformas" },
+  { keywords: ["instalação", "montagem"], category: "Infraestrutura", subcategory: "Instalações" },
+  { keywords: ["manutenção", "conserto", "reparo"], category: "Serviços", subcategory: "Manutenção" },
+  { keywords: ["treinamento", "curso", "consultoria", "palestra"], category: "Serviços", subcategory: "Consultoria" },
+];
+
 const prioridadeOptions = [
   { value: 'baixa', label: 'Baixa' },
   { value: 'media', label: 'Média' },
@@ -77,6 +100,31 @@ export default function NewRequest() {
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [newLink, setNewLink] = useState({ label: '', url: '' });
   const [tempAttachments, setTempAttachments] = useState<{ file?: File; id: string; name: string; path?: string; isExisting?: boolean }[]>([]);
+  const [lastSuggestedTitle, setLastSuggestedTitle] = useState('');
+
+  // Sugestão Inteligente de Categoria baseada no Título
+  useEffect(() => {
+    const title = form.title.toLowerCase();
+    if (title.length < 3 || title === lastSuggestedTitle) return;
+
+    for (const item of suggestionDictionary) {
+      if (item.keywords.some(k => title.includes(k))) {
+        const isTI = item.category === 'TI / Tecnologia';
+        
+        // Só sugere se ainda for o padrão ou estiver vazio
+        setForm(prev => ({
+          ...prev,
+          category: item.category,
+          subcategoria_solicitacao: item.subcategory,
+          needs_ti_analysis: isTI,
+          responsible_area: isTI ? 'TI / Tecnologia' : prev.responsible_area
+        }));
+        
+        setLastSuggestedTitle(title);
+        break;
+      }
+    }
+  }, [form.title]);
 
   useEffect(() => {
     async function loadRequest() {
