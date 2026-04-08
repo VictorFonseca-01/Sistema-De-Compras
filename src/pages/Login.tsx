@@ -55,7 +55,7 @@ export default function Login() {
       toast.error('Falha na autenticação.');
       setLoading(false);
     } else {
-      toast.success('Acesso concedido (Legado).');
+      toast.success('Acesso concedido (Logado).');
       navigate('/');
     }
   };
