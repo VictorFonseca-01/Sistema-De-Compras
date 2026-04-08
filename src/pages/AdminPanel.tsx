@@ -19,6 +19,7 @@ import {
 import { useProfile, type Profile } from '../hooks/useProfile';
 import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
+import { MultiSearchableSelect } from '../components/MultiSearchableSelect';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { clsx } from 'clsx';
 import { formatSyntheticEmail } from '../lib/auth-utils';
@@ -79,9 +80,14 @@ export default function AdminPanel() {
   
   const [userScopes, setUserScopes] = useState<ManagerScope[]>([]);
   const [isAddingScope, setIsAddingScope] = useState(false);
-  const [newScope, setNewScope] = useState<ManagerScope>({ 
+  const [newScope, setNewScope] = useState<{
+    scope_type: 'company' | 'department';
+    company_ids: string[];
+    department_id?: string;
+    can_edit: boolean;
+  }>({ 
     scope_type: 'company', 
-    company_id: '',
+    company_ids: [],
     can_edit: false 
   });
 
@@ -163,26 +169,37 @@ export default function AdminPanel() {
   };
 
   const addScope = async () => {
-    if (!editingUser || !newScope.company_id) return;
+    if (!editingUser || newScope.company_ids.length === 0) return;
     setActionLoading(true);
-    const { data, error } = await supabase.from('manager_scopes').insert([{
-      user_id: editingUser.id,
-      scope_type: newScope.scope_type,
-      company_id: newScope.company_id,
-      department_id: newScope.department_id || null
-    }]).select().single();
 
-    if (!error && data) {
-      setUserScopes([...userScopes, data]);
-      setIsAddingScope(false);
-      setNewScope({ 
-        scope_type: 'company', 
-        company_id: '',
-        can_edit: false 
-      });
-      toast.success('Escopo de gestão expandido.');
+    try {
+      const inserts = newScope.company_ids.map(compId => ({
+        user_id: editingUser.id,
+        scope_type: newScope.scope_type,
+        company_id: compId,
+        department_id: newScope.department_id || null,
+        can_edit: newScope.can_edit
+      }));
+
+      const { data, error } = await supabase.from('manager_scopes').insert(inserts).select();
+
+      if (!error && data) {
+        setUserScopes([...userScopes, ...data]);
+        setIsAddingScope(false);
+        setNewScope({ 
+          scope_type: 'company', 
+          company_ids: [],
+          can_edit: false 
+        });
+        toast.success(`${data.length} regras de acesso ativadas.`);
+      } else if (error) {
+        throw error;
+      }
+    } catch (err: any) {
+      toast.error('Erro ao adicionar escopo: ' + err.message);
+    } finally {
+      setActionLoading(false);
     }
-    setActionLoading(false);
   };
 
   const removeScope = async (id: string) => {
@@ -572,10 +589,11 @@ export default function AdminPanel() {
                                    </div>
                                    <div className="space-y-1">
                                       <label className={labelClass}>Empresa Alvo</label>
-                                      <SearchableSelect 
+                                      <MultiSearchableSelect 
                                          options={companies.map(c => ({ value: c.id, label: c.name }))} 
-                                         value={newScope.company_id} 
-                                         onChange={val => setNewScope({...newScope, company_id: val})} 
+                                         value={newScope.company_ids} 
+                                         onChange={vals => setNewScope({...newScope, company_ids: vals})} 
+                                         placeholder="Selecionar Unidades"
                                       />
                                    </div>
                                    {newScope.scope_type === 'department' && (
@@ -603,7 +621,7 @@ export default function AdminPanel() {
                                 </div>
                                 <div className="flex justify-end gap-3 pt-4 relative z-10">
                                    <button onClick={() => setIsAddingScope(false)} className="btn-premium-ghost px-6 py-3 text-[10px] font-black uppercase">CANCELAR</button>
-                                   <button onClick={addScope} disabled={actionLoading || !newScope.company_id} className="btn-premium-primary px-10 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/30">ATIVAR REGRA DE ACESSO</button>
+                                   <button onClick={addScope} disabled={actionLoading || newScope.company_ids.length === 0} className="btn-premium-primary px-10 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/30">ATIVAR REGRA DE ACESSO</button>
                                 </div>
                                 <Zap className="absolute -left-10 -bottom-10 text-gp-blue opacity-[0.03] -rotate-12" size={140} />
                              </div>
