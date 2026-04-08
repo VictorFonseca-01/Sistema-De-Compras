@@ -642,7 +642,7 @@ export default function RequestDetails() {
                 <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
                   <FileText size={18} className="text-gp-blue" /> Responsabilidade: Auditoria de TI
                 </h3>
-                {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized && (
+                {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized && (
                   <div className="flex items-center gap-2">
                     <label className="btn-premium-ghost px-4 py-2 rounded-xl cursor-pointer text-[10px] font-black">
                       {uploading ? 'ENVIANDO...' : 'PARECER TÉCNICO (DOCS)'}
@@ -656,7 +656,7 @@ export default function RequestDetails() {
                  {/* 1. PARECER TÉCNICO */}
                  <div className="space-y-4">
                     <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Parecer / Análise de Viabilidade</label>
-                    {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
+                    {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized ? (
                       <textarea 
                         className="gp-input px-6 py-5 min-h-[120px] resize-none text-[14px] font-medium leading-relaxed"
                         placeholder="Descreva aqui sua análise técnica detalhada..."
@@ -674,7 +674,7 @@ export default function RequestDetails() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6 border-y border-gp-border/30">
                     <div className="space-y-4">
                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Link de Referência</label>
-                      {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
+                      {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized ? (
                         <input 
                           type="url"
                           className="gp-input px-5 h-12"
@@ -692,7 +692,7 @@ export default function RequestDetails() {
                     </div>
                     <div className="space-y-4">
                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Site do Fabricante / Referência</label>
-                      {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
+                      {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized ? (
                         <input 
                           type="text"
                           className="gp-input px-5 h-12"
@@ -721,7 +721,7 @@ export default function RequestDetails() {
                            <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
                          </div>
                        ))}
-                       {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized && (
+                       {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized && (
                          <label className="border-2 border-dashed border-gp-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-gp-blue/30 hover:bg-gp-blue/[0.01] transition-all group">
                              <Plus size={20} className="text-gp-muted group-hover:text-gp-blue" />
                              <span className="text-[9px] font-black uppercase text-gp-muted">Anexar Mídia</span>
@@ -742,7 +742,7 @@ export default function RequestDetails() {
                           <p className="text-[12px] font-medium text-gp-muted">Valor sugerido para a cotação final de compras.</p>
                        </div>
                     </div>
-                    {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
+                    {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized ? (
                       <div className="relative group/val w-full md:w-64">
                         <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gp-blue-light text-sm tracking-widest leading-none pointer-events-none">R$</div>
                         <input 
