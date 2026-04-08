@@ -104,11 +104,22 @@ export default function Notifications() {
 
   const markAllAsRead = async () => {
     if (!profile) return;
-    const { error } = await supabase
+    let updateQuery = supabase
       .from('notifications')
       .update({ is_read: true })
-      .eq('user_id', profile.id)
       .eq('is_read', false);
+
+    // Aplicar os mesmos filtros de visibilidade para marcar como lido
+    if (['ti', 'compras', 'diretoria', 'master_admin'].includes(profile.role)) {
+      // Observer: Marcar todas que o admin visualiza
+      updateQuery = updateQuery.or(`user_id.eq.${profile.id},user_id.is.null,and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
+    } else if (profile.role === 'gestor') {
+      updateQuery = updateQuery.or(`user_id.eq.${profile.id},and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
+    } else {
+      updateQuery = updateQuery.eq('user_id', profile.id);
+    }
+
+    const { error } = await updateQuery;
     
     if (!error) {
       toast.success('Todas as notificações foram lidas.');

@@ -34,7 +34,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         .eq('is_read', false);
 
       if (['ti', 'compras', 'diretoria', 'master_admin'].includes(profile.role)) {
-        // Global observer
+        // Observer: Contar notificações globais ou específicas
+        // Para evitar contagem infinita, limitamos ao que o perfil visualiza na página
+        // Simplificando: Notificações direcionadas ou sem user_id (sistema)
+        query = query.or(`user_id.eq.${profile.id},user_id.is.null,and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
       } else if (profile.role === 'gestor') {
         query = query.or(`user_id.eq.${profile.id},and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
       } else {
@@ -62,7 +65,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
   }, [profile]);
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Painel de Controle', path: '/' },
+    { icon: LayoutDashboard, label: 'Dashboards', path: '/' },
     { icon: ListOrdered, label: 'Solicitações de Compras', path: '/solicitacoes' }, 
     { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes', badge: unreadCount },
