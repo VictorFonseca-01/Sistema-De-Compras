@@ -432,7 +432,11 @@ export default function RequestDetails() {
   const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
   const isAdjustment = request.status === 'ADJUSTMENT_NEEDED';
 
-  const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
+  const isTIWorkflow = request.category === 'TI / Tecnologia';
+  const flowMap = isTIWorkflow 
+    ? ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED']
+    : ['PENDING_GESTOR', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
+  
   const currentIdx = flowMap.indexOf(request.status);
 
   return (
@@ -469,8 +473,8 @@ export default function RequestDetails() {
                 
                 {[
                   { step: 'solicitante', label: 'Solicitação', desc: 'Abertura', status: 'PENDING_GESTOR' },
-                  { step: 'gestor', label: 'Gestor', desc: 'Validação', status: 'PENDING_TI' },
-                  { step: 'ti', label: 'Técnico', desc: 'Análise IT', status: 'PENDING_COMPRAS' },
+                  { step: 'gestor', label: 'Gestor', desc: 'Validação', status: isTIWorkflow ? 'PENDING_TI' : 'PENDING_COMPRAS' },
+                  ...(isTIWorkflow ? [{ step: 'ti', label: 'Técnico', desc: 'Análise IT', status: 'PENDING_COMPRAS' }] : []),
                   { step: 'compras', label: 'Compras', desc: 'Cotações', status: 'PENDING_DIRETORIA' },
                   { step: 'diretoria', label: 'Diretoria', desc: 'Aprovação Boards', status: 'PENDING_COMPRAS_FINAL' },
                   { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'COMPLETED' },
@@ -1100,7 +1104,13 @@ export default function RequestDetails() {
                       disabled={actionLoading}
                       onClick={() => {
                         let ns = ''; let nst = '';
-                        if (request.status === 'PENDING_GESTOR') { ns = 'PENDING_TI'; nst = 'ti'; }
+                        if (request.status === 'PENDING_GESTOR') { 
+                          if (isTIWorkflow) {
+                            ns = 'PENDING_TI'; nst = 'ti'; 
+                          } else {
+                            ns = 'PENDING_COMPRAS'; nst = 'compras'; 
+                          }
+                        }
                         else if (request.status === 'PENDING_TI' || (request.status === 'ADJUSTMENT_NEEDED' && request.current_step === 'ti')) { ns = 'PENDING_COMPRAS'; nst = 'compras'; }
                         else if (request.status === 'PENDING_COMPRAS') { ns = 'PENDING_DIRETORIA'; nst = 'diretoria'; }
                         else if (request.status === 'PENDING_DIRETORIA') { ns = 'PENDING_COMPRAS_FINAL'; nst = 'compras'; }

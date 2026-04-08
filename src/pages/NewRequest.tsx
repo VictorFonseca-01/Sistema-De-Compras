@@ -28,19 +28,12 @@ import { useEffect } from 'react';
 type Priority = 'baixa' | 'media' | 'alta' | 'critica';
 
 const categoriaOptions = [
-  { value: "Mouse", label: "Mouse" },
-  { value: "Teclado", label: "Teclado" },
-  { value: "Fone de Ouvido", label: "Fone de Ouvido" },
-  { value: "Câmera", label: "Câmera" },
-  { value: "Computador", label: "Computador" },
-  { value: "Notebook", label: "Notebook" },
-  { value: "Celular", label: "Celular" },
-  { value: "Adaptadores em geral (especifique na descrição)", label: "Adaptadores em geral (especifique na descrição)" },
-  { value: "Hardware", label: "Hardware" },
-  { value: "Software / Licenças", label: "Software / Licenças" },
-  { value: "Acessórios", label: "Acessórios" },
-  { value: "Serviços / Nuvem", label: "Serviços / Nuvem" },
-  { value: "Infraestrutura", label: "Infraestrutura" }
+  { value: "TI / Tecnologia", label: "TI / Tecnologia" },
+  { value: "Mobiliário", label: "Mobiliário" },
+  { value: "Infraestrutura", label: "Infraestrutura" },
+  { value: "Administrativo", label: "Administrativo" },
+  { value: "Serviços", label: "Serviços" },
+  { value: "Outros", label: "Outros" }
 ];
 
 const prioridadeOptions = [
@@ -64,7 +57,7 @@ export default function NewRequest() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    category: 'Hardware',
+    category: 'TI / Tecnologia',
     estimated_cost: '',
     priority: 'media' as Priority,
   });
@@ -158,14 +151,10 @@ export default function NewRequest() {
     }
 
     // Validação específica para TI
-    if (profile?.role === 'ti') {
+    // Validação específica para Compras (Se necessário nesta fase)
+    if (profile?.role === 'compras') {
       if (!form.estimated_cost) {
-        setError('Analistas de TI devem informar o valor estimado.');
-        setLoading(false);
-        return;
-      }
-      if (links.length === 0) {
-        setError('Analistas de TI devem anexar pelo menos um link de referência.');
+        setError('A equipe de Compras deve informar o valor orçamentário.');
         setLoading(false);
         return;
       }
@@ -399,7 +388,7 @@ export default function NewRequest() {
                 <div className="relative group/input">
                   <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gp-blue-light text-sm tracking-widest leading-none pointer-events-none">R$</div>
                   <input
-                    required={profile?.role === 'ti' || profile?.role === 'compras'}
+                    required={profile?.role === 'compras'}
                     type="number"
                     step="0.01"
                     placeholder="0,00"
