@@ -10,7 +10,6 @@ import {
   FileText, 
   Tag, 
   Calendar, 
-  ExternalLink, 
   ShieldCheck,
   User,
   Hash,
@@ -20,7 +19,11 @@ import {
   Download,
   Image as ImageIcon,
   Building2,
-  Gavel
+  Gavel,
+  Link as LinkIcon,
+  Play,
+  Plus,
+  BadgeDollarSign
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'react-hot-toast';
@@ -36,6 +39,13 @@ interface Request {
   status: string;
   current_step: string;
   created_at: string;
+  ti_estimated_cost?: number;
+  ti_technical_opinion?: string;
+  ti_reference_link?: string;
+  ti_reference_site?: string;
+  tracking_code?: string;
+  delivery_prediction?: string;
+  invoice_number?: string;
   profiles: {
     full_name: string;
     email: string;
@@ -48,13 +58,9 @@ interface Attachment {
   file_name: string;
   file_path: string;
   file_type: string;
+  is_technical?: boolean;
+  is_quote?: boolean;
   created_at: string;
-}
-
-interface RequestLink {
-  id: string;
-  label: string;
-  url: string;
 }
 
 interface RequestHistory {
@@ -72,6 +78,10 @@ interface Quote {
   supplier_name: string;
   price: number;
   description: string;
+  purchase_link?: string;
+  supplier_site?: string;
+  observations?: string;
+  quoted_value?: number;
   is_selected: boolean;
   justification: string;
   quote_date: string;
@@ -79,14 +89,14 @@ interface Quote {
 }
 
 const statusMap: Record<string, { label: string; badge: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
-  pending_gestor:        { label: 'Aguardando Gestor',    badge: 'gp-badge-amber',  icon: Clock },
-  pending_ti:            { label: 'Análise Técnica (TI)',   badge: 'gp-badge-blue',   icon: FileText },
-  pending_compras:       { label: 'Em Cotação',           badge: 'gp-badge-purple', icon: Clock },
-  pending_diretoria:     { label: 'Aguardando Diretoria', badge: 'gp-badge-purple', icon: Clock },
-  pending_compras_final: { label: 'Finalização de Compra', badge: 'gp-badge-blue',   icon: ShieldCheck },
-  approved:              { label: 'Solicitação Concluída',  badge: 'gp-badge-success', icon: CheckCircle2 },
-  rejected:              { label: 'Solicitação Recusada',   badge: 'gp-badge-red',    icon: XCircle },
-  adjustment_needed:     { label: 'Ajuste Necessário',    badge: 'gp-badge-amber',  icon: AlertCircle },
+  PENDING_GESTOR:        { label: 'Aguardando Gestor',    badge: 'gp-badge-amber',  icon: Clock },
+  PENDING_TI:            { label: 'Análise Técnica (TI)',   badge: 'gp-badge-blue',   icon: FileText },
+  PENDING_COMPRAS:       { label: 'Em Cotação',           badge: 'gp-badge-purple', icon: Clock },
+  PENDING_DIRETORIA:     { label: 'Aguardando Diretoria', badge: 'gp-badge-purple', icon: Clock },
+  PENDING_COMPRAS_FINAL: { label: 'Finalização de Compra', badge: 'gp-badge-blue',   icon: ShieldCheck },
+  COMPLETED:             { label: 'Solicitação Concluída',  badge: 'gp-badge-success', icon: CheckCircle2 },
+  REJECTED:              { label: 'Solicitação Recusada',   badge: 'gp-badge-red',    icon: XCircle },
+  ADJUSTMENT_NEEDED:     { label: 'Ajuste Necessário',    badge: 'gp-badge-amber',  icon: AlertCircle },
 };
 
 export default function RequestDetails() {
@@ -94,18 +104,17 @@ export default function RequestDetails() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const statusLabels: Record<string, string> = {
-    pending_gestor: 'Validação Gestor',
-    pending_ti: 'Análise Técnica (TI)',
-    pending_compras: 'Mapa de Cotação',
-    pending_diretoria: 'Aprovação Diretoria',
-    pending_compras_final: 'Processamento de Compra',
-    approved: 'Solicitação Concluída',
-    rejected: 'Solicitação Recusada',
-    adjustment_needed: 'Ajuste Necessário',
+    PENDING_GESTOR: 'Validação Gestor',
+    PENDING_TI: 'Análise Técnica (TI)',
+    PENDING_COMPRAS: 'Mapa de Cotação',
+    PENDING_DIRETORIA: 'Aprovação Diretoria',
+    PENDING_COMPRAS_FINAL: 'Processamento de Compra',
+    COMPLETED: 'Solicitação Concluída',
+    REJECTED: 'Solicitação Recusada',
+    ADJUSTMENT_NEEDED: 'Ajuste Necessário',
   };
 
   const [request, setRequest] = useState<Request | null>(null);
-  const [links, setLinks] = useState<RequestLink[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -115,8 +124,24 @@ export default function RequestDetails() {
   const [comment, setComment] = useState('');
   
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [newQuote, setNewQuote] = useState({ supplier_name: '', price: '', description: '' });
+  const [newQuote, setNewQuote] = useState({ 
+    supplier_name: '', 
+    price: '', 
+    description: '',
+    purchase_link: '',
+    supplier_site: '',
+    observations: '',
+    quoted_value: ''
+  });
   const [showQuoteForm, setShowQuoteForm] = useState(false);
+
+  // TI Specialized Fields State
+  const [tiForm, setTiForm] = useState({
+    ti_technical_opinion: '',
+    ti_estimated_cost: '',
+    ti_reference_link: '',
+    ti_reference_site: ''
+  });
 
   const fetchRequest = async () => {
     setLoading(true);
@@ -135,11 +160,13 @@ export default function RequestDetails() {
     }
 
     setRequest(data);
+    setTiForm({
+      ti_technical_opinion: data.ti_technical_opinion || '',
+      ti_estimated_cost: data.ti_estimated_cost?.toString() || '',
+      ti_reference_link: data.ti_reference_link || '',
+      ti_reference_site: data.ti_reference_site || ''
+    });
     setLoading(false);
-
-    // Fetch related data
-    const { data: linkData } = await supabase.from('request_links').select('*').eq('request_id', id);
-    if (linkData) setLinks(linkData);
 
     const { data: attachData } = await supabase.from('request_attachments').select('*').eq('request_id', id);
     if (attachData) setAttachments(attachData);
@@ -155,7 +182,7 @@ export default function RequestDetails() {
     fetchRequest();
   }, [id, profile]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isTechnical: boolean = false, isQuote: boolean = false) => {
     const file = e.target.files?.[0];
     if (!file || !id || !profile) return;
 
@@ -177,7 +204,9 @@ export default function RequestDetails() {
           request_id: id,
           file_name: file.name,
           file_path: filePath,
-          file_type: file.type
+          file_type: file.type,
+          is_technical: isTechnical,
+          is_quote: isQuote
         }]);
 
       if (dbError) throw dbError;
@@ -196,12 +225,29 @@ export default function RequestDetails() {
     if (!request || !profile) return;
     setActionLoading(true);
     
+    const updatePayload: any = { 
+      status: nextStatus,
+      current_step: nextStep
+    };
+
+    // If step is TI, include tech fields
+    if (request.current_step === 'ti' && profile.role === 'ti') {
+      updatePayload.ti_technical_opinion = tiForm.ti_technical_opinion;
+      updatePayload.ti_estimated_cost = tiForm.ti_estimated_cost ? parseFloat(tiForm.ti_estimated_cost) : null;
+      updatePayload.ti_reference_link = tiForm.ti_reference_link;
+      updatePayload.ti_reference_site = tiForm.ti_reference_site;
+    }
+
+    // If step is Final Purchasing, include tracking/NF fields
+    if (request.status === 'PENDING_COMPRAS_FINAL' && profile.role === 'compras') {
+      updatePayload.tracking_code = request.tracking_code;
+      updatePayload.invoice_number = request.invoice_number;
+      updatePayload.delivery_prediction = request.delivery_prediction;
+    }
+
     const { error: updateError } = await supabase
       .from('requests')
-      .update({ 
-        status: nextStatus,
-        current_step: nextStep
-      })
+      .update(updatePayload)
       .eq('id', request.id);
 
     if (!updateError) {
@@ -262,16 +308,29 @@ export default function RequestDetails() {
         supplier_name: newQuote.supplier_name,
         price: parseFloat(newQuote.price),
         description: newQuote.description,
+        purchase_link: newQuote.purchase_link,
+        supplier_site: newQuote.supplier_site,
+        observations: newQuote.observations,
+        quoted_value: newQuote.quoted_value ? parseFloat(newQuote.quoted_value) : parseFloat(newQuote.price),
         created_by: profile?.id
       }]);
 
     if (!error) {
       toast.success('Orçamento registrado.');
-      setNewQuote({ supplier_name: '', price: '', description: '' });
+      setNewQuote({ 
+        supplier_name: '', 
+        price: '', 
+        description: '',
+        purchase_link: '',
+        supplier_site: '',
+        observations: '',
+        quoted_value: ''
+      });
       setShowQuoteForm(false);
       fetchRequest();
     } else {
-      toast.error('Erro ao salvar orçamento.');
+      console.error("Erro ao salvar orçamento:", error);
+      toast.error('Erro ao salvar orçamento: ' + error.message);
     }
   };
 
@@ -363,21 +422,21 @@ export default function RequestDetails() {
                 <div className="hidden lg:block absolute top-[22px] left-0 right-0 h-0.5 bg-gp-border z-0" />
                 
                 {[
-                  { step: 'solicitante', label: 'Solicitação', desc: 'Abertura', status: 'pending_gestor' },
-                  { step: 'gestor', label: 'Gestor', desc: 'Validação', status: 'pending_ti' },
-                  { step: 'ti', label: 'Técnico', desc: 'Análise IT', status: 'pending_compras' },
-                  { step: 'compras', label: 'Compras', desc: 'Cotações', status: 'pending_diretoria' },
-                  { step: 'diretoria', label: 'Diretoria', desc: 'Aprovação Boards', status: 'pending_compras_final' },
-                  { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'approved' },
+                  { step: 'solicitante', label: 'Solicitação', desc: 'Abertura', status: 'PENDING_GESTOR' },
+                  { step: 'gestor', label: 'Gestor', desc: 'Validação', status: 'PENDING_TI' },
+                  { step: 'ti', label: 'Técnico', desc: 'Análise IT', status: 'PENDING_COMPRAS' },
+                  { step: 'compras', label: 'Compras', desc: 'Cotações', status: 'PENDING_DIRETORIA' },
+                  { step: 'diretoria', label: 'Diretoria', desc: 'Aprovação Boards', status: 'PENDING_COMPRAS_FINAL' },
+                  { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'COMPLETED' },
                 ].map((stage, idx) => {
-                  const flowMap = ['pending_gestor', 'pending_ti', 'pending_compras', 'pending_diretoria', 'pending_compras_final', 'approved'];
+                  const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
                   const currentIdx = flowMap.indexOf(request.status);
                   
                   // Encontrar log específico desta etapa
                   const stageLog = history.find(h => h.new_status === stage.status);
                   // O primeiro passo (Solicitação) não tem new_status no passado, pegamos o status de criação
-                  const isCurrent = request.status === (idx === 0 ? 'pending_gestor' : flowMap[idx-1]) && !isFinalized;
-                  const isPast = (currentIdx >= idx && request.status !== 'rejected') || request.status === 'approved';
+                  const isCurrent = request.status === (idx === 0 ? 'PENDING_GESTOR' : flowMap[idx-1]) && !isFinalized;
+                  const isPast = (currentIdx >= idx && request.status !== 'REJECTED') || request.status === 'COMPLETED';
                   
                   // Refined Status Logic
                   let state: 'past' | 'current' | 'future' | 'refused' = 'future';
@@ -392,7 +451,7 @@ export default function RequestDetails() {
                   
                   if (isPast) state = 'past';
                   if (isCurrent) state = 'current';
-                  if (request.status === 'rejected' && idx === currentIdx) state = 'refused';
+                  if (request.status === 'REJECTED' && idx === currentIdx) state = 'refused';
 
                   return (
                     <div key={idx} className="flex-1 flex flex-row lg:flex-col items-start lg:items-center gap-6 lg:gap-5 group/node transition-all relative z-10 min-w-0">
@@ -509,7 +568,7 @@ export default function RequestDetails() {
           </div>
 
           {/* 2. VALIDAÇÃO — GESTOR */}
-          {(history.some(h => h.new_status === 'pending_ti') || request.current_step === 'gestor') && (
+          {(history.some(h => h.new_status === 'PENDING_TI') || request.current_step === 'gestor') && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               request.current_step === 'gestor' ? "border-gp-amber/30 ring-1 ring-gp-amber/5" : "opacity-80"
@@ -535,7 +594,7 @@ export default function RequestDetails() {
           )}
 
           {/* 3. ANÁLISE TÉCNICA — TI (ONLY TI/ADMIN/AFTER GESTOR) */}
-          {(history.some(h => h.new_status === 'pending_compras') || request.current_step === 'ti' || profile?.role === 'ti') && (
+          {(history.some(h => h.new_status === 'PENDING_COMPRAS') || request.current_step === 'ti' || profile?.role === 'ti') && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               (request.current_step === 'ti' && !isFinalized) ? "border-gp-blue/30 ring-1 ring-gp-blue/5 shadow-lg" : "opacity-80"
@@ -553,49 +612,124 @@ export default function RequestDetails() {
                   </div>
                 )}
               </div>
-              <div className="space-y-4">
-                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed">
-                   Análise técnica de viabilidade, comparação com padrões internos e especificações de rede.
-                 </p>
-                 
-                 {/* Arquivos e Links Técnicos */}
-                 {(links.length > 0 || attachments.length > 0) && (
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {links.map((link, i) => (
-                        <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue transition-all group shadow-sm">
-                          <span className="font-bold text-[13px] text-gp-text truncate pr-2">{link.label}</span>
-                          <ExternalLink size={14} className="text-gp-muted group-hover:text-gp-blue" />
-                        </a>
-                      ))}
-                      {attachments.filter(a => !a.file_name.toLowerCase().includes('nf') && !a.file_name.toLowerCase().includes('comprovante')).map((file) => (
-                        <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
-                          <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted">
-                              <ImageIcon size={14} />
-                            </div>
-                            <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
-                          </div>
-                          <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue"><Download size={14} /></a>
-                        </div>
-                      ))}
-                   </div>
-                 )}
+              {/* Technical Analysis Content */}
+              <div className="space-y-8">
+                 {/* 1. PARECER TÉCNICO */}
+                 <div className="space-y-4">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Parecer / Análise de Viabilidade</label>
+                    {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                      <textarea 
+                        className="gp-input px-6 py-5 min-h-[120px] resize-none text-[14px] font-medium leading-relaxed"
+                        placeholder="Descreva aqui sua análise técnica detalhada..."
+                        value={tiForm.ti_technical_opinion}
+                        onChange={e => setTiForm({...tiForm, ti_technical_opinion: e.target.value})}
+                      />
+                    ) : (
+                      <div className="bg-gp-surface2 p-6 rounded-2xl border border-gp-border text-gp-text2 text-[14px] font-medium leading-relaxed italic shadow-inner">
+                        {request.ti_technical_opinion || "Nenhuma análise técnica registrada."}
+                      </div>
+                    )}
+                 </div>
 
-                 {history.find(h => h.new_status === 'pending_compras') && (
-                    <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-blue">
-                       <p className="text-[13px] font-black text-gp-blue uppercase tracking-widest mb-2 opacity-60 leading-none">Parecer da Equipe Global TI</p>
-                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => h.new_status === 'pending_compras')?.comment || 'Avalizado tecnicamente.'}"</p>
+                 {/* 2. REFERÊNCIAS E LINKS */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6 border-y border-gp-border/30">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Link de Referência</label>
+                      {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                        <input 
+                          type="url"
+                          className="gp-input px-5 h-12"
+                          placeholder="https://exemplo.com/produto"
+                          value={tiForm.ti_reference_link}
+                          onChange={e => setTiForm({...tiForm, ti_reference_link: e.target.value})}
+                        />
+                      ) : (
+                        request.ti_reference_link ? (
+                          <a href={request.ti_reference_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-gp-surface border border-gp-border rounded-xl text-gp-blue font-bold text-[13px] hover:border-gp-blue transition-all truncate">
+                            <LinkIcon size={14} /> {request.ti_reference_link}
+                          </a>
+                        ) : <p className="text-[12px] text-gp-muted opacity-50 italic">Nenhum link informado.</p>
+                      )}
                     </div>
-                 )}
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Site do Fabricante / Referência</label>
+                      {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                        <input 
+                          type="text"
+                          className="gp-input px-5 h-12"
+                          placeholder="Ex: dell.com.br"
+                          value={tiForm.ti_reference_site}
+                          onChange={e => setTiForm({...tiForm, ti_reference_site: e.target.value})}
+                        />
+                      ) : (
+                        <p className="font-bold text-gp-text text-[14px]">{request.ti_reference_site || "-"}</p>
+                      )}
+                    </div>
+                 </div>
+
+                 {/* 3. MÍDIAS DE APOIO */}
+                 <div className="space-y-6">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Mídias de Apoio (Fotos e Vídeos)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                       {attachments.filter(a => a.is_technical || a.file_name.toLowerCase().includes('ti_')).map((file) => (
+                         <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
+                           <div className="flex items-center gap-3 overflow-hidden">
+                             <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted">
+                               {file.file_type?.startsWith('video/') ? <Play size={14} /> : <ImageIcon size={14} />}
+                             </div>
+                             <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                           </div>
+                           <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
+                         </div>
+                       ))}
+                       {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized && (
+                         <label className="border-2 border-dashed border-gp-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-gp-blue/30 hover:bg-gp-blue/[0.01] transition-all group">
+                             <Plus size={20} className="text-gp-muted group-hover:text-gp-blue" />
+                             <span className="text-[9px] font-black uppercase text-gp-muted">Anexar Mídia</span>
+                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, true, false)} disabled={uploading} />
+                         </label>
+                       )}
+                    </div>
+                 </div>
+
+                 {/* 4. INVESTIMENTO ESTIMADO (REVISADO TI) */}
+                 <div className="bg-gp-blue/[0.03] p-8 rounded-2xl border border-gp-blue/10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-inner">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-xl bg-gp-blue/10 border border-gp-blue/20 flex items-center justify-center text-gp-blue">
+                          <BadgeDollarSign size={24} strokeWidth={2.5} />
+                       </div>
+                       <div>
+                          <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-1">Cálculo Orçamentário TI</p>
+                          <p className="text-[12px] font-medium text-gp-muted">Valor sugerido para a cotação final de compras.</p>
+                       </div>
+                    </div>
+                    {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                      <div className="relative group/val w-full md:w-64">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gp-blue-light text-sm tracking-widest leading-none pointer-events-none">R$</div>
+                        <input 
+                          type="number"
+                          step="0.01"
+                          placeholder="0,00"
+                          className="gp-input pl-14 font-black text-gp-blue"
+                          value={tiForm.ti_estimated_cost}
+                          onChange={e => setTiForm({...tiForm, ti_estimated_cost: e.target.value})}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-3xl font-black text-gp-text">
+                        R$ {Number(request.ti_estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                    )}
+                 </div>
               </div>
             </div>
           )}
 
           {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (ONLY COMPRAS/ADMIN/AFTER TI) */}
-          {(history.some(h => h.new_status === 'pending_diretoria') || request.current_step === 'compras' || profile?.role === 'compras') && (
+          {(history.some(h => h.new_status === 'PENDING_DIRETORIA') || request.current_step === 'compras' || profile?.role === 'compras') && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
-              (request.current_step === 'compras' && request.status === 'pending_compras') ? "border-gp-purple/30 ring-1 ring-gp-purple/5 shadow-lg" : "opacity-80"
+              (request.current_step === 'compras' && request.status === 'PENDING_COMPRAS') ? "border-gp-purple/30 ring-1 ring-gp-purple/5 shadow-lg" : "opacity-80"
             )}>
               <div className="flex justify-between items-center">
                 <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
@@ -609,18 +743,41 @@ export default function RequestDetails() {
               </div>
 
               {showQuoteForm && (
-                <div className="bg-gp-surface2 p-6 rounded-2xl border border-gp-border mb-8 animate-fade-down space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-gp-muted uppercase tracking-widest pl-1">Razão Social / Fornecedor</label>
+                <div className="bg-gp-surface2 p-8 rounded-2xl border border-gp-border mb-8 animate-fade-down space-y-6 shadow-2xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Fornecedor / Razão Social</label>
                       <input type="text" placeholder="Ex: Dell Brasil" className="gp-input px-5 h-12" value={newQuote.supplier_name} onChange={e => setNewQuote({...newQuote, supplier_name: e.target.value})} />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-gp-muted uppercase tracking-widest pl-1">Valor Unitário Bruto (R$)</label>
-                      <input type="number" placeholder="0,00" className="gp-input px-5 h-12" value={newQuote.price} onChange={e => setNewQuote({...newQuote, price: e.target.value})} />
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Valor Unitário Bruto (R$)</label>
+                      <input type="number" placeholder="0,00" className="gp-input px-5 h-12 text-gp-blue font-bold" value={newQuote.price} onChange={e => setNewQuote({...newQuote, price: e.target.value})} />
                     </div>
                   </div>
-                  <button onClick={handleAddQuote} className="w-full btn-premium-primary py-3 rounded-xl font-black uppercase text-[11px]">SALVAR NO MAPA DE COTAÇÃO</button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Link Direto para Compra</label>
+                      <input type="url" placeholder="https://..." className="gp-input px-5 h-12" value={newQuote.purchase_link} onChange={e => setNewQuote({...newQuote, purchase_link: e.target.value})} />
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Site / Fornecedor</label>
+                      <input type="text" placeholder="Ex: dell.com.br" className="gp-input px-5 h-12" value={newQuote.supplier_site} onChange={e => setNewQuote({...newQuote, supplier_site: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Observações da Cotação</label>
+                    <textarea placeholder="Prazos, garantias, frete..." className="gp-input px-5 py-4 h-24 resize-none" value={newQuote.observations} onChange={e => setNewQuote({...newQuote, observations: e.target.value})} />
+                  </div>
+
+                  <div className="flex items-center gap-4 pt-4 border-t border-gp-border/30">
+                    <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center gap-2">
+                       <Plus size={16} /> ANEXAR PDF / PROPOSTA
+                       <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, false, true)} disabled={uploading} />
+                    </label>
+                    <button onClick={handleAddQuote} className="flex-1 btn-premium-primary py-3.5 rounded-xl font-black uppercase text-[11px] tracking-widest">REGISTRAR NO MAPA</button>
+                  </div>
                 </div>
               )}
 
@@ -661,7 +818,7 @@ export default function RequestDetails() {
           )}
 
           {/* 5. DECISÃO — DIRETORIA */}
-          {(history.some(h => h.new_status === 'pending_compras_final') || request.current_step === 'diretoria') && (
+          {(history.some(h => h.new_status === 'PENDING_COMPRAS_FINAL') || request.current_step === 'diretoria') && (
             <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
               request.current_step === 'diretoria' ? "border-gp-error/20 ring-1 ring-gp-error/5" : "opacity-80"
@@ -673,9 +830,9 @@ export default function RequestDetails() {
                  <p className="text-[12px] font-medium text-gp-muted leading-relaxed italic">
                    Aprovação estratégica baseada no investimento total e cotações apresentadas.
                  </p>
-                 {history.find(h => ["pending_compras_final", "approved"].includes(h.new_status) && h.comment) && (
+                 {history.find(h => ["PENDING_COMPRAS_FINAL", "COMPLETED"].includes(h.new_status) && h.comment) && (
                     <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-blue-light">
-                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => ["pending_compras_final", "approved"].includes(h.new_status))?.comment}"</p>
+                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => ["PENDING_COMPRAS_FINAL", "COMPLETED"].includes(h.new_status))?.comment}"</p>
                     </div>
                  )}
               </div>
@@ -683,25 +840,70 @@ export default function RequestDetails() {
           )}
 
           {/* 6. FINALIZAÇÃO — COMPRAS */}
-          {(history.some(h => h.new_status === 'approved') || request.current_step === 'compras' && request.status === 'pending_compras_final') && (
+          {(history.some(h => h.new_status === 'COMPLETED') || request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL') && (
              <div className={clsx(
               "gp-card p-6 sm:p-10 space-y-6 transition-all",
-              (request.status === 'pending_compras_final') ? "bg-gp-blue/[0.02] border-gp-blue/30" : "opacity-80"
+              (request.status === 'PENDING_COMPRAS_FINAL') ? "bg-gp-blue/[0.02] border-gp-blue/30" : "opacity-80"
             )}>
               <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
                 <ShieldCheck size={18} className="text-gp-success" /> Responsabilidade: Finalização de Compra
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-6">
                  <p className="text-[12px] font-medium text-gp-muted leading-relaxed">
                    Registro de nota fiscal, rastreio e comprovantes finais de aquisição.
                  </p>
-                 {request.status === 'pending_compras_final' && profile?.role === 'compras' && (
-                    <div className="p-4 bg-gp-surface2 rounded-xl border border-dashed border-gp-border text-center">
-                       <p className="text-[10px] font-black text-gp-muted lowercase tracking-widest mb-4">Anexe os documentos fiscais aqui antes de aprovar final.</p>
-                       <label className="btn-premium-ghost px-6 py-2.5 rounded-xl cursor-pointer text-[10px] font-black">
-                         {uploading ? 'ENVIANDO...' : 'UPLOAD NF / COMPROVANTE'}
-                         <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
-                       </label>
+                 
+                 {request.status === 'PENDING_COMPRAS_FINAL' && profile?.role === 'compras' ? (
+                    <div className="space-y-6 bg-gp-surface2 p-8 rounded-2xl border border-gp-border shadow-inner">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Número da Nota Fiscal</label>
+                             <input 
+                                type="text" 
+                                className="gp-input px-5 h-12" 
+                                placeholder="Ex: NF-12345"
+                                value={request.invoice_number || ''}
+                                onChange={e => setRequest({...request, invoice_number: e.target.value})}
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Código de Rastreio</label>
+                             <input 
+                                type="text" 
+                                className="gp-input px-5 h-12" 
+                                placeholder="Ex: BR123456789"
+                                value={request.tracking_code || ''}
+                                onChange={e => setRequest({...request, tracking_code: e.target.value})}
+                             />
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Previsão de Entrega</label>
+                          <input 
+                             type="date" 
+                             className="gp-input px-5 h-12" 
+                             value={request.delivery_prediction || ''}
+                             onChange={e => setRequest({...request, delivery_prediction: e.target.value})}
+                          />
+                       </div>
+
+                       <div className="pt-4 flex flex-col sm:flex-row gap-4">
+                          <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center justify-center gap-2 flex-1">
+                             <Plus size={16} /> ANEXAR NF / COMPROVANTE
+                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, false)} disabled={uploading} />
+                          </label>
+                       </div>
+                    </div>
+                 ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                          <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-1">Nota Fiscal</p>
+                          <p className="font-bold text-gp-text">{request.invoice_number || '-'}</p>
+                       </div>
+                       <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                          <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-1">Cód. Rastreio</p>
+                          <p className="font-bold text-gp-text">{request.tracking_code || '-'}</p>
+                       </div>
                     </div>
                  )}
               </div>
@@ -722,9 +924,9 @@ export default function RequestDetails() {
                   <h4 className="font-black text-[18px] tracking-tighter uppercase leading-none">
                      {request.current_step === 'gestor' && 'Validação Regional'}
                      {request.current_step === 'ti' && 'Parecer Técnico'}
-                     {request.current_step === 'compras' && request.status === 'pending_compras' && 'Análise de Mercado'}
+                     {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS' && 'Análise de Mercado'}
                      {request.current_step === 'diretoria' && 'Aprovação do Board'}
-                     {request.current_step === 'compras' && request.status === 'pending_compras_final' && 'Finalização Fiscal'}
+                     {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL' && 'Finalização Fiscal'}
                   </h4>
                   <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">Aguardando sua decisão no fluxo</p>
                 </div>
@@ -741,11 +943,11 @@ export default function RequestDetails() {
                     disabled={actionLoading}
                     onClick={() => {
                       let ns = ''; let nst = '';
-                      if (request.status === 'pending_gestor') { ns = 'pending_ti'; nst = 'ti'; }
-                      else if (request.status === 'pending_ti') { ns = 'pending_compras'; nst = 'compras'; }
-                      else if (request.status === 'pending_compras') { ns = 'pending_diretoria'; nst = 'diretoria'; }
-                      else if (request.status === 'pending_diretoria') { ns = 'pending_compras_final'; nst = 'compras'; }
-                      else if (request.status === 'pending_compras_final') { ns = 'approved'; nst = 'compras'; }
+                      if (request.status === 'PENDING_GESTOR') { ns = 'PENDING_TI'; nst = 'ti'; }
+                      else if (request.status === 'PENDING_TI') { ns = 'PENDING_COMPRAS'; nst = 'compras'; }
+                      else if (request.status === 'PENDING_COMPRAS') { ns = 'PENDING_DIRETORIA'; nst = 'diretoria'; }
+                      else if (request.status === 'PENDING_DIRETORIA') { ns = 'PENDING_COMPRAS_FINAL'; nst = 'compras'; }
+                      else if (request.status === 'PENDING_COMPRAS_FINAL') { ns = 'COMPLETED'; nst = 'compras'; }
                       handleAction(ns, nst);
                     }}
                     className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
@@ -754,7 +956,7 @@ export default function RequestDetails() {
                   </button>
                   <button 
                     disabled={actionLoading}
-                    onClick={() => handleAction('rejected', request.current_step)}
+                    onClick={() => handleAction('REJECTED', request.current_step)}
                     className="w-full btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
                   >
                     RECUSAR SOLICITAÇÃO
