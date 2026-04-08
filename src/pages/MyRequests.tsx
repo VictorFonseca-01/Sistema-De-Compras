@@ -200,16 +200,23 @@ export default function MyRequests() {
                            (req.priority === 'alta' || req.priority === 'critica') ? 'text-gp-error' : 'text-gp-blue-light'
                        )}>
                             {req.priority} • {req.category}
-                            { (req as any).subcategoria_solicitacao && (
-                                <span className="opacity-70 lowercase"> › {(req as any).subcategoria_solicitacao}</span>
-                            )}
                        </span>
+                       { (req as any).subcategoria_solicitacao && (
+                            <span className="text-[10px] font-bold text-gp-muted lowercase opacity-60 italic leading-none">
+                              › {(req as any).subcategoria_solicitacao}
+                            </span>
+                        )}
                     </div>
                     <span className="text-sm font-black text-gp-text">
                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(req.estimated_cost)}
                     </span>
                   </div>
                 </div>
+                {req.status === 'ADJUSTMENT_NEEDED' && (
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gp-amber animate-pulse" />
+                  </div>
+                )}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gp-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
               </Link>
             )

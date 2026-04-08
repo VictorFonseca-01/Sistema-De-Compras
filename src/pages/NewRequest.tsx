@@ -101,11 +101,12 @@ export default function NewRequest() {
   const [newLink, setNewLink] = useState({ label: '', url: '' });
   const [tempAttachments, setTempAttachments] = useState<{ file?: File; id: string; name: string; path?: string; isExisting?: boolean }[]>([]);
   const [lastSuggestedTitle, setLastSuggestedTitle] = useState('');
+  const [isManualCategoryChange, setIsManualCategoryChange] = useState(false);
 
   // Sugestão Inteligente de Categoria baseada no Título
   useEffect(() => {
     const title = form.title.toLowerCase();
-    if (title.length < 3 || title === lastSuggestedTitle) return;
+    if (title.length < 3 || title === lastSuggestedTitle || isManualCategoryChange) return;
 
     for (const item of suggestionDictionary) {
       if (item.keywords.some(k => title.includes(k))) {
@@ -414,21 +415,22 @@ export default function NewRequest() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <label className={labelClass}>Categoria Corporativa</label>
-                  <SearchableSelect 
-                    options={categoriaOptions}
-                    value={form.category}
-                    onChange={(val) => {
-                      const isTI = val === 'TI / Tecnologia';
-                      setForm({ 
-                        ...form, 
-                        category: val, 
-                        needs_ti_analysis: isTI,
-                        responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area,
-                        subcategoria_solicitacao: '' // Reset subcategory
-                      });
-                    }}
-                    placeholder="Selecione..."
-                  />
+                  <SearchableSelect
+                  options={categoriaOptions}
+                  value={form.category}
+                  onChange={(val) => {
+                    setIsManualCategoryChange(true);
+                    const isTI = val === 'TI / Tecnologia';
+                    setForm({ 
+                      ...form, 
+                      category: val, 
+                      subcategoria_solicitacao: '',
+                      needs_ti_analysis: isTI,
+                      responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area
+                    });
+                  }}
+                  placeholder="Selecione a Categoria"
+                />
                 </div>
 
                 {form.category && (

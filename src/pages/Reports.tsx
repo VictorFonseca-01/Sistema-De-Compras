@@ -38,7 +38,7 @@ export default function Reports() {
       maintenance: assets?.filter(a => a.status === 'manutencao').length || 0,
     };
 
-    // 2. Requests KPIs
+    // 2. Requests KPIs & Category Aggregation
     const { data: requests } = await supabase.from('requests').select('*');
     const requestKPIs = {
       total: requests?.length || 0,
@@ -47,6 +47,16 @@ export default function Reports() {
       rejected: requests?.filter(r => r.status === 'REJECTED').length || 0,
     };
 
+    // Calculate Category Breakdown
+    const categoryAgg: Record<string, { count: number; investment: number }> = {};
+    requests?.forEach(r => {
+      const cat = r.category || 'Outros';
+      const cost = Number(r.estimated_cost) || 0;
+      if (!categoryAgg[cat]) categoryAgg[cat] = { count: 0, investment: 0 };
+      categoryAgg[cat].count++;
+      categoryAgg[cat].investment += cost;
+    });
+
     // 3. Departments distribution
     const departments = assets?.reduce((acc: any, a) => {
       const dept = a.departamento || 'OPERACIONAL';
@@ -54,7 +64,7 @@ export default function Reports() {
       return acc;
     }, {});
 
-    setReportData({ assetKPIs, requestKPIs, departments });
+    setReportData({ assetKPIs, requestKPIs, departments, categoryAgg });
     setLoading(false);
   }
 
@@ -201,6 +211,32 @@ export default function Reports() {
            </div>
         </div>
 
+        {/* Section 3: Investimento Setorial (NOVA) */}
+        <div className="space-y-8 mb-20 relative z-10">
+           <h3 className="text-[11px] font-black text-gp-text uppercase tracking-[0.3em] flex items-center gap-4 bg-gp-surface2 w-fit px-5 py-2.5 rounded-xl border border-gp-border shadow-sm">
+              <BarChart3 className="text-gp-blue" size={16} strokeWidth={3} /> ANÁLISE DE INVESTIMENTO SETORIAL
+           </h3>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.entries(reportData.categoryAgg as Record<string, any>).sort((a,b) => b[1].investment - a[1].investment).slice(0, 6).map(([cat, data], i) => (
+                <div key={i} className="p-6 bg-gp-surface2 border border-gp-border rounded-2xl shadow-inner group">
+                   <div className="flex justify-between items-start mb-4">
+                      <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest truncate max-w-[140px]">{cat}</p>
+                      <span className="text-[9px] font-black text-gp-blue bg-gp-blue/10 px-2 py-0.5 rounded">{data.count} SOLIC.</span>
+                   </div>
+                   <p className="text-xl font-black text-gp-text tracking-tight">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.investment)}
+                   </p>
+                   <div className="mt-4 h-1.5 bg-gp-surface rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gp-blue rounded-full opacity-60" 
+                        style={{ width: `${Math.min(100, (data.investment / (reportData.assetKPIs.value || 1)) * 100)}%` }}
+                      />
+                   </div>
+                </div>
+              ))}
+           </div>
+        </div>
+
         {/* Footer Audit Information */}
         <div className="mt-24 pt-12 border-t border-gp-border relative z-10">
            <div className="max-w-2xl mx-auto text-center space-y-6">
@@ -241,3 +277,4 @@ function ReportMetricCard({ label, value, badge, highlight = 'gray' }: { label: 
     </div>
   );
 }
+
