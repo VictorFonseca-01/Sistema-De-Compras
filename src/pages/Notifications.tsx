@@ -28,8 +28,18 @@ export default function Notifications() {
     let query = supabase
       .from('notifications')
       .select('*')
-      .eq('user_id', profile.id)
       .order('created_at', { ascending: false });
+
+    // New Role-based visibility logic
+    if (['ti', 'compras', 'diretoria', 'master_admin'].includes(profile.role)) {
+      // Observer: View ALL (no extra filters)
+    } else if (profile.role === 'gestor') {
+      // Gestor: View own notifications OR notifications for their department/unit
+      query = query.or(`user_id.eq.${profile.id},and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
+    } else {
+      // Employee: View only own notifications
+      query = query.eq('user_id', profile.id);
+    }
 
     if (filter === 'unread') {
       query = query.eq('is_read', false);
@@ -41,6 +51,16 @@ export default function Notifications() {
     }
     setLoading(false);
   };
+
+  // Auto mark as read when page is viewed
+  useEffect(() => {
+    if (notifications.length > 0 && notifications.some(n => !n.is_read)) {
+      const timer = setTimeout(() => {
+          markAllAsRead();
+      }, 3000); // 3 seconds delay to let user see what was unread
+      return () => clearTimeout(timer);
+    }
+  }, [notifications]);
 
   useEffect(() => {
     fetchNotifications();

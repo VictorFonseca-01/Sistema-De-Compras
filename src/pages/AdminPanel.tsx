@@ -40,6 +40,7 @@ interface ManagerScope {
   scope_type: 'company' | 'department' | 'custom';
   company_id: string;
   department_id?: string;
+  can_edit?: boolean;
 }
 
 const roleOptions = [
@@ -78,7 +79,11 @@ export default function AdminPanel() {
   
   const [userScopes, setUserScopes] = useState<ManagerScope[]>([]);
   const [isAddingScope, setIsAddingScope] = useState(false);
-  const [newScope, setNewScope] = useState<ManagerScope>({ scope_type: 'company', company_id: '' });
+  const [newScope, setNewScope] = useState<ManagerScope>({ 
+    scope_type: 'company', 
+    company_id: '',
+    can_edit: false 
+  });
 
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addForm, setAddForm] = useState({ 
@@ -149,7 +154,7 @@ export default function AdminPanel() {
       department: u.department || ''
     });
 
-    if (u.role === 'gestor') {
+    if (u.role === 'gestor' || u.role === 'usuario') {
       const { data } = await supabase.from('manager_scopes').select('*').eq('user_id', u.id).eq('active', true);
       setUserScopes(data || []);
     } else {
@@ -170,7 +175,11 @@ export default function AdminPanel() {
     if (!error && data) {
       setUserScopes([...userScopes, data]);
       setIsAddingScope(false);
-      setNewScope({ scope_type: 'company', company_id: '' });
+      setNewScope({ 
+        scope_type: 'company', 
+        company_id: '',
+        can_edit: false 
+      });
       toast.success('Escopo de gestão expandido.');
     }
     setActionLoading(false);
@@ -523,7 +532,7 @@ export default function AdminPanel() {
                        </div>
                     </div>
 
-                    {editForm.role === 'gestor' && (
+                    {(editForm.role === 'gestor' || editForm.role === 'usuario') && (
                        <div className="pt-12 space-y-8 border-t border-gp-border">
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-gp-amber/5 p-6 rounded-2xl border border-gp-amber/10">
                              <div>
@@ -579,6 +588,18 @@ export default function AdminPanel() {
                                          />
                                       </div>
                                    )}
+                                   <div className="col-span-full pt-2 flex items-center gap-3">
+                                      <label className="relative inline-flex items-center cursor-pointer group">
+                                         <input 
+                                            type="checkbox" 
+                                            className="sr-only peer"
+                                            checked={newScope.can_edit}
+                                            onChange={e => setNewScope({...newScope, can_edit: e.target.checked})}
+                                         />
+                                         <div className="w-11 h-6 bg-gp-surface3 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gp-blue"></div>
+                                      </label>
+                                      <span className="text-[11px] font-black uppercase tracking-widest text-gp-text">Permitir Edição (Acesso de Escrita)</span>
+                                   </div>
                                 </div>
                                 <div className="flex justify-end gap-3 pt-4 relative z-10">
                                    <button onClick={() => setIsAddingScope(false)} className="btn-premium-ghost px-6 py-3 text-[10px] font-black uppercase">CANCELAR</button>
@@ -593,7 +614,7 @@ export default function AdminPanel() {
                                 <div className="p-10 text-center border-3 border-dashed border-gp-border rounded-[2.5rem] bg-gp-surface2/[0.05]">
                                    <Globe size={32} className="mx-auto mb-4 text-gp-muted opacity-30" strokeWidth={1} />
                                    <p className="text-[11px] text-gp-muted font-black uppercase tracking-[0.2em] max-w-xs mx-auto italic leading-relaxed opacity-60">
-                                      Nenhum perímetro geográfico configurado. Este gestor não terá acesso a solicitações globais.
+                                      Nenhum perímetro geográfico configurado. Este usuário não terá acesso a solicitações globais.
                                    </p>
                                 </div>
                              ) : userScopes.map((scope) => {
@@ -618,6 +639,12 @@ export default function AdminPanel() {
                                                   scope.scope_type === 'company' ? "bg-gp-blue/10 text-gp-blue" : "bg-gp-purple/10 text-gp-purple"
                                                )}>
                                                   {scope.scope_type === 'company' ? 'REDIRECIONAMENTO GLOBAL' : 'REDIRECIONAMENTO LOCAL'}
+                                               </span>
+                                               <span className={clsx(
+                                                  "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md",
+                                                  scope.can_edit ? "bg-gp-success/10 text-gp-success" : "bg-gp-surface3 text-gp-muted"
+                                               )}>
+                                                  {scope.can_edit ? 'PERMISSÃO DE EDIÇÃO' : 'SOMENTE VISUALIZAÇÃO'}
                                                </span>
                                             </div>
                                          </div>

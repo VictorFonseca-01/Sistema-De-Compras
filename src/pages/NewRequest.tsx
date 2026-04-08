@@ -223,7 +223,9 @@ export default function NewRequest() {
             user_id: g.id,
             title: requestId ? 'Solicitação Atualizada' : 'Nova Solicitação Pendente',
             message: `O colaborador ${profile.full_name} ${requestId ? 're-enviou' : 'criou'} uma solicitação: "${form.title}".`,
-            link: `/solicitacoes/${request.id}`
+            link: `/solicitacoes/${request.id}`,
+            company_id: finalCompanyId,
+            department_id: finalDepartmentId
           }));
           await supabase.from('notifications').insert(notificationsToInsert);
         }

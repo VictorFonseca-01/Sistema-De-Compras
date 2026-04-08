@@ -46,6 +46,8 @@ interface Request {
   tracking_code?: string;
   delivery_prediction?: string;
   invoice_number?: string;
+  company_id: string;
+  department_id: string;
   profiles: {
     full_name: string;
     email: string;
@@ -274,7 +276,9 @@ export default function RequestDetails() {
         message: isAdjustment 
           ? `Sua solicitação "${request.title}" precisa de ajustes. Veja o comentário do auditor.`
           : `Sua solicitação "${request.title}" avançou para: ${statusLabels[nextStatus] || nextStatus}.`,
-        link: `/solicitacoes/${request.id}`
+        link: `/solicitacoes/${request.id}`,
+        company_id: request.company_id,
+        department_id: request.department_id
       });
 
       if (['PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA'].includes(nextStatus)) {
@@ -288,7 +292,9 @@ export default function RequestDetails() {
                 user_id: member.id,
                 title: 'Pendência de Aprovação',
                 message: `Há uma solicitação de "${request.title}" aguardando sua análise.`,
-                link: `/solicitacoes/${request.id}`
+                link: `/solicitacoes/${request.id}`,
+                company_id: request.company_id,
+                department_id: request.department_id
               });
             }
           });

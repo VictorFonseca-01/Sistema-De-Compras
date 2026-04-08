@@ -19,11 +19,20 @@ export function BottomNavigation({ onMenuClick }: BottomNavigationProps) {
     if (!profile) return;
 
     const fetchUnread = async () => {
-      const { count } = await supabase
+      let query = supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', profile.id)
         .eq('is_read', false);
+
+      if (['ti', 'compras', 'diretoria', 'master_admin'].includes(profile.role)) {
+        // Global
+      } else if (profile.role === 'gestor') {
+        query = query.or(`user_id.eq.${profile.id},and(department_id.eq.${profile.department_id},company_id.eq.${profile.company_id})`);
+      } else {
+        query = query.eq('user_id', profile.id);
+      }
+
+      const { count } = await query;
       setUnreadCount(count || 0);
     };
 
@@ -35,7 +44,7 @@ export function BottomNavigation({ onMenuClick }: BottomNavigationProps) {
         event: '*', 
         schema: 'public', 
         table: 'notifications',
-        filter: `user_id=eq.${profile.id}` 
+        filter: profile.role === 'usuario' ? `user_id=eq.${profile.id}` : undefined
       }, () => fetchUnread())
       .subscribe();
 
