@@ -318,7 +318,7 @@ export default function Settings() {
       {/* Modal de Confirmação de Limpeza */}
       {showEmptyConfirm && (
         <div className="gp-modal-overlay">
-          <div className="gp-modal max-w-md animate-fade-up">
+          <div className="gp-modal max-w-md animate-zoom-in">
             <div className="p-10 text-center">
               <div className="flex justify-center mb-8">
                  <div className={clsx(

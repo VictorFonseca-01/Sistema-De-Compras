@@ -278,6 +278,19 @@
     @apply bg-gp-blue text-white scale-110 z-10 border-gp-blue;
     box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
   }
+
+  /* Modals & Overlays */
+  .gp-modal-overlay {
+    @apply fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 transition-all duration-500;
+    background-color: rgba(15, 23, 42, 0.85); /* Fallback para cor escura com opacidade */
+    backdrop-filter: blur(12px);
+  }
+
+  .gp-modal {
+    @apply w-full bg-gp-surface border border-gp-border overflow-hidden relative transition-all duration-500;
+    border-radius: 2rem;
+    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Base Typography Utilities */
@@ -296,10 +309,16 @@
 .animate-fade-up { animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 @keyframes fade-zoom {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 .animate-fade-zoom { animation: fade-zoom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-zoom-in { animation: zoom-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
 @keyframes bounce-short {
   0%, 100% { transform: translateY(0); }
