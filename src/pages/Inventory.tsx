@@ -603,6 +603,7 @@ export default function Inventory() {
         selectedCount={selectedAssetIds.size}
         isProcessing={isBulkProcessing}
         onConfirm={handleBulkActionConfirm}
+        userRole={profile?.role}
       />
     </div>
   );

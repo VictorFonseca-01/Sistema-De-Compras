@@ -38,7 +38,7 @@ function App() {
           <Route path="relatorios" element={<Reports />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['master_admin', 'ti', 'diretoria']} />}>
           <Route path="admin" element={<AdminPanel />} />
         </Route>
       </Route>

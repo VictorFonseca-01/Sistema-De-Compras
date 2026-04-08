@@ -16,9 +16,10 @@ interface BulkActionModalProps {
   onConfirm: (data: { type: 'status' | 'local', value: string, notes: string }) => void;
   selectedCount: number;
   isProcessing: boolean;
+  userRole?: string;
 }
 
-export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isProcessing }: BulkActionModalProps) {
+export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isProcessing, userRole }: BulkActionModalProps) {
   const [actionType, setActionType] = useState<'status' | 'local'>('status');
   const [statusValue, setStatusValue] = useState<Asset['status']>('em_uso');
   const [localValue, setLocalValue] = useState('');
@@ -102,7 +103,7 @@ export function BulkActionModal({ isOpen, onClose, onConfirm, selectedCount, isP
                     <option value="em_estoque">EM ESTOQUE (DEVOLVER)</option>
                     <option value="em_uso">EM USO EXTERNO</option>
                     <option value="manutencao">ENCAMINHAR PARA MANUTENÇÃO</option>
-                    <option value="baixado">BAIXAR DEFINITIVAMENTE</option>
+                    {userRole !== 'diretoria' && <option value="baixado">BAIXAR DEFINITIVAMENTE</option>}
                   </select>
                 </div>
               ) : (

@@ -456,7 +456,7 @@ export default function AdminPanel() {
                         >
                           <Edit2 size={18} strokeWidth={2.5} />
                         </button>
-                        {u.id !== currentUser?.id && (
+                        {u.id !== currentUser?.id && currentUser?.role !== 'diretoria' && (
                           <button 
                             onClick={() => setUserToDelete(u)}
                             className="p-3 rounded-xl hover:bg-gp-error/10 transition-colors text-gp-muted hover:text-gp-error border border-transparent hover:border-gp-error/20 shadow-sm"

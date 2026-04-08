@@ -75,16 +75,21 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboards', path: '/' },
     { icon: ListOrdered, label: 'Solicitações de Compras', path: '/solicitacoes' }, 
-    { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes', badge: unreadCount },
   ];
+
+  // Estoque restrito a cargos administrativos/controles
+  if (['master_admin', 'ti', 'compras', 'diretoria'].includes(profile?.role || '')) {
+    navItems.splice(2, 0, { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' });
+  }
 
   if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'diretoria' || profile?.role === 'compras' || profile?.role === 'ti') {
     navItems.push({ icon: UserCheck, label: 'Solicitações Pendentes', path: '/solicitacoes' });
   }
 
   const adminItems: { icon: any; label: string; path: string }[] = [];
-  if (profile?.role === 'master_admin') {
+  // Governança (TI, Diretoria e Master Admin veem o painel e relatórios)
+  if (['master_admin', 'ti', 'diretoria'].includes(profile?.role || '')) {
     adminItems.push({ icon: Users, label: 'Usuários e Empresas', path: '/admin' });
     adminItems.push({ icon: FileText, label: 'Relatórios BI', path: '/relatorios' });
   }
