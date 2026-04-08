@@ -22,6 +22,8 @@ import {
 import { useProfile } from '../hooks/useProfile';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { toast } from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
 
 type Priority = 'baixa' | 'media' | 'alta' | 'critica';
 
@@ -55,6 +57,8 @@ export default function NewRequest() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const requestId = searchParams.get('id');
 
   const { profile } = useProfile();
   const [form, setForm] = useState({
@@ -67,7 +71,51 @@ export default function NewRequest() {
 
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [newLink, setNewLink] = useState({ label: '', url: '' });
-  const [tempAttachments, setTempAttachments] = useState<{ file: File; id: string }[]>([]);
+  const [tempAttachments, setTempAttachments] = useState<{ file?: File; id: string; name: string; path?: string; isExisting?: boolean }[]>([]);
+
+  useEffect(() => {
+    async function loadRequest() {
+      if (!requestId) return;
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('requests')
+        .select(`
+          *,
+          request_links(label, url),
+          request_attachments(id, file_name, file_path, file_type)
+        `)
+        .eq('id', requestId)
+        .single();
+      
+      if (!error && data) {
+        setForm({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          estimated_cost: data.estimated_cost?.toString() || '',
+          priority: data.priority as Priority,
+        });
+        
+        if (data.request_links) {
+          setLinks(data.request_links.map((l: any) => ({ label: l.label, url: l.url })));
+        }
+        
+        if (data.request_attachments) {
+          setTempAttachments(data.request_attachments.map((a: any) => ({
+            id: a.id,
+            name: a.file_name,
+            path: a.file_path,
+            isExisting: true
+          })));
+        }
+      } else {
+        toast.error('Erro ao carregar solicitação.');
+      }
+      setLoading(false);
+    }
+    loadRequest();
+  }, [requestId]);
 
   const addLink = () => {
     if (newLink.label && newLink.url) {
@@ -85,7 +133,8 @@ export default function NewRequest() {
     const files = Array.from(e.target.files || []);
     const newAttachments = files.map(file => ({
       file,
-      id: Math.random().toString(36).substring(7)
+      id: Math.random().toString(36).substring(7),
+      name: file.name
     }));
     setTempAttachments([...tempAttachments, ...newAttachments]);
     toast.success(`${files.length} arquivo(s) selecionado(s).`);
@@ -126,24 +175,41 @@ export default function NewRequest() {
       let finalCompanyId = profile?.company_id;
       let finalDepartmentId = profile?.department_id;
 
-      const { data: request, error: requestError } = await supabase
-        .from('requests')
-        .insert([{
-          user_id: user.id,
-          title: form.title,
-          description: form.description,
-          category: form.category,
-          estimated_cost: form.estimated_cost ? parseFloat(form.estimated_cost) : null,
-          priority: form.priority,
-          status: 'pending_gestor',
-          current_step: 'gestor',
-          company_id: finalCompanyId,
-          department_id: finalDepartmentId
-        }])
-        .select()
-        .single();
+      const payload = {
+        user_id: user.id,
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        estimated_cost: form.estimated_cost ? parseFloat(form.estimated_cost) : null,
+        priority: form.priority,
+        status: 'PENDING_GESTOR',
+        current_step: 'gestor',
+        company_id: finalCompanyId,
+        department_id: finalDepartmentId
+      };
 
-      if (requestError) throw requestError;
+      let request;
+      if (requestId) {
+        const { data, error: updateError } = await supabase
+          .from('requests')
+          .update(payload)
+          .eq('id', requestId)
+          .select()
+          .single();
+        if (updateError) throw updateError;
+        request = data;
+        
+        // Remove existing links if re-submitting (simplified)
+        await supabase.from('request_links').delete().eq('request_id', requestId);
+      } else {
+        const { data, error: insertError } = await supabase
+          .from('requests')
+          .insert([payload])
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        request = data;
+      }
 
       if (request && profile?.department) {
         const { data: gestores } = await supabase
@@ -155,8 +221,8 @@ export default function NewRequest() {
         if (gestores && gestores.length > 0) {
           const notificationsToInsert = gestores.map(g => ({
             user_id: g.id,
-            title: 'Nova Solicitação Pendente',
-            message: `O colaborador ${profile.full_name} criou uma nova solicitação: "${form.title}".`,
+            title: requestId ? 'Solicitação Atualizada' : 'Nova Solicitação Pendente',
+            message: `O colaborador ${profile.full_name} ${requestId ? 're-enviou' : 'criou'} uma solicitação: "${form.title}".`,
             link: `/solicitacoes/${request.id}`
           }));
           await supabase.from('notifications').insert(notificationsToInsert);
@@ -172,8 +238,9 @@ export default function NewRequest() {
         await supabase.from('request_links').insert(linksToInsert);
       }
 
-      if (tempAttachments.length > 0 && request) {
-        for (const item of tempAttachments) {
+      if (tempAttachments.filter(a => !a.isExisting).length > 0 && request) {
+        for (const item of tempAttachments.filter(a => !a.isExisting)) {
+          if (!item.file) continue;
           const fileExt = item.file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
           const filePath = `${request.id}/${fileName}`;
@@ -194,7 +261,7 @@ export default function NewRequest() {
       }
 
       setSuccess(true);
-      toast.success('Solicitação protocolada com sucesso!');
+      toast.success(requestId ? 'Solicitação atualizada com sucesso!' : 'Solicitação protocolada com sucesso!');
       setTimeout(() => navigate('/solicitacoes'), 2500);
     } catch (err: any) {
       setError('Falha ao registrar pedido: ' + err.message);
@@ -233,8 +300,8 @@ export default function NewRequest() {
            >
              <ArrowLeft size={14} strokeWidth={3} /> Voltar à Lista
            </button>
-           <h1 className="gp-page-title">Nova Solicitação</h1>
-           <p className="gp-page-subtitle">Explique detalhadamente sua necessidade para que a equipe técnica possa validar.</p>
+            <h1 className="gp-page-title">{requestId ? 'Revisar Solicitação' : 'Nova Solicitação'}</h1>
+            <p className="gp-page-subtitle">{requestId ? 'Ajuste os pontos solicitados pela auditoria e re-envie para validação.' : 'Explique detalhadamente sua necessidade para que a equipe técnica possa validar.'}</p>
         </div>
       </header>
 
@@ -434,11 +501,13 @@ export default function NewRequest() {
                     <div key={item.id} className="flex items-center justify-between p-5 bg-gp-surface2 border border-gp-border rounded-2xl group hover:border-gp-blue/20 transition-all shadow-sm">
                       <div className="flex items-center gap-4 overflow-hidden">
                          <div className="w-11 h-11 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center text-gp-muted shrink-0 shadow-inner group-hover:text-gp-blue transition-colors">
-                           {item.file.type.startsWith('image/') ? <ImageIcon size={20} /> : <FileIcon size={20} />}
+                           {item.file?.type.startsWith('image/') ? <ImageIcon size={20} /> : <FileIcon size={20} />}
                          </div>
                          <div className="truncate">
-                            <p className="font-black text-[13px] text-gp-text truncate mb-1 leading-none">{item.file.name}</p>
-                            <p className="text-[10px] font-black text-gp-muted uppercase tracking-tighter opacity-60">{(item.file.size / 1024).toFixed(0)} KB · {item.file.type.split('/')[1]}</p>
+                             <p className="font-black text-[13px] text-gp-text truncate mb-1 leading-none">{item.name}</p>
+                             <p className="text-[10px] font-black text-gp-muted uppercase tracking-tighter opacity-60">
+                               {item.isExisting ? 'ARQUIVO CADASTRADO' : `${(item.file!.size / 1024).toFixed(0)} KB · ${item.file!.type.split('/')[1]}`}
+                             </p>
                          </div>
                       </div>
                       <button type="button" onClick={() => removeAttachment(item.id)} className="p-2.5 text-gp-muted hover:text-gp-error transition-colors hover:bg-gp-error/5 rounded-xl">
@@ -479,7 +548,7 @@ export default function NewRequest() {
              ) : (
                <>
                  <Send size={18} strokeWidth={3} className="mr-2.5" />
-                 PROTOCOLAR SOLICITAÇÃO
+                 {requestId ? 'RE-ENVIAR PARA VALIDAÇÃO' : 'PROTOCOLAR SOLICITAÇÃO'}
                </>
              )}
            </button>

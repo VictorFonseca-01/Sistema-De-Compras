@@ -1,6 +1,9 @@
 import { Home, ClipboardList, PlusCircle, Box, Menu } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
+import { useProfile } from '../hooks/useProfile';
 
 interface BottomNavigationProps {
   onMenuClick: () => void;
@@ -9,9 +12,38 @@ interface BottomNavigationProps {
 export function BottomNavigation({ onMenuClick }: BottomNavigationProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .eq('is_read', false);
+      setUnreadCount(count || 0);
+    };
+
+    fetchUnread();
+
+    const channel = supabase
+      .channel('bottom_notifications')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${profile.id}` 
+      }, () => fetchUnread())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [profile]);
 
   const navItems = [
-    { label: 'HUB', icon: Home, path: '/', id: 'nav-home' },
+    { label: 'HUB', icon: Home, path: '/', id: 'nav-home', badge: unreadCount },
     { label: 'OS', icon: ClipboardList, path: '/solicitacoes', id: 'nav-requests' },
     { label: 'NOVO', icon: PlusCircle, path: '/solicitacoes/nova', id: 'nav-new', isCenter: true },
     { label: 'ASSETS', icon: Box, path: '/estoque', id: 'nav-inventory' },
@@ -51,8 +83,12 @@ export function BottomNavigation({ onMenuClick }: BottomNavigationProps) {
                 strokeWidth={isActive || item.isCenter ? 3 : 2.5} 
                 className={clsx(isActive && "animate-pulse-short")}
               />
+
+              {item.badge && item.badge > 0 && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gp-error rounded-full border-2 border-gp-bg animate-pulse shadow-lg shadow-gp-error/40" />
+              )}
               
-              {isActive && !item.isCenter && (
+              {isActive && !item.isCenter && !item.badge && (
                  <div className="absolute top-0 w-1 h-1 bg-gp-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
               )}
             </div>

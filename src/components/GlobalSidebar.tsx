@@ -11,19 +11,51 @@ import {
   Warehouse,
   X,
   FileText,
-  ShieldCheck
+  ShieldCheck,
+  Bell
 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
+import { supabase } from '../lib/supabase';
+import { useEffect } from 'react';
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { profile, loading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .eq('is_read', false);
+      setUnreadCount(count || 0);
+    };
+
+    fetchUnread();
+
+    const channel = supabase
+      .channel('sidebar_notifications')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${profile.id}` 
+      }, () => fetchUnread())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [profile]);
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Painel de Controle', path: '/' },
     { icon: ListOrdered, label: 'Solicitações de Compras', path: '/solicitacoes' }, 
-    { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' }, 
+    { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' },
+    { icon: Bell, label: 'Notificações', path: '/notificacoes', badge: unreadCount },
   ];
 
   if (profile?.role === 'master_admin' || profile?.role === 'gestor' || profile?.role === 'diretoria' || profile?.role === 'compras' || profile?.role === 'ti') {
@@ -246,7 +278,15 @@ function SidebarItem({ item, isCollapsed, onClose, variant = 'blue' }: { item: a
                {item.label}
             </span>
           )}
-          {isActive && !isCollapsed && (
+          {item.badge > 0 && (
+             <div className={clsx(
+                "ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black text-white",
+                isActive ? "bg-gp-blue" : "bg-gp-error animate-pulse shadow-lg shadow-gp-error/20"
+             )}>
+                {item.badge > 99 ? '99+' : item.badge}
+             </div>
+          )}
+          {isActive && !isCollapsed && !item.badge && (
              <div className={clsx(
                 "ml-auto w-1.5 h-1.5 rounded-full",
                 variant === 'blue' ? "bg-gp-blue animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-gp-purple shadow-[0_0_8px_rgba(168,85,247,0.5)]"

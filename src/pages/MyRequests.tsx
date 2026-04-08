@@ -5,12 +5,15 @@ import {
   FileText, 
   Clock, 
   CheckCircle2, 
-  XCircle,
+  XCircle, 
+  ShieldCheck,
+  Gavel,
+  AlertCircle,
   Plus,
   Search,
   Filter,
   ArrowUpRight,
-  ShieldCheck
+  Edit
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -31,15 +34,15 @@ interface Request {
   };
 }
 
-const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
-  pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-amber', icon: Clock },
-  pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
-  pending_compras: { label: 'Etapa de Cotação', badgeClass: 'gp-badge-purple', icon: Clock },
-  pending_diretoria: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
-  pending_compras_final: { label: 'Finalização de Compra', badgeClass: 'gp-badge-blue', icon: ShieldCheck },
-  approved: { label: 'Solicitação Concluída', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
-  rejected: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
-  adjustment_needed: { label: 'Ajuste Necessário', badgeClass: 'gp-badge-amber', icon: Clock },
+const statusMap: Record<string, { label: string; badgeClass: string; icon: any }> = {
+  PENDING_GESTOR: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-amber', icon: Clock },
+  PENDING_TI: { label: 'Análise do TI', badgeClass: 'gp-badge-blue', icon: FileText },
+  PENDING_COMPRAS: { label: 'Em COTAÇÃO', badgeClass: 'gp-badge-purple', icon: Clock },
+  PENDING_DIRETORIA: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Gavel },
+  PENDING_COMPRAS_FINAL: { label: 'Processamento Final', badgeClass: 'gp-badge-blue', icon: ShieldCheck },
+  COMPLETED: { label: 'Concluído', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
+  REJECTED: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
+  ADJUSTMENT_NEEDED: { label: 'Ajuste Nec.', badgeClass: 'gp-badge-amber', icon: AlertCircle },
 };
 
 export default function MyRequests() {
@@ -277,8 +280,19 @@ export default function MyRequests() {
                       </div>
                     </td>
                     <td className="gp-td text-right">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gp-surface2 text-gp-text3 group-hover:bg-gp-blue group-hover:text-white transition-all shadow-sm border border-gp-border">
-                        <ArrowUpRight size={18} strokeWidth={2.5} />
+                      <div className="flex items-center justify-end gap-2">
+                        {req.status === 'ADJUSTMENT_NEEDED' && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); navigate(`/solicitacoes/nova?id=${req.id}`); }}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gp-amber/10 text-gp-amber hover:bg-gp-amber hover:text-white transition-all shadow-sm border border-gp-amber/20"
+                            title="Editar para Ajuste"
+                          >
+                            <Edit size={18} strokeWidth={2.5} />
+                          </button>
+                        )}
+                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gp-surface2 text-gp-text3 group-hover:bg-gp-blue group-hover:text-white transition-all shadow-sm border border-gp-border">
+                          <ArrowUpRight size={18} strokeWidth={2.5} />
+                        </div>
                       </div>
                     </td>
                   </tr>

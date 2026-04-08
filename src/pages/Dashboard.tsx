@@ -21,14 +21,14 @@ import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
 const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
-  pending_gestor:        { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
-  pending_ti:            { label: 'Analise TI',    color: 'var(--gp-blue)',    icon: FileText },
-  pending_compras:       { label: 'Cotacao',       color: 'var(--gp-purple)',  icon: TrendingUp },
-  pending_diretoria:     { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
-  pending_compras_final: { label: 'Finalizacao',    color: 'var(--gp-blue)',    icon: ShieldCheck },
-  approved:              { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
-  rejected:              { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
-  adjustment_needed:     { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
+  PENDING_GESTOR:        { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
+  PENDING_TI:            { label: 'Analise TI',    color: 'var(--gp-blue)',    icon: FileText },
+  PENDING_COMPRAS:       { label: 'Cotacao',       color: 'var(--gp-purple)',  icon: TrendingUp },
+  PENDING_DIRETORIA:     { label: 'Ag. Diretoria', color: 'var(--gp-purple)',  icon: Clock },
+  PENDING_COMPRAS_FINAL: { label: 'Finalizacao',    color: 'var(--gp-blue)',    icon: ShieldCheck },
+  COMPLETED:              { label: 'Aprovado',      color: 'var(--gp-success)', icon: CheckCircle },
+  REJECTED:              { label: 'Recusado',      color: 'var(--gp-error)',   icon: XCircle },
+  ADJUSTMENT_NEEDED:     { label: 'Ajuste Nec.',   color: 'var(--gp-warning)', icon: AlertCircle },
 };
 
 function KpiSkeleton() {
@@ -139,12 +139,12 @@ export default function Dashboard() {
           const formatCurrency = (val: number) => 
             new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
-          const stats_pending_gestor = getStats(['pending_gestor']);
-          const stats_pending_ti = getStats(['pending_ti']);
-          const stats_pending_compras = getStats(['pending_compras', 'pending_compras_final']);
-          const stats_pending_diretoria = getStats(['pending_diretoria']);
-          const stats_approved = getStats(['approved']);
-          const stats_pending_total = requests.filter(r => r.status.startsWith('pending')).reduce((acc, r) => {
+          const stats_pending_gestor = getStats(['PENDING_GESTOR']);
+          const stats_pending_ti = getStats(['PENDING_TI']);
+          const stats_pending_compras = getStats(['PENDING_COMPRAS', 'PENDING_COMPRAS_FINAL']);
+          const stats_pending_diretoria = getStats(['PENDING_DIRETORIA']);
+          const stats_approved = getStats(['COMPLETED']);
+          const stats_pending_total = requests.filter(r => r.status.startsWith('PENDING')).reduce((acc, r) => {
             return {
               count: acc.count + 1,
               sum: acc.sum + (Number(r.estimated_cost) || 0)

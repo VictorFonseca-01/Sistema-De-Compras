@@ -42,9 +42,9 @@ export default function Reports() {
     const { data: requests } = await supabase.from('requests').select('*');
     const requestKPIs = {
       total: requests?.length || 0,
-      approved: requests?.filter(r => r.status === 'approved').length || 0,
-      pending: requests?.filter(r => r.status.startsWith('pending')).length || 0,
-      rejected: requests?.filter(r => r.status === 'rejected').length || 0,
+      approved: requests?.filter(r => r.status === 'COMPLETED').length || 0,
+      pending: requests?.filter(r => r.status.startsWith('PENDING')).length || 0,
+      rejected: requests?.filter(r => r.status === 'REJECTED').length || 0,
     };
 
     // 3. Departments distribution
@@ -161,7 +161,7 @@ export default function Reports() {
               <div className="space-y-5">
                  {[
                    { label: 'SOLICITAÇÕES APROVADAS', value: reportData.requestKPIs.approved, colorClass: 'bg-gp-success' },
-                   { label: 'PEDIDOS EM TRAMITAÇÃO', value: reportData.requestKPIs.pending, colorClass: 'bg-gp-amber' },
+                   { label: 'AGUARDANDO PROCESSO', value: reportData.requestKPIs.pending, colorClass: 'bg-gp-amber' },
                    { label: 'PROPOSTAS REJEITADAS', value: reportData.requestKPIs.rejected, colorClass: 'bg-gp-error' },
                  ].map((item, i) => (
                    <div key={i} className="flex flex-col gap-3 group">

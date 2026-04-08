@@ -65,6 +65,7 @@ interface Attachment {
 
 interface RequestHistory {
   id: string;
+  old_status?: string;
   new_status: string;
   comment: string;
   created_at: string;
@@ -260,14 +261,23 @@ export default function RequestDetails() {
       }]);
 
       const notifications = [];
+      const isRejection = nextStatus === 'REJECTED';
+      const isAdjustment = nextStatus === 'ADJUSTMENT_NEEDED';
+      
+      let title = `Pedido Atualizado`;
+      if (isRejection) title = `Pedido Recusado`;
+      if (isAdjustment) title = `Ajuste Necessário`;
+
       notifications.push({
         user_id: request.user_id,
-        title: `Pedido ${nextStatus === 'rejected' ? 'Recusado' : 'Atualizado'}`,
-        message: `Sua solicitação "${request.title}" avançou para: ${statusLabels[nextStatus] || nextStatus}.`,
+        title: title,
+        message: isAdjustment 
+          ? `Sua solicitação "${request.title}" precisa de ajustes. Veja o comentário do auditor.`
+          : `Sua solicitação "${request.title}" avançou para: ${statusLabels[nextStatus] || nextStatus}.`,
         link: `/solicitacoes/${request.id}`
       });
 
-      if (['pending_ti', 'pending_compras', 'pending_diretoria'].includes(nextStatus)) {
+      if (['PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA'].includes(nextStatus)) {
         const targetRole = nextStep;
         const { data: team } = await supabase.from('profiles').select('id').eq('role', targetRole);
         
@@ -290,7 +300,7 @@ export default function RequestDetails() {
       }
 
       setComment('');
-      toast.success(`Solicitação ${nextStatus === 'rejected' ? 'recusada' : 'processada'} com sucesso.`);
+      toast.success(`Solicitação ${nextStatus === 'REJECTED' ? 'recusada' : 'processada'} com sucesso.`);
       fetchRequest();
     } else {
       toast.error('Erro ao processar ação: ' + updateError.message);
@@ -389,7 +399,7 @@ export default function RequestDetails() {
 
   const currentStatus = statusMap[request.status] || { label: request.status, badge: 'gp-badge-gray', icon: Clock };
   const isApprover = profile?.role === request.current_step || profile?.role === 'master_admin';
-  const isFinalized = request.status === 'approved' || request.status === 'rejected';
+  const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
@@ -418,6 +428,8 @@ export default function RequestDetails() {
           <div className="relative z-10">
              {/* TIMELINE TRACK */}
              <div className="flex flex-col lg:flex-row gap-10 lg:gap-0 lg:items-center relative">
+                {/* Vertical line for mobile */}
+                <div className="lg:hidden absolute top-0 bottom-0 left-[21px] w-0.5 bg-gp-border z-0" />
                 {/* Horizontal line for desktop */}
                 <div className="hidden lg:block absolute top-[22px] left-0 right-0 h-0.5 bg-gp-border z-0" />
                 
@@ -430,38 +442,47 @@ export default function RequestDetails() {
                   { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'COMPLETED' },
                 ].map((stage, idx) => {
                   const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
+                  
+                  // Refined Status Logic for ADJUSTMENT_NEEDED
+                  let state: 'past' | 'current' | 'future' | 'refused' | 'warning' = 'future';
                   const currentIdx = flowMap.indexOf(request.status);
                   
-                  // Encontrar log específico desta etapa
+                  // Encontrar log específico desta etapa e variáveis auxiliares
                   const stageLog = history.find(h => h.new_status === stage.status);
-                  // O primeiro passo (Solicitação) não tem new_status no passado, pegamos o status de criação
-                  const isCurrent = request.status === (idx === 0 ? 'PENDING_GESTOR' : flowMap[idx-1]) && !isFinalized;
-                  const isPast = (currentIdx >= idx && request.status !== 'REJECTED') || request.status === 'COMPLETED';
-                  
-                  // Refined Status Logic
-                  let state: 'past' | 'current' | 'future' | 'refused' = 'future';
-                  if (request.status === 'rejected' && flowMap.indexOf(request.status) === -1) {
-                     // Check if this stage was the one rejected
-                     const lastLog = history[0];
-                     if (idx > 0 && lastLog?.new_status === 'rejected') {
-                        // If this stage matches the stage in charge when rejected?
-                        // Simplified: find the first non-completed stage
-                     }
+                  const isCurrent = (currentIdx === idx && !isFinalized) || (request.status === 'ADJUSTMENT_NEEDED' && idx === 0);
+
+                  if (request.status === 'ADJUSTMENT_NEEDED') {
+                    if (idx === 0) state = 'warning';
+                    else state = 'future';
+                  } else if (request.status === 'REJECTED') {
+                    // Find where it was rejected
+                    const lastLog = history[0]; // status_history is ordered by created_at desc
+                    const rejectedAtIdx = flowMap.indexOf(lastLog?.old_status || '');
+                    if (idx < rejectedAtIdx) state = 'past';
+                    else if (idx === rejectedAtIdx) state = 'refused';
+                    else state = 'future';
+                  } else {
+                    const isPast = (currentIdx > idx) || request.status === 'COMPLETED';
+                    
+                    if (isPast) state = 'past';
+                    else if (isCurrent) state = 'current';
+                    else state = 'future';
                   }
-                  
-                  if (isPast) state = 'past';
-                  if (isCurrent) state = 'current';
-                  if (request.status === 'REJECTED' && idx === currentIdx) state = 'refused';
 
                   return (
                     <div key={idx} className="flex-1 flex flex-row lg:flex-col items-start lg:items-center gap-6 lg:gap-5 group/node transition-all relative z-10 min-w-0">
                       <div className={clsx(
-                        "w-11 h-11 rounded-[1.2rem] border-2 flex items-center justify-center transition-all duration-700 shadow-xl",
+                        "w-11 h-11 rounded-[1.2rem] border-2 flex items-center justify-center transition-all duration-700 shadow-xl relative z-10",
                         state === 'past' ? "bg-gp-blue border-gp-blue text-white" :
                         state === 'current' ? "bg-gp-surface2 border-gp-blue text-gp-blue animate-pulse-short shadow-gp-blue/20" :
+                        state === 'warning' ? "bg-gp-amber border-gp-amber text-white shadow-gp-amber/20 animate-bounce-short" :
+                        state === 'refused' ? "bg-gp-error border-gp-error text-white shadow-gp-error/20" :
                         "bg-gp-surface border-gp-border text-gp-muted opacity-40"
                       )}>
-                        {state === 'past' ? <CheckCircle2 size={20} strokeWidth={3} /> : <span className="font-black text-xs leading-none">0{idx+1}</span>}
+                        {state === 'past' ? <CheckCircle2 size={20} strokeWidth={3} /> : 
+                         state === 'warning' ? <AlertCircle size={20} strokeWidth={3} /> :
+                         state === 'refused' ? <XCircle size={20} strokeWidth={3} /> :
+                         <span className="font-black text-xs leading-none">0{idx+1}</span>}
                       </div>
                       
                       <div className="flex flex-col lg:items-center text-left lg:text-center min-w-0 pt-1 lg:pt-0">
@@ -583,10 +604,10 @@ export default function RequestDetails() {
                      : "Validação gerencial concluída conforme histórico de auditoria."
                    }
                  </p>
-                 {history.find(h => h.new_status === 'pending_ti') && (
+                 {history.find(h => h.new_status === 'PENDING_TI') && (
                     <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-amber">
-                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => h.new_status === 'pending_ti')?.comment || 'Validado sem observações.'}"</p>
-                       <span className="text-[9px] font-black text-gp-muted uppercase tracking-widest mt-3 block">{history.find(h => h.new_status === 'pending_ti')?.profiles?.full_name}</span>
+                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => h.new_status === 'PENDING_TI')?.comment || 'Validado sem observações.'}"</p>
+                       <span className="text-[9px] font-black text-gp-muted uppercase tracking-widest mt-3 block">{history.find(h => h.new_status === 'PENDING_TI')?.profiles?.full_name}</span>
                     </div>
                  )}
               </div>
@@ -735,7 +756,7 @@ export default function RequestDetails() {
                 <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
                   <Activity size={18} className="text-gp-purple" /> Responsabilidade: Compras e Suprimentos
                 </h3>
-                {request.current_step === 'compras' && request.status === 'pending_compras' && (profile?.role === 'compras' || profile?.role === 'master_admin') && (
+                {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS' && (profile?.role === 'compras' || profile?.role === 'master_admin') && (
                   <button onClick={() => setShowQuoteForm(!showQuoteForm)} className="btn-premium-primary px-5 py-2 rounded-xl text-[10px] font-black">
                      {showQuoteForm ? 'CANCELAR' : 'REGISTRAR COTAÇÃO'}
                   </button>
@@ -954,13 +975,23 @@ export default function RequestDetails() {
                   >
                     {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'AUTORIZAR E AVANÇAR ETAPA'}
                   </button>
-                  <button 
-                    disabled={actionLoading}
-                    onClick={() => handleAction('REJECTED', request.current_step)}
-                    className="w-full btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
-                  >
-                    RECUSAR SOLICITAÇÃO
-                  </button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      disabled={actionLoading}
+                      onClick={() => handleAction('ADJUSTMENT_NEEDED', 'usuario')}
+                      className="btn-premium-secondary py-3.5 rounded-xl text-gp-amber border-gp-amber/20 font-black uppercase text-[10px] tracking-widest"
+                    >
+                      SOLICITAR AJUSTE
+                    </button>
+                    <button 
+                      disabled={actionLoading}
+                      onClick={() => handleAction('REJECTED', request.current_step)}
+                      className="btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
+                    >
+                      RECUSAR PEDIDO
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
