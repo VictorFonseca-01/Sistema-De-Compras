@@ -437,7 +437,7 @@ export default function RequestDetails() {
 
           <div className="relative z-10">
              {/* TIMELINE TRACK */}
-             <div className="flex flex-col lg:flex-row gap-10 lg:gap-0 lg:items-center relative">
+             <div className="flex flex-col lg:flex-row gap-10 lg:gap-0 lg:items-start relative">
                 {/* Vertical line for mobile */}
                 <div className="lg:hidden absolute top-0 bottom-0 left-[21px] w-0.5 bg-gp-border z-0" />
                 {/* Horizontal line for desktop */}
@@ -496,7 +496,7 @@ export default function RequestDetails() {
                          <span className="font-black text-xs leading-none">0{idx+1}</span>}
                       </div>
                       
-                      <div className="flex flex-col lg:items-center text-left lg:text-center min-w-0 pt-1 lg:pt-0">
+                      <div className="flex flex-col lg:items-center text-left lg:text-center min-w-0 pt-1 lg:pt-0 min-h-[60px] lg:min-h-0">
                         <span className={clsx(
                           "text-[12px] font-black uppercase tracking-widest leading-none mb-2 block",
                           state === 'current' ? "text-gp-blue" : state === 'past' ? "text-gp-text" : "text-gp-muted"
