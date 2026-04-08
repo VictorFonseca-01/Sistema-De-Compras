@@ -1082,7 +1082,7 @@ export default function RequestDetails() {
                       <button 
                         disabled={actionLoading}
                         onClick={() => handleAction('REJECTED', request.current_step as any)}
-                        className="btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
+                        className="btn-premium-secondary py-3.5 rounded-xl text-gp-error border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
                       >
                         RECUSAR PEDIDO
                       </button>

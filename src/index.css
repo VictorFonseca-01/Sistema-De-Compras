@@ -281,7 +281,7 @@
 
   /* Modals & Overlays */
   .gp-modal-overlay {
-    @apply fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 transition-all duration-500;
+    @apply fixed inset-0 z-[2100] flex items-center justify-center p-4 sm:p-6 transition-all duration-500;
     background-color: rgba(15, 23, 42, 0.85); /* Fallback para cor escura com opacidade */
     backdrop-filter: blur(12px);
   }

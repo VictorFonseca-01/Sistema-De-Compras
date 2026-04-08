@@ -211,18 +211,29 @@ export default function NewRequest() {
         request = data;
       }
 
-      if (request && profile?.department) {
-        const { data: gestores } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('role', 'gestor')
-          .eq('department', profile.department);
+      if (request) {
+        // Find managers who should be notified:
+        // 1. Managers in the same department (Legacy/Direct match)
+        // 2. Managers with explicit scopes for this company/department
+        
+        const [gestoresRes, scopeManagersRes] = await Promise.all([
+          supabase.from('profiles').select('id').eq('role', 'gestor').eq('department', profile?.department),
+          supabase.from('manager_scopes')
+            .select('user_id')
+            .eq('company_id', finalCompanyId)
+            .or(`scope_type.eq.company,department_id.eq.${finalDepartmentId}`)
+            .eq('active', true)
+        ]);
 
-        if (gestores && gestores.length > 0) {
-          const notificationsToInsert = gestores.map(g => ({
-            user_id: g.id,
+        const managerIds = new Set<string>();
+        gestoresRes.data?.forEach(g => managerIds.add(g.id));
+        scopeManagersRes.data?.forEach(s => managerIds.add(s.user_id));
+
+        if (managerIds.size > 0) {
+          const notificationsToInsert = Array.from(managerIds).map(userId => ({
+            user_id: userId,
             title: requestId ? 'Solicitação Atualizada' : 'Nova Solicitação Pendente',
-            message: `O colaborador ${profile.full_name} ${requestId ? 're-enviou' : 'criou'} uma solicitação: "${form.title}".`,
+            message: `O colaborador ${profile?.full_name} ${requestId ? 're-enviou' : 'criou'} uma solicitação: "${form.title}".`,
             link: `/solicitacoes/${request.id}`,
             company_id: finalCompanyId,
             department_id: finalDepartmentId

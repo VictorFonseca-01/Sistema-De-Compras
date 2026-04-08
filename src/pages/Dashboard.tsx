@@ -343,13 +343,13 @@ export default function Dashboard() {
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Gasto Potencial (Fluxo)</p>
                     <p className="text-xl font-black text-gp-text tracking-tight uppercase">
-                      {requestStats.find(s => s.label === 'Pendentes (Total)')?.secondary || 'R$ 0,00'}
+                      {requestStats.find(s => s.label === 'Gasto Potencial')?.secondary || 'R$ 0,00'}
                     </p>
                   </div>
                 </div>
                 <div className="mt-8 pt-5 border-t border-gp-border flex items-center justify-between">
                   <span className="text-[10px] text-gp-muted font-black uppercase tracking-widest">Processos Ativos</span>
-                  <span className="text-[10px] font-black text-gp-amber uppercase bg-gp-amber/10 px-2 py-0.5 rounded leading-none">{requestStats.find(s => s.label === 'Pendentes (Total)')?.value || 0} ITEMS</span>
+                  <span className="text-[10px] font-black text-gp-amber uppercase bg-gp-amber/10 px-2 py-0.5 rounded leading-none">{requestStats.find(s => s.label === 'Gasto Potencial')?.value || 0} ITEMS</span>
                 </div>
               </div>
             )}
@@ -366,7 +366,7 @@ export default function Dashboard() {
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Aquisições Capitalizadas</p>
                     <p className="text-xl font-black text-gp-text tracking-tight uppercase">
-                      {requestStats.find(s => s.label === 'Aprovadas (Total)')?.value || 0} Equipamentos
+                      {requestStats.find(s => s.label === 'Aquisições Capitalizadas')?.value || 0} Equipamentos
                     </p>
                   </div>
                 </div>
