@@ -61,7 +61,7 @@ export function BottomNavigation({ onMenuClick }: BottomNavigationProps) {
 
   return (
     <nav 
-      className="lg:hidden fixed bottom-0 left-0 right-0 h-[88px] pb-[env(safe-area-inset-bottom)] bg-gp-bg/80 backdrop-blur-2xl border-t border-gp-border/50 flex items-center justify-around px-4 z-[90] shadow-[0_-10px_40px_-5px_rgba(0,0,0,0.4)] transition-all duration-500"
+      className="lg:hidden fixed bottom-0 left-0 right-0 h-[88px] pb-[env(safe-area-inset-bottom)] bg-gp-bg/80 backdrop-blur-2xl border-t border-gp-border/50 flex items-center justify-around px-4 z-[90] shadow-[0_-10px_40px_-5px_rgba(0,0,0,0.4)] transition-all duration-500 print:hidden"
     >
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;

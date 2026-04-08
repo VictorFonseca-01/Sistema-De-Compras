@@ -108,11 +108,12 @@ export function MainLayout() {
         />
       )}
 
-      {/* Sidebar Navigation */}
-      <Sidebar 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)} 
-      />
+      <div className="print:hidden">
+        <Sidebar 
+          isOpen={isMobileMenuOpen} 
+          onClose={() => setIsMobileMenuOpen(false)} 
+        />
+      </div>
 
       {/* Main Structural Column */}
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden print:overflow-visible relative">
@@ -132,7 +133,9 @@ export function MainLayout() {
         </main>
         
         {/* Mobile Ecosystem Navigation */}
-        <BottomNavigation onMenuClick={() => setIsMobileMenuOpen(true)} />
+        <div className="print:hidden">
+          <BottomNavigation onMenuClick={() => setIsMobileMenuOpen(true)} />
+        </div>
       </div>
     </div>
   );

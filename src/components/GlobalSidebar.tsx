@@ -143,9 +143,9 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         {isCollapsed && (
           <button 
             onClick={() => setIsCollapsed(false)}
-            className="mx-auto w-10 h-10 flex items-center justify-center bg-gp-blue rounded-xl shadow-xl shadow-gp-blue/20 hover:scale-110 transition-transform duration-300"
+            className="mx-auto w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform duration-300"
           >
-            <img src="/logo-branca.png" alt="GP" className="w-6 h-6 object-contain" />
+            <img src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} alt="GP" className="w-8 h-8 object-contain" />
           </button>
         )}
         {onClose && (
