@@ -701,8 +701,8 @@ export default function RequestDetails() {
                 {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized && (
                   <div className="flex items-center gap-2">
                     <label className="btn-premium-ghost px-4 py-2 rounded-xl cursor-pointer text-[10px] font-black">
-                      {uploading ? 'ENVIANDO...' : 'PARECER TÉCNICO (DOCS)'}
-                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                      {uploading ? 'ENVIANDO...' : 'PARECER / PDFs / DOCS'}
+                      <input type="file" className="hidden" multiple accept="image/*,application/pdf,video/*" onChange={handleFileUpload} disabled={uploading} />
                     </label>
                   </div>
                 )}
@@ -764,7 +764,7 @@ export default function RequestDetails() {
 
                  {/* 3. MÍDIAS DE APOIO */}
                  <div className="space-y-6">
-                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Mídias de Apoio (Fotos e Vídeos)</label>
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Mídias de Apoio (Documentos, PDFs, Fotos e Vídeos)</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                        {attachments.filter(a => a.is_technical || a.file_name.toLowerCase().includes('ti_')).map((file) => (
                          <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
@@ -780,8 +780,8 @@ export default function RequestDetails() {
                        {(isTI || isAdmin) && (request.current_step === 'ti' || isAdjustment) && !isFinalized && (
                          <label className="border-2 border-dashed border-gp-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-gp-blue/30 hover:bg-gp-blue/[0.01] transition-all group">
                              <Plus size={20} className="text-gp-muted group-hover:text-gp-blue" />
-                             <span className="text-[9px] font-black uppercase text-gp-muted">Anexar Mídia</span>
-                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, true, false)} disabled={uploading} />
+                             <span className="text-[9px] font-black uppercase text-gp-muted">Anexar Mídia / PDF</span>
+                             <input type="file" className="hidden" multiple accept="image/*,application/pdf,video/*" onChange={(e) => handleFileUpload(e, true, false)} disabled={uploading} />
                          </label>
                        )}
                     </div>
@@ -868,8 +868,8 @@ export default function RequestDetails() {
 
                   <div className="flex items-center gap-4 pt-4 border-t border-gp-border/30">
                     <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center gap-2">
-                       <Plus size={16} /> ANEXAR PDF / PROPOSTA
-                       <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, false, true)} disabled={uploading} />
+                       <Plus size={16} /> ANEXAR PDFs / PROPOSTAS
+                       <input type="file" className="hidden" multiple accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, false, true)} disabled={uploading} />
                     </label>
                     <button onClick={handleAddQuote} className="flex-1 btn-premium-primary py-3.5 rounded-xl font-black uppercase text-[11px] tracking-widest">REGISTRAR NO MAPA</button>
                   </div>
