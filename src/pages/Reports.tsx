@@ -51,7 +51,7 @@ export default function Reports() {
     const categoryAgg: Record<string, { count: number; investment: number }> = {};
     requests?.forEach(r => {
       const cat = r.category || 'Outros';
-      const cost = Number(r.estimated_cost) || 0;
+      const cost = Number(r.actual_cost || r.estimated_cost) || 0;
       if (!categoryAgg[cat]) categoryAgg[cat] = { count: 0, investment: 0 };
       categoryAgg[cat].count++;
       categoryAgg[cat].investment += cost;

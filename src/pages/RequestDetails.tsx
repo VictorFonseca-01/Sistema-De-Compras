@@ -53,6 +53,7 @@ interface Request {
   responsible_area?: string;
   needs_ti_analysis?: boolean;
   subcategoria_solicitacao?: string;
+  actual_cost?: number;
   profiles: {
     full_name: string;
     email: string;
@@ -389,8 +390,8 @@ export default function RequestDetails() {
       .eq('id', quote.id);
 
     if (!error) {
-      // Sync request estimated cost with selected quote
-      await supabase.from('requests').update({ estimated_cost: quote.price }).eq('id', id);
+      // Sync request ACTUAL COST with selected quote (preserve estimated_cost as base budget)
+      await supabase.from('requests').update({ actual_cost: quote.price }).eq('id', id);
       toast.success('Fornecedor selecionado.');
       fetchRequest();
     }
@@ -591,11 +592,35 @@ export default function RequestDetails() {
                   </div>
                 )}
               </div>
-              <div className="bg-gp-blue/[0.03] border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group w-full md:w-auto">
-                <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-blue/10 pb-2 w-full text-right">INVESTIMENTO ESTIMADO</p>
-                <p className="text-3xl font-black text-gp-text group-hover:text-gp-blue transition-colors duration-500">
-                  R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
+              <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">
+                <div className="bg-gp-surface2 border border-gp-border p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group flex-1">
+                  <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-border pb-2 w-full text-right">ORÇAMENTO BASE</p>
+                  <p className="text-xl font-black text-gp-text group-hover:text-gp-blue transition-colors duration-500">
+                    R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+
+                {request.actual_cost && request.actual_cost !== request.estimated_cost && (
+                   <div className={clsx(
+                     "border p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-lg group flex-1 relative overflow-hidden",
+                     request.actual_cost <= request.estimated_cost ? "bg-gp-blue/[0.05] border-gp-blue/30" : "bg-gp-error/[0.05] border-gp-error/30"
+                   )}>
+                    <p className={clsx(
+                      "text-[10px] font-black uppercase tracking-[0.2em] mb-2 leading-none border-b pb-2 w-full text-right",
+                      request.actual_cost <= request.estimated_cost ? "text-gp-blue-light border-gp-blue/20" : "text-gp-error border-gp-error/20"
+                    )}>
+                      {request.actual_cost <= request.estimated_cost ? 'INVESTIMENTO FINAL' : 'EXCESSO ORÇAMENTÁRIO'}
+                    </p>
+                    <p className="text-2xl font-black text-gp-text">
+                      R$ {Number(request.actual_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                    {request.actual_cost < request.estimated_cost && (
+                      <span className="absolute bottom-2 left-4 text-[9px] font-black text-gp-blue uppercase opacity-70">
+                         SAVINGS: {Math.round((1 - (request.actual_cost / request.estimated_cost)) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

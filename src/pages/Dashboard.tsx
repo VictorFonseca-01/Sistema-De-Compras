@@ -143,7 +143,7 @@ export default function Dashboard() {
             const filtered = requests.filter(r => statusList.includes(r.status));
             return {
               count: filtered.length,
-              sum: filtered.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
+              sum: filtered.reduce((acc, r) => acc + (Number(r.actual_cost || r.estimated_cost) || 0), 0)
             };
           };
 
@@ -158,7 +158,7 @@ export default function Dashboard() {
           const stats_pending_total = requests.filter(r => r.status.startsWith('PENDING')).reduce((acc, r) => {
             return {
               count: acc.count + 1,
-              sum: acc.sum + (Number(r.estimated_cost) || 0)
+              sum: acc.sum + (Number(r.actual_cost || r.estimated_cost) || 0)
             };
           }, { count: 0, sum: 0 });
 
@@ -240,7 +240,7 @@ export default function Dashboard() {
           requests.forEach(r => {
             const cat = r.category || 'Outros';
             const sub = r.subcategoria_solicitacao || 'Não Categorizado';
-            const cost = Number(r.estimated_cost) || 0;
+            const cost = Number(r.actual_cost || r.estimated_cost) || 0;
 
             if (!cats[cat]) cats[cat] = { count: 0, investment: 0 };
             cats[cat].count++;
