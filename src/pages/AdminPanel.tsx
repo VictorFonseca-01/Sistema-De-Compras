@@ -80,6 +80,7 @@ export default function AdminPanel() {
   
   const [userScopes, setUserScopes] = useState<ManagerScope[]>([]);
   const [isAddingScope, setIsAddingScope] = useState(false);
+  const [isClearingScopes, setIsClearingScopes] = useState(false);
   const [newScope, setNewScope] = useState<{
     scope_type: 'company' | 'department';
     company_ids: string[];
@@ -197,6 +198,30 @@ export default function AdminPanel() {
       }
     } catch (err: any) {
       toast.error('Erro ao adicionar escopo: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const clearAllScopes = async () => {
+    if (!editingUser) return;
+    setActionLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('manager_scopes')
+        .delete()
+        .eq('user_id', editingUser.id);
+
+      if (!error) {
+        setUserScopes([]);
+        setIsClearingScopes(false);
+        toast.success('Todos os escopos de acesso foram removidos.');
+      } else {
+        throw error;
+      }
+    } catch (err: any) {
+      toast.error('Erro ao remover escopos: ' + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -549,28 +574,29 @@ export default function AdminPanel() {
                        </div>
                     </div>
 
-                    {/* REMOVIDA RESTRIÇÃO DE ROLE PARA GESTÃO DE ESCOPOS */}
                     <div className="pt-12 space-y-8 border-t border-gp-border">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-gp-amber/5 p-6 rounded-2xl border border-gp-amber/10">
-                             <div>
-                                <h4 className="font-black text-gp-text text-[15px] flex items-center gap-3 uppercase tracking-tight">
-                                   <div className="w-10 h-10 rounded-xl bg-gp-amber/10 text-gp-amber flex items-center justify-center shadow-inner">
-                                      <Globe size={22} strokeWidth={2.5} />
-                                   </div>
-                                   Definição de Perímetro (Escopos)
-                                </h4>
-                                <p className="text-[11px] text-gp-muted font-black uppercase tracking-[0.2em] mt-3 opacity-60 leading-relaxed">
-                                   Configure quais empresas ou departamentos este gestor poderá auditar e aprovar.
-                                </p>
+                          <div className="flex flex-col gap-8 h-full">
+                             <div className="flex items-center justify-between">
+                                <h3 className="text-[14px] font-black text-gp-text uppercase tracking-[0.2em] flex items-center gap-3">
+                                   <Building2 size={20} className="text-gp-blue" />
+                                   Perímetros de Gestão
+                                </h3>
+                                <div className="flex items-center gap-3">
+                                   {userScopes.length > 0 && (
+                                      <button 
+                                        onClick={() => setIsClearingScopes(true)}
+                                        className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase text-gp-error hover:bg-gp-error/5 rounded-xl transition-all tracking-widest border border-gp-error/20"
+                                      >
+                                         <Trash2 size={14} />
+                                         Limpar Tudo
+                                      </button>
+                                   )}
+                                   <button onClick={() => setIsAddingScope(!isAddingScope)} className="flex items-center gap-2 btn-premium-primary px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                      <Plus size={16} />
+                                      {isAddingScope ? 'Fechar Editor' : 'Novo Escopo'}
+                                   </button>
+                                </div>
                              </div>
-                             <button 
-                                onClick={() => setIsAddingScope(!isAddingScope)}
-                                className="w-full sm:w-auto btn-premium-secondary px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/5"
-                             >
-                                {isAddingScope ? 'FECHAR EDITOR' : (
-                                   <><Plus size={16} strokeWidth={3} className="mr-2" /> NOVO ESCOPO</>
-                                )}
-                             </button>
                           </div>
 
                           {isAddingScope && (
@@ -694,6 +720,18 @@ export default function AdminPanel() {
            </div>
         </div>
       )}
+
+
+      <ConfirmModal
+         isOpen={isClearingScopes}
+         onClose={() => setIsClearingScopes(false)}
+         onConfirm={clearAllScopes}
+         title="REMOVER TODOS OS ESCOPOS"
+         message="Tem certeza que deseja apagar TODOS os perímetros de acesso deste usuário? Ele perderá a visibilidade completa de todas as unidades configuradas."
+         confirmText="SIM, REMOVER TUDO"
+         variant="danger"
+         loading={actionLoading}
+      />
 
       <ConfirmModal 
         isOpen={!!userToDelete}
