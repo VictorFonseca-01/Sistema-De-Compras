@@ -129,7 +129,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
                <img src="/logo-branca.png" alt="Global Parts" className="w-6 h-6 object-contain" />
              </div>
             <div className="min-w-0 flex flex-col justify-center">
-               <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text dark:text-white">
+               <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text">
                  GLOBAL<span className="text-gp-blue">PARTS</span>
                </p>
                 <p className="text-[9px] font-black tracking-[0.3em] uppercase text-gp-blue-light mt-1.5 opacity-80 leading-none">
