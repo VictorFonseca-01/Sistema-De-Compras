@@ -61,7 +61,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       }, () => fetchUnread())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const handleRefresh = () => fetchUnread();
+    window.addEventListener('refresh-notifications', handleRefresh);
+
+    return () => { 
+      supabase.removeChannel(channel); 
+      window.removeEventListener('refresh-notifications', handleRefresh);
+    };
   }, [profile]);
 
   const navItems = [

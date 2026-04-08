@@ -99,6 +99,7 @@ export default function Notifications() {
     
     if (!error) {
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      window.dispatchEvent(new CustomEvent('refresh-notifications'));
     }
   };
 
@@ -123,6 +124,7 @@ export default function Notifications() {
     
     if (!error) {
       toast.success('Todas as notificações foram lidas.');
+      window.dispatchEvent(new CustomEvent('refresh-notifications'));
       fetchNotifications();
     }
   };
