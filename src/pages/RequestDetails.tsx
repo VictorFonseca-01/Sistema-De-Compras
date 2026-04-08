@@ -23,7 +23,9 @@ import {
   Link as LinkIcon,
   Play,
   Plus,
-  BadgeDollarSign
+  BadgeDollarSign,
+  Cpu,
+  Navigation
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'react-hot-toast';
@@ -48,6 +50,8 @@ interface Request {
   invoice_number?: string;
   company_id: string;
   department_id: string;
+  responsible_area?: string;
+  needs_ti_analysis?: boolean;
   profiles: {
     full_name: string;
     email: string;
@@ -432,7 +436,7 @@ export default function RequestDetails() {
   const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
   const isAdjustment = request.status === 'ADJUSTMENT_NEEDED';
 
-  const isTIWorkflow = request.category === 'TI / Tecnologia';
+  const isTIWorkflow = request.needs_ti_analysis;
   const flowMap = isTIWorkflow 
     ? ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED']
     : ['PENDING_GESTOR', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
@@ -578,6 +582,13 @@ export default function RequestDetails() {
                 <h1 className="gp-page-title text-3xl leading-none">
                   {request.title}
                 </h1>
+                {request.needs_ti_analysis && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="gp-badge gp-badge-blue font-black text-[9px] uppercase tracking-widest">
+                      <Cpu size={10} className="mr-1" /> Requer Análise Técnica
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="bg-gp-blue/[0.03] border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group w-full md:w-auto">
                 <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-blue/10 pb-2 w-full text-right">INVESTIMENTO ESTIMADO</p>
@@ -600,6 +611,12 @@ export default function RequestDetails() {
                   <Tag size={12} strokeWidth={3} /> Categoria
                 </p>
                 <p className="font-bold text-gp-text text-[15px]">{request.category}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                  <Navigation size={12} strokeWidth={3} /> Área Responsável
+                </p>
+                <p className="font-bold text-gp-text text-[15px]">{request.responsible_area || 'Não Definida'}</p>
               </div>
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">

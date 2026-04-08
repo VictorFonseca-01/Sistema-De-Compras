@@ -60,6 +60,8 @@ export default function NewRequest() {
     category: 'TI / Tecnologia',
     estimated_cost: '',
     priority: 'media' as Priority,
+    responsible_area: 'TI / Tecnologia',
+    needs_ti_analysis: true,
   });
 
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
@@ -88,6 +90,8 @@ export default function NewRequest() {
           category: data.category,
           estimated_cost: data.estimated_cost?.toString() || '',
           priority: data.priority as Priority,
+          responsible_area: data.responsible_area || '',
+          needs_ti_analysis: data.needs_ti_analysis || false,
         });
         
         if (data.request_links) {
@@ -171,6 +175,8 @@ export default function NewRequest() {
         category: form.category,
         estimated_cost: form.estimated_cost ? parseFloat(form.estimated_cost) : null,
         priority: form.priority,
+        responsible_area: form.responsible_area,
+        needs_ti_analysis: form.needs_ti_analysis,
         status: 'PENDING_GESTOR',
         current_step: 'gestor',
         company_id: finalCompanyId,
@@ -346,14 +352,52 @@ export default function NewRequest() {
                   <SearchableSelect 
                     options={categoriaOptions}
                     value={form.category}
-                    onChange={(val) => setForm({ ...form, category: val })}
+                    onChange={(val) => {
+                      const isTI = val === 'TI / Tecnologia';
+                      setForm({ 
+                        ...form, 
+                        category: val, 
+                        needs_ti_analysis: isTI,
+                        responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area 
+                      });
+                    }}
                     placeholder="Selecione..."
                   />
                 </div>
                 <div className="flex items-center gap-4 p-5 bg-gp-blue/[0.02] border border-gp-blue/10 rounded-2xl shadow-inner">
                    <Info size={20} className="text-gp-blue-light flex-shrink-0" strokeWidth={2.5} />
                    <p className="text-[12px] font-medium text-gp-text3 leading-snug">
-                     A triagem técnica da equipe de TI depende da categorização correta do item solicitado.
+                     Selecione a categoria que melhor representa o item solicitado para o roteamento correto.
+                   </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className={labelClass}>Área Responsável / Setor</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Departamento Pessoal, Produção, etc."
+                    className="gp-input"
+                    value={form.responsible_area}
+                    onChange={e => setForm({ ...form, responsible_area: e.target.value })}
+                  />
+                </div>
+                <div className="flex flex-col justify-center gap-2 p-5 bg-gp-surface2 border border-gp-border rounded-2xl transition-all hover:border-gp-blue/30 group">
+                   <div className="flex items-center justify-between">
+                     <span className="text-[11px] font-black text-gp-text uppercase tracking-widest">Necessita Parecer Técnico do TI?</span>
+                     <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          className="sr-only peer"
+                          checked={form.needs_ti_analysis}
+                          onChange={e => setForm({ ...form, needs_ti_analysis: e.target.checked })}
+                        />
+                        <div className="w-11 h-6 bg-gp-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gp-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gp-blue"></div>
+                     </label>
+                   </div>
+                   <p className="text-[9px] font-medium text-gp-muted uppercase tracking-tighter opacity-60">
+                     Define se o fluxo passará pela etapa de análise técnica.
                    </p>
                 </div>
               </div>
