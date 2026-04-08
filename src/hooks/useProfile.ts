@@ -25,16 +25,16 @@ export function useProfile() {
           const { data, error: profileError } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', user.id)
-            .single();
+            .eq('id', user.id);
           
           if (profileError) {
             console.error('Profile query error:', profileError);
             setError(new Error(profileError.message));
-          } else if (data) {
-            setProfile(data);
+          } else if (data && data.length > 0) {
+            setProfile(data[0]);
           } else {
-            setError(new Error('Perfil não encontrado para este usuário.'));
+            // Se não houver perfil, não disparamos erro fatal, apenas deixamos como null
+            console.warn('Perfil não encontrado para o usuário:', user.id);
           }
         }
       } catch (err: any) {

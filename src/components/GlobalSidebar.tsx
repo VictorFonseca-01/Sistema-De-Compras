@@ -67,18 +67,18 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         'bg-gp-sidebar border-r border-gp-sidebar-border text-gp-text',
         !isOpen && '-translate-x-full lg:translate-x-0',
         isOpen && 'translate-x-0',
-        isCollapsed ? 'w-24' : 'w-72' // Um pouco mais largo para respiro
+        isCollapsed ? 'w-24' : 'w-72 lg:w-80' // Um pouco mais largo para respiro e frases longas
       )}
     >
       {/* Brand Identity */}
-      <div className="h-20 flex items-center justify-between px-6 flex-shrink-0 border-b border-gp-sidebar-border/50 relative overflow-hidden bg-gp-surface2/30">
+      <div className="h-24 flex items-center justify-between px-6 flex-shrink-0 border-b border-gp-sidebar-border/50 relative overflow-hidden bg-gp-surface2/30">
         {!isCollapsed && (
           <div className="flex items-center gap-4 min-w-0 group cursor-pointer" onClick={() => setIsCollapsed(true)}>
             <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gp-blue rounded-xl shadow-lg shadow-gp-blue/20 transform group-hover:scale-110 transition-all duration-500">
                <img src="/logo-branca.png" alt="Global Parts" className="w-6 h-6 object-contain" />
              </div>
             <div className="min-w-0 flex flex-col justify-center">
-               <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text">
+               <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text dark:text-white">
                  GLOBAL<span className="text-gp-blue">PARTS</span>
                </p>
                 <p className="text-[9px] font-black tracking-[0.3em] uppercase text-gp-blue-light mt-1.5 opacity-80 leading-none">
@@ -242,7 +242,7 @@ function SidebarItem({ item, isCollapsed, onClose, variant = 'blue' }: { item: a
             )}
           />
           {!isCollapsed && (
-            <span className="text-[13px] font-black uppercase tracking-[0.05em] truncate group-hover:translate-x-1 transition-transform">
+            <span className="text-[12px] sm:text-[13px] font-black uppercase tracking-tight sm:tracking-[0.05em] truncate group-hover:translate-x-1 transition-transform">
                {item.label}
             </span>
           )}

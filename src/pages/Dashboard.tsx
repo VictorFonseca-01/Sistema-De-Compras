@@ -117,133 +117,141 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!profile) return;
+      if (!profile) {
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
 
-      const { data: requests } = await supabase.from('requests').select('*, profiles!inner(full_name)');
-      
-      if (requests) {
-        const getStats = (statusList: string[]) => {
-          const filtered = requests.filter(r => statusList.includes(r.status));
-          return {
-            count: filtered.length,
-            sum: filtered.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
+      try {
+        const { data: requests } = await supabase.from('requests').select('*, profiles!inner(full_name)');
+        
+        if (requests) {
+          const getStats = (statusList: string[]) => {
+            const filtered = requests.filter(r => statusList.includes(r.status));
+            return {
+              count: filtered.length,
+              sum: filtered.reduce((acc, r) => acc + (Number(r.estimated_cost) || 0), 0)
+            };
           };
-        };
 
-        const formatCurrency = (val: number) => 
-          new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+          const formatCurrency = (val: number) => 
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
-        const stats_pending_gestor = getStats(['pending_gestor']);
-        const stats_pending_ti = getStats(['pending_ti']);
-        const stats_pending_compras = getStats(['pending_compras', 'pending_compras_final']);
-        const stats_pending_diretoria = getStats(['pending_diretoria']);
-        const stats_approved = getStats(['approved']);
-        const stats_pending_total = requests.filter(r => r.status.startsWith('pending')).reduce((acc, r) => {
-          return {
-            count: acc.count + 1,
-            sum: acc.sum + (Number(r.estimated_cost) || 0)
-          };
-        }, { count: 0, sum: 0 });
+          const stats_pending_gestor = getStats(['pending_gestor']);
+          const stats_pending_ti = getStats(['pending_ti']);
+          const stats_pending_compras = getStats(['pending_compras', 'pending_compras_final']);
+          const stats_pending_diretoria = getStats(['pending_diretoria']);
+          const stats_approved = getStats(['approved']);
+          const stats_pending_total = requests.filter(r => r.status.startsWith('pending')).reduce((acc, r) => {
+            return {
+              count: acc.count + 1,
+              sum: acc.sum + (Number(r.estimated_cost) || 0)
+            };
+          }, { count: 0, sum: 0 });
 
-        const totalInvestment = stats_approved.sum;
+          const totalInvestment = stats_approved.sum;
 
-        setRequestStats([
-          { 
-            group: 'financial',
-            label: 'Investimento Total', 
-            value: formatCurrency(totalInvestment), 
-            icon: BarChart3, 
-            colorClass: 'text-gp-blue', 
-            bgClass: 'bg-gp-blue/10' 
-          },
-          { 
-            group: 'financial',
-            label: 'Pendentes (Total)', 
-            value: stats_pending_total.count,
-            secondary: formatCurrency(stats_pending_total.sum),
-            icon: Clock, 
-            colorClass: 'text-gp-amber', 
-            bgClass: 'bg-gp-amber/10' 
-          },
-          { 
-            group: 'financial',
-            label: 'Aprovadas (Total)', 
-            value: stats_approved.count,
-            secondary: formatCurrency(stats_approved.sum),
-            icon: CheckCircle, 
-            colorClass: 'text-gp-success', 
-            bgClass: 'bg-gp-success/10' 
-          },
-          { 
-            group: 'pipeline',
-            label: 'Validação Gestor', 
-            value: stats_pending_gestor.count,
-            secondary: formatCurrency(stats_pending_gestor.sum),
-            icon: FileText, 
-            colorClass: 'text-gp-text', 
-            bgClass: 'bg-gp-surface2' 
-          },
-          { 
-            group: 'pipeline',
-            label: 'Análise Técnica', 
-            value: stats_pending_ti.count,
-            secondary: formatCurrency(stats_pending_ti.sum),
-            icon: Activity, 
-            colorClass: 'text-gp-blue', 
-            bgClass: 'bg-gp-blue/10' 
-          },
-          { 
-            group: 'pipeline',
-            label: 'Aprovação Final', 
-            value: stats_pending_diretoria.count,
-            secondary: formatCurrency(stats_pending_diretoria.sum),
-            icon: Clock, 
-            colorClass: 'text-gp-amber', 
-            bgClass: 'bg-gp-amber/10' 
-          },
-          { 
-            group: 'pipeline',
-            label: 'Cotação Compras', 
-            value: stats_pending_compras.count,
-            secondary: formatCurrency(stats_pending_compras.sum),
-            icon: TrendingUp, 
-            colorClass: 'text-gp-purple', 
-            bgClass: 'bg-gp-purple/10' 
-          },
-        ]);
+          setRequestStats([
+            { 
+              group: 'financial',
+              label: 'Investimento Total', 
+              value: formatCurrency(totalInvestment), 
+              icon: BarChart3, 
+              colorClass: 'text-gp-blue', 
+              bgClass: 'bg-gp-blue/10' 
+            },
+            { 
+              group: 'financial',
+              label: 'Gasto Potencial', 
+              value: stats_pending_total.count,
+              secondary: formatCurrency(stats_pending_total.sum),
+              icon: Clock, 
+              colorClass: 'text-gp-amber', 
+              bgClass: 'bg-gp-amber/10' 
+            },
+            { 
+              group: 'financial',
+              label: 'Aquisições Capitalizadas', 
+              value: stats_approved.count,
+              secondary: formatCurrency(stats_approved.sum),
+              icon: CheckCircle, 
+              colorClass: 'text-gp-success', 
+              bgClass: 'bg-gp-success/10' 
+            },
+            { 
+              group: 'pipeline',
+              label: 'Validação Gestor', 
+              value: stats_pending_gestor.count,
+              secondary: formatCurrency(stats_pending_gestor.sum),
+              icon: FileText, 
+              colorClass: 'text-gp-text', 
+              bgClass: 'bg-gp-surface2 border-gp-border/30' 
+            },
+            { 
+              group: 'pipeline',
+              label: 'Análise Técnica', 
+              value: stats_pending_ti.count,
+              secondary: formatCurrency(stats_pending_ti.sum),
+              icon: Activity, 
+              colorClass: 'text-gp-blue', 
+              bgClass: 'bg-gp-blue/10' 
+            },
+            { 
+              group: 'pipeline',
+              label: 'Aprovação Final', 
+              value: stats_pending_diretoria.count,
+              secondary: formatCurrency(stats_pending_diretoria.sum),
+              icon: Clock, 
+              colorClass: 'text-gp-amber', 
+              bgClass: 'bg-gp-amber/10' 
+            },
+            { 
+              group: 'pipeline',
+              label: 'Cotação Compras', 
+              value: stats_pending_compras.count,
+              secondary: formatCurrency(stats_pending_compras.sum),
+              icon: TrendingUp, 
+              colorClass: 'text-gp-purple', 
+              bgClass: 'bg-gp-purple/10' 
+            },
+          ]);
 
-        setRecentRequests(
-          [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
-        );
+          setRecentRequests(
+            [...requests].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4)
+          );
+        }
+
+        const { data: assets } = await supabase.from('assets').select('*');
+        if (assets) {
+          const total = assets.length;
+          const stock = assets.filter(a => a.status === 'em_estoque').length;
+          const use = assets.filter(a => a.status === 'em_uso').length;
+          const maintenance = assets.filter(a => a.status === 'manutencao').length;
+          setInventoryStats([
+            { label: 'Em Estoque', value: stock, icon: Package, colorClass: 'text-gp-blue', bgClass: 'bg-gp-blue/10' },
+            { label: 'Em Uso', value: use, icon: Activity, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
+            { label: 'Manutenção', value: maintenance, icon: Wrench, colorClass: 'text-gp-error', bgClass: 'bg-gp-error/10' },
+          ]);
+          setChartData([
+            { label: 'Estoque', count: stock, color: 'var(--gp-blue)', percent: total ? (stock / total) * 100 : 0 },
+            { label: 'Em Uso', count: use, color: 'var(--gp-success)', percent: total ? (use / total) * 100 : 0 },
+            { label: 'Manutenção', count: maintenance, color: 'var(--gp-error)', percent: total ? (maintenance / total) * 100 : 0 },
+          ]);
+        }
+
+        const { data: movements } = await supabase
+          .from('asset_movements')
+          .select('*, assets(nome_item, numero_patrimonio)')
+          .order('created_at', { ascending: false })
+          .limit(4);
+        if (movements) setRecentMovements(movements);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: assets } = await supabase.from('assets').select('*');
-      if (assets) {
-        const total = assets.length;
-        const stock = assets.filter(a => a.status === 'em_estoque').length;
-        const use = assets.filter(a => a.status === 'em_uso').length;
-        const maintenance = assets.filter(a => a.status === 'manutencao').length;
-        setInventoryStats([
-          { label: 'Em Estoque', value: stock, icon: Package, colorClass: 'text-gp-blue', bgClass: 'bg-gp-blue/10' },
-          { label: 'Em Uso', value: use, icon: Activity, colorClass: 'text-gp-success', bgClass: 'bg-gp-success/10' },
-          { label: 'Manutenção', value: maintenance, icon: Wrench, colorClass: 'text-gp-error', bgClass: 'bg-gp-error/10' },
-        ]);
-        setChartData([
-          { label: 'Estoque', count: stock, color: 'var(--gp-blue)', percent: total ? (stock / total) * 100 : 0 },
-          { label: 'Em Uso', count: use, color: 'var(--gp-success)', percent: total ? (use / total) * 100 : 0 },
-          { label: 'Manutenção', count: maintenance, color: 'var(--gp-error)', percent: total ? (maintenance / total) * 100 : 0 },
-        ]);
-      }
-
-      const { data: movements } = await supabase
-        .from('asset_movements')
-        .select('*, assets(nome_item, numero_patrimonio)')
-        .order('created_at', { ascending: false })
-        .limit(4);
-      if (movements) setRecentMovements(movements);
-
-      setLoading(false);
     }
     fetchData();
   }, [profile]);
@@ -294,8 +302,8 @@ export default function Dashboard() {
         {/* Financial Summary */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">Balanço Financeiro</h3>
-            <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-40 flex items-center gap-1.5">
+            <h3 className="text-[10px] font-black text-gp-text uppercase tracking-[0.2em] opacity-80">Balanço Financeiro</h3>
+            <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-60 flex items-center gap-1.5">
               <CheckCircle size={10} strokeWidth={3} /> Controladoria Global
             </span>
           </div>
@@ -395,12 +403,12 @@ export default function Dashboard() {
                       <p className="text-2xl font-black text-gp-text leading-none tracking-tight mb-2">
                         {stat.value}
                       </p>
-                      <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-60">
+                      <p className="text-[10px] font-black text-gp-text uppercase tracking-widest opacity-70">
                         {stat.label}
                       </p>
                       {stat.secondary && (
-                        <div className="mt-4 pt-4 border-t border-gp-border/30">
-                          <p className="text-[11px] font-black text-gp-blue-light tracking-widest opacity-80 uppercase leading-none">
+                        <div className="mt-4 pt-4 border-t border-gp-border/20">
+                          <p className="text-[11px] font-black text-gp-blue tracking-widest opacity-90 uppercase leading-none">
                             {stat.secondary}
                           </p>
                         </div>

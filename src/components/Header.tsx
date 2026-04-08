@@ -128,16 +128,16 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <header className="h-20 flex items-center justify-between px-6 lg:px-10 flex-shrink-0 sticky top-0 z-50 bg-gp-bg/60 backdrop-blur-xl border-b border-gp-border/50">
       
       {/* Mobile Menu Trigger & Logo */}
-      <div className="flex items-center gap-4 lg:hidden">
+      <div className="flex items-center gap-2 sm:gap-4 lg:hidden min-w-0">
         <button 
           onClick={onMenuClick}
-          className="p-2.5 rounded-xl bg-gp-surface border border-gp-border text-gp-text shadow-sm active:scale-95 transition-all"
+          className="p-2 rounded-xl bg-gp-surface border border-gp-border text-gp-text shadow-sm active:scale-95 transition-all shrink-0"
         >
-          <Menu size={20} strokeWidth={3} />
+          <Menu size={18} strokeWidth={3} />
         </button>
-        <div className="flex items-center gap-2">
-           <img src="/logo-branca.png" alt="GP" className="w-6 h-6 object-contain invert dark:invert-0" />
-           <span className="font-black text-[12px] uppercase tracking-widest text-gp-text">GLOBALP</span>
+        <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+           <img src="/logo-branca.png" alt="GP" className="w-5 h-5 object-contain invert dark:invert-0 shrink-0" />
+           <span className="font-black text-[11px] sm:text-[12px] uppercase tracking-widest text-gp-text dark:text-white truncate">GLOBALP</span>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                      <Zap size={14} className="text-gp-blue" strokeWidth={3} />
-                     <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gp-text">Central de Notificações</span>
+                     <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gp-text dark:text-white">Central de Notificações</span>
                   </div>
                   {unreadCount > 0 && (
                     <button 
@@ -196,11 +196,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               </div>
               <div className="max-h-[400px] overflow-y-auto no-scrollbar bg-gp-surface/50">
                 {notifications.length === 0 ? (
-                  <div className="py-16 text-center px-8 border-b border-gp-border/30">
-                    <div className="w-16 h-16 bg-gp-surface2 rounded-2xl flex items-center justify-center mx-auto mb-6 text-gp-muted shadow-inner">
+                  <div className="py-20 text-center px-10 border-b border-gp-border/30">
+                    <div className="w-16 h-16 bg-gp-surface2 rounded-2xl flex items-center justify-center mx-auto mb-6 text-gp-muted shadow-inner relative overflow-hidden">
                        <Bell size={24} strokeWidth={1} />
+                       <div className="absolute inset-0 bg-gp-blue/5 animate-pulse" />
                     </div>
-                    <p className="text-[11px] font-black uppercase text-gp-muted tracking-widest opacity-40">Feed Limpo: Sem novas entradas.</p>
+                    <p className="text-[11px] font-black uppercase text-gp-text tracking-widest opacity-60">Feed Limpo: Sem novas entradas.</p>
                   </div>
                 ) : notifications.map(n => (
                   <div
@@ -228,7 +229,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               </div>
               <button 
                 onClick={() => { navigate('/notificacoes'); setShowNotifications(false); }}
-                className="w-full py-4 bg-gp-surface2/80 hover:bg-gp-surface hover:text-gp-blue transition-all border-t border-gp-border text-[10px] font-black uppercase tracking-[0.3em] text-gp-muted"
+                className="w-full py-4 bg-gp-surface2/80 hover:bg-gp-surface hover:text-gp-blue transition-all border-t border-gp-border text-[10px] font-black uppercase tracking-[0.3em] text-gp-text opacity-70 hover:opacity-100"
               >
                  Ver Histórico Completo
               </button>

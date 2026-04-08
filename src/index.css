@@ -7,12 +7,12 @@
 
 @theme {
   /* Tailwind v4 Mappings - Centralized Design Tokens */
-  --color-gp-blue: #3B82F6;
-  --color-gp-blue-hover: #2563EB;
-  --color-gp-blue-active: #1D4ED8;
-  --color-gp-blue-light: #60A5FA;
+  --color-gp-blue: var(--gp-blue);
+  --color-gp-blue-hover: var(--gp-blue-hover);
+  --color-gp-blue-active: var(--gp-blue-active);
+  --color-gp-blue-light: var(--gp-blue-light);
   
-  --color-gp-bg: #FFFFFF;
+  --color-gp-bg: var(--gp-bg);
   --color-gp-bg-sec: var(--gp-bg-sec);
   
   --color-gp-surface: var(--gp-surface);
