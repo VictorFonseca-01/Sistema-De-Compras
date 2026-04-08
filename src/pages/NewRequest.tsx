@@ -92,7 +92,7 @@ export default function NewRequest() {
     category: 'TI / Tecnologia',
     estimated_cost: '',
     priority: 'media' as Priority,
-    responsible_area: 'TI / Tecnologia',
+    responsible_area: '',
     needs_ti_analysis: true,
     subcategoria_solicitacao: '',
   });
@@ -117,8 +117,7 @@ export default function NewRequest() {
           ...prev,
           category: item.category,
           subcategoria_solicitacao: item.subcategory,
-          needs_ti_analysis: isTI,
-          responsible_area: isTI ? 'TI / Tecnologia' : prev.responsible_area
+          needs_ti_analysis: isTI
         }));
         
         setLastSuggestedTitle(title);
@@ -425,8 +424,7 @@ export default function NewRequest() {
                       ...form, 
                       category: val, 
                       subcategoria_solicitacao: '',
-                      needs_ti_analysis: isTI,
-                      responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area
+                      needs_ti_analysis: isTI
                     });
                   }}
                   placeholder="Selecione a Categoria"
