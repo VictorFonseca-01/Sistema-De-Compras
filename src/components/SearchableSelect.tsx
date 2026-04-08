@@ -84,7 +84,7 @@ export function SearchableSelect({
   };
 
   return (
-    <div className={clsx('relative w-full', className)} ref={wrapperRef} onKeyDown={handleKeyDown}>
+    <div className={clsx('relative w-full', className, isOpen && 'z-[1001]')} ref={wrapperRef} onKeyDown={handleKeyDown}>
       {/* Trigger */}
       <div
         role="combobox"
@@ -126,8 +126,8 @@ export function SearchableSelect({
           id="select-dropdown"
           role="listbox"
           className={clsx(
-            'absolute z-[1000] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            'bg-gp-surface border-[1.5px] border-gp-border shadow-3xl'
+            'absolute z-[1001] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
+            'bg-gp-navy2 border-[1.5px] border-gp-border shadow-3xl'
           )}
         >
           {/* Search */}
