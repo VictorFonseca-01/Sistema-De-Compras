@@ -238,11 +238,17 @@ export default function RequestDetails() {
     };
 
     // If step is TI, include tech fields
-    if (request.current_step === 'ti' && profile.role === 'ti') {
+    if (request.current_step === 'ti' && (isTI || isAdmin)) {
       updatePayload.ti_technical_opinion = tiForm.ti_technical_opinion;
-      updatePayload.ti_estimated_cost = tiForm.ti_estimated_cost ? parseFloat(tiForm.ti_estimated_cost) : null;
+      const techCost = tiForm.ti_estimated_cost ? parseFloat(tiForm.ti_estimated_cost) : null;
+      updatePayload.ti_estimated_cost = techCost;
       updatePayload.ti_reference_link = tiForm.ti_reference_link;
       updatePayload.ti_reference_site = tiForm.ti_reference_site;
+      
+      // Sync official estimated cost with TI's calculated cost
+      if (techCost !== null) {
+        updatePayload.estimated_cost = techCost;
+      }
     }
 
     // If step is Final Purchasing, include tracking/NF fields
