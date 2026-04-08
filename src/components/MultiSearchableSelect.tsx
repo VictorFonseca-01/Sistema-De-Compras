@@ -67,7 +67,7 @@ export function MultiSearchableSelect({
   };
 
   return (
-    <div className={clsx('relative w-full', className, isOpen && 'z-[1001]')} ref={wrapperRef}>
+    <div className={clsx('relative w-full', className)} style={{ position: 'relative', zIndex: isOpen ? 2000 : 1 }} ref={wrapperRef}>
       {/* Trigger */}
       <div
         role="combobox"
@@ -107,13 +107,18 @@ export function MultiSearchableSelect({
         <div
           id="select-dropdown"
           role="listbox"
+          style={{ 
+            backgroundColor: '#0B0F19', 
+            opacity: 1, 
+            zIndex: 2001,
+            pointerEvents: 'auto'
+          }}
           className={clsx(
-            'absolute z-[1001] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            '!bg-[#0B0F19] border-[1.5px] border-gp-border shadow-3xl'
+            'absolute w-full mt-2 rounded-xl overflow-hidden shadow-3xl border-[1.5px] border-gp-border'
           )}
         >
           {/* Search & Actions */}
-          <div className="p-2 border-b border-gp-border !bg-[#0B0F19] space-y-2 text-gp-text">
+          <div className="p-2 border-b border-gp-border space-y-2 text-gp-text" style={{ backgroundColor: '#0B0F19' }}>
             <div className="relative group">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
               <input
@@ -147,7 +152,7 @@ export function MultiSearchableSelect({
           </div>
 
           {/* Options */}
-          <div className="overflow-y-auto max-h-52 p-1 no-scrollbar">
+          <div className="overflow-y-auto max-h-52 p-1 no-scrollbar" style={{ backgroundColor: '#0B0F19' }}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => {
                 const isSelected = value.includes(option.value);
@@ -183,7 +188,7 @@ export function MultiSearchableSelect({
           </div>
 
           {/* Footer Action */}
-          <div className="p-2 !bg-[#0B0F19] border-t border-gp-border">
+          <div className="p-2 border-t border-gp-border" style={{ backgroundColor: '#0B0F19' }}>
              <button 
                 type="button"
                 onClick={() => setIsOpen(false)}

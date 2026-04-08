@@ -84,7 +84,7 @@ export function SearchableSelect({
   };
 
   return (
-    <div className={clsx('relative w-full', className, isOpen && 'z-[1001]')} ref={wrapperRef} onKeyDown={handleKeyDown}>
+    <div className={clsx('relative w-full', className)} style={{ position: 'relative', zIndex: isOpen ? 2000 : 1 }} ref={wrapperRef} onKeyDown={handleKeyDown}>
       {/* Trigger */}
       <div
         role="combobox"
@@ -125,13 +125,18 @@ export function SearchableSelect({
         <div
           id="select-dropdown"
           role="listbox"
+          style={{ 
+            backgroundColor: '#0B0F19', 
+            opacity: 1, 
+            zIndex: 2001,
+            pointerEvents: 'auto'
+          }}
           className={clsx(
-            'absolute z-[1001] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            '!bg-[#0B0F19] border-[1.5px] border-gp-border shadow-3xl'
+            'absolute w-full mt-2 rounded-xl overflow-hidden shadow-3xl border-[1.5px] border-gp-border'
           )}
         >
           {/* Search */}
-          <div className="p-2 border-b border-gp-border !bg-[#0B0F19]">
+          <div className="p-2 border-b border-gp-border" style={{ backgroundColor: '#0B0F19' }}>
             <div className="relative group">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
               <input
@@ -146,7 +151,7 @@ export function SearchableSelect({
           </div>
 
           {/* Options */}
-          <div className="overflow-y-auto max-h-52 p-1 no-scrollbar">
+          <div className="overflow-y-auto max-h-52 p-1 no-scrollbar" style={{ backgroundColor: '#0B0F19' }}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, idx) => {
                 const isSelected = option.value === value;
