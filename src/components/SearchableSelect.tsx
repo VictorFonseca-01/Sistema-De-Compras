@@ -126,8 +126,8 @@ export function SearchableSelect({
           id="select-dropdown"
           role="listbox"
           className={clsx(
-            'absolute z-[100] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            'bg-gp-surface border-[1.5px] border-gp-border shadow-2xl'
+            'absolute z-[1000] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
+            'bg-gp-surface border-[1.5px] border-gp-border shadow-3xl'
           )}
         >
           {/* Search */}
