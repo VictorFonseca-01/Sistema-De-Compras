@@ -244,10 +244,13 @@
 
   /* Table Standards */
   .gp-table-wrap {
-    @apply w-full overflow-x-auto rounded-2xl border bg-gp-surface shadow-xl no-scrollbar;
+    @apply w-full overflow-x-auto rounded-2xl border bg-gp-surface shadow-xl;
     border-color: var(--gp-border);
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .gp-table-wrap::-webkit-scrollbar { display: none; }
   .gp-table {
     @apply w-full text-left border-collapse min-w-[700px] sm:min-w-0;
   }
