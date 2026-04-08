@@ -109,7 +109,7 @@ export default function NewRequest() {
     if (title.length < 3 || title === lastSuggestedTitle || isManualCategoryChange) return;
 
     for (const item of suggestionDictionary) {
-      if (item.keywords.some(k => title.includes(k))) {
+      if (item.keywords.some(k => title.includes(k) || (title.length >= 3 && k.startsWith(title)))) {
         const isTI = item.category === 'TI / Tecnologia';
         
         // Só sugere se ainda for o padrão ou estiver vazio
