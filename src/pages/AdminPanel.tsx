@@ -600,8 +600,8 @@ export default function AdminPanel() {
                           </div>
 
                           {isAddingScope && (
-                             <div className="p-8 bg-gp-surface2 rounded-[2rem] border-2 border-gp-blue/20 space-y-6 animate-fade-up shadow-2xl relative overflow-visible">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative z-10">
+                             <div className="p-8 bg-gp-surface2 rounded-[2rem] border-2 border-gp-blue/20 space-y-6 animate-fade-up shadow-2xl relative overflow-visible z-[1001]">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative z-20">
                                    <div className="space-y-1">
                                       <label className={labelClass}>Nível de Visibilidade</label>
                                       <SearchableSelect 
