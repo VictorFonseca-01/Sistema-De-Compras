@@ -36,6 +36,15 @@ const categoriaOptions = [
   { value: "Outros", label: "Outros" }
 ];
 
+const subcategoriaMapping: Record<string, string[]> = {
+  "TI / Tecnologia": ["Celular", "Notebook", "Computador", "Monitor", "Periféricos", "Software", "Licenças", "Infraestrutura de TI", "Acessórios", "Outros"],
+  "Mobiliário": ["Cadeira", "Mesa", "Armário", "Gaveteiro", "Estante", "Bancada", "Outros"],
+  "Infraestrutura": ["Canaletas", "Elétrica", "Rede física", "Reformas", "Instalações", "Manutenção estrutural", "Outros"],
+  "Administrativo": ["Material de escritório", "Suprimentos", "Itens de consumo", "Organização", "Outros"],
+  "Serviços": ["Manutenção", "Terceirização", "Instalação", "Consultoria", "Outros"],
+  "Outros": ["Outros"]
+};
+
 const prioridadeOptions = [
   { value: 'baixa', label: 'Baixa' },
   { value: 'media', label: 'Média' },
@@ -62,6 +71,7 @@ export default function NewRequest() {
     priority: 'media' as Priority,
     responsible_area: 'TI / Tecnologia',
     needs_ti_analysis: true,
+    subcategoria_solicitacao: '',
   });
 
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
@@ -92,6 +102,7 @@ export default function NewRequest() {
           priority: data.priority as Priority,
           responsible_area: data.responsible_area || '',
           needs_ti_analysis: data.needs_ti_analysis || false,
+          subcategoria_solicitacao: data.subcategoria_solicitacao || '',
         });
         
         if (data.request_links) {
@@ -154,8 +165,13 @@ export default function NewRequest() {
       return;
     }
 
-    // Validação específica para TI
-    // Validação específica para Compras (Se necessário nesta fase)
+    if (!form.title || !form.category || !form.subcategoria_solicitacao || !form.priority) {
+      setError('Por favor, preencha todos os campos obrigatórios (Incluindo Subcategoria).');
+      setLoading(false);
+      return;
+    }
+
+    // Validação específica para Compras
     if (profile?.role === 'compras') {
       if (!form.estimated_cost) {
         setError('A equipe de Compras deve informar o valor orçamentário.');
@@ -177,6 +193,7 @@ export default function NewRequest() {
         priority: form.priority,
         responsible_area: form.responsible_area,
         needs_ti_analysis: form.needs_ti_analysis,
+        subcategoria_solicitacao: form.subcategoria_solicitacao,
         status: 'PENDING_GESTOR',
         current_step: 'gestor',
         company_id: finalCompanyId,
@@ -358,18 +375,32 @@ export default function NewRequest() {
                         ...form, 
                         category: val, 
                         needs_ti_analysis: isTI,
-                        responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area 
+                        responsible_area: isTI ? 'TI / Tecnologia' : form.responsible_area,
+                        subcategoria_solicitacao: '' // Reset subcategory
                       });
                     }}
                     placeholder="Selecione..."
                   />
                 </div>
-                <div className="flex items-center gap-4 p-5 bg-gp-blue/[0.02] border border-gp-blue/10 rounded-2xl shadow-inner">
-                   <Info size={20} className="text-gp-blue-light flex-shrink-0" strokeWidth={2.5} />
-                   <p className="text-[12px] font-medium text-gp-text3 leading-snug">
-                     Selecione a categoria que melhor representa o item solicitado para o roteamento correto.
-                   </p>
-                </div>
+
+                {form.category && (
+                  <div className="space-y-1 animate-fade-in">
+                    <label className={labelClass}>Subcategoria Específica</label>
+                    <SearchableSelect 
+                      options={subcategoriaMapping[form.category]?.map(s => ({ value: s, label: s })) || []}
+                      value={form.subcategoria_solicitacao}
+                      onChange={(val) => setForm({ ...form, subcategoria_solicitacao: val })}
+                      placeholder="Escolha o tipo específico..."
+                    />
+                  </div>
+                )}
+              </div> 
+              
+              <div className="flex items-center gap-4 p-5 bg-gp-blue/[0.02] border border-gp-blue/10 rounded-2xl shadow-inner">
+                <Info size={20} className="text-gp-blue-light flex-shrink-0" strokeWidth={2.5} />
+                <p className="text-[12px] font-medium text-gp-text3 leading-snug">
+                  Selecione a categoria que melhor representa o item solicitado para o roteamento correto.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

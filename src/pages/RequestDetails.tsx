@@ -52,6 +52,7 @@ interface Request {
   department_id: string;
   responsible_area?: string;
   needs_ti_analysis?: boolean;
+  subcategoria_solicitacao?: string;
   profiles: {
     full_name: string;
     email: string;
@@ -608,9 +609,14 @@ export default function RequestDetails() {
               </div>
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">
-                  <Tag size={12} strokeWidth={3} /> Categoria
+                  <Tag size={12} strokeWidth={3} /> Classificação
                 </p>
-                <p className="font-bold text-gp-text text-[15px]">{request.category}</p>
+                <p className="font-bold text-gp-text text-[15px]">
+                  {request.category}
+                  {request.subcategoria_solicitacao && (
+                    <span className="text-gp-blue-light ml-2">› {request.subcategoria_solicitacao}</span>
+                  )}
+                </p>
               </div>
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-[10px] font-black text-gp-muted uppercase tracking-widest leading-none">

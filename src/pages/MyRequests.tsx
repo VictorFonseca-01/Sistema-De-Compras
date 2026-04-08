@@ -199,7 +199,10 @@ export default function MyRequests() {
                            "text-[9px] font-black uppercase tracking-widest",
                            (req.priority === 'alta' || req.priority === 'critica') ? 'text-gp-error' : 'text-gp-blue-light'
                        )}>
-                           {req.priority} • {req.category}
+                            {req.priority} • {req.category}
+                            { (req as any).subcategoria_solicitacao && (
+                                <span className="opacity-70 lowercase"> › {(req as any).subcategoria_solicitacao}</span>
+                            )}
                        </span>
                     </div>
                     <span className="text-sm font-black text-gp-text">
@@ -275,7 +278,13 @@ export default function MyRequests() {
                              {req.priority}
                           </span>
                           <span className="text-[9px] text-gp-text3 opacity-30">•</span>
-                          <span className="text-[9px] text-gp-muted font-black uppercase tracking-widest">{req.category}</span>
+                          <span className="text-[9px] text-gp-text3 opacity-30">•</span>
+                          <span className="text-[9px] text-gp-muted font-black uppercase tracking-widest">
+                            {req.category}
+                            { (req as any).subcategoria_solicitacao && (
+                                <span className="text-gp-blue-light/70 ml-1.5 lowercase italic font-medium">› {(req as any).subcategoria_solicitacao}</span>
+                            )}
+                          </span>
                         </div>
                       </div>
                     </td>
