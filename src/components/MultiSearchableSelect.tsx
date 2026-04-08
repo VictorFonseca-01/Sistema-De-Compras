@@ -109,11 +109,11 @@ export function MultiSearchableSelect({
           role="listbox"
           className={clsx(
             'absolute z-[1001] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            'bg-gp-navy2 border-[1.5px] border-gp-border shadow-3xl'
+            '!bg-[#0B0F19] border-[1.5px] border-gp-border shadow-3xl'
           )}
         >
           {/* Search & Actions */}
-          <div className="p-2 border-b border-gp-border bg-gp-surface2 space-y-2">
+          <div className="p-2 border-b border-gp-border !bg-[#0B0F19] space-y-2 text-gp-text">
             <div className="relative group">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
               <input
@@ -183,7 +183,7 @@ export function MultiSearchableSelect({
           </div>
 
           {/* Footer Action */}
-          <div className="p-2 bg-gp-surface2 border-t border-gp-border">
+          <div className="p-2 !bg-[#0B0F19] border-t border-gp-border">
              <button 
                 type="button"
                 onClick={() => setIsOpen(false)}

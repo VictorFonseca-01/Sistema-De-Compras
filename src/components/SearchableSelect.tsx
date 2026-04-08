@@ -127,11 +127,11 @@ export function SearchableSelect({
           role="listbox"
           className={clsx(
             'absolute z-[1001] w-full mt-2 rounded-xl overflow-hidden animate-fade-up',
-            'bg-gp-navy2 border-[1.5px] border-gp-border shadow-3xl'
+            '!bg-[#0B0F19] border-[1.5px] border-gp-border shadow-3xl'
           )}
         >
           {/* Search */}
-          <div className="p-2 border-b border-gp-border bg-gp-surface2">
+          <div className="p-2 border-b border-gp-border !bg-[#0B0F19]">
             <div className="relative group">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gp-text3 group-focus-within:text-gp-blue transition-colors" />
               <input
