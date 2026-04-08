@@ -404,8 +404,12 @@ export default function RequestDetails() {
   );
 
   const currentStatus = statusMap[request.status] || { label: request.status, badge: 'gp-badge-gray', icon: Clock };
-  const isApprover = profile?.role === request.current_step || profile?.role === 'master_admin';
+  const isAdmin = profile?.role === 'master_admin';
+  const isTI = profile?.role === 'ti';
+  const isOwner = profile?.id === request.user_id;
+  const isApprover = profile?.role === request.current_step || isAdmin;
   const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
+  const isAdjustment = request.status === 'ADJUSTMENT_NEEDED';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
@@ -630,7 +634,7 @@ export default function RequestDetails() {
                 <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
                   <FileText size={18} className="text-gp-blue" /> Responsabilidade: Auditoria de TI
                 </h3>
-                {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized && (
+                {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized && (
                   <div className="flex items-center gap-2">
                     <label className="btn-premium-ghost px-4 py-2 rounded-xl cursor-pointer text-[10px] font-black">
                       {uploading ? 'ENVIANDO...' : 'PARECER TÉCNICO (DOCS)'}
@@ -644,7 +648,7 @@ export default function RequestDetails() {
                  {/* 1. PARECER TÉCNICO */}
                  <div className="space-y-4">
                     <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Parecer / Análise de Viabilidade</label>
-                    {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                    {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
                       <textarea 
                         className="gp-input px-6 py-5 min-h-[120px] resize-none text-[14px] font-medium leading-relaxed"
                         placeholder="Descreva aqui sua análise técnica detalhada..."
@@ -662,7 +666,7 @@ export default function RequestDetails() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6 border-y border-gp-border/30">
                     <div className="space-y-4">
                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Link de Referência</label>
-                      {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                      {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
                         <input 
                           type="url"
                           className="gp-input px-5 h-12"
@@ -680,7 +684,7 @@ export default function RequestDetails() {
                     </div>
                     <div className="space-y-4">
                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none mb-2 block">Site do Fabricante / Referência</label>
-                      {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                      {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
                         <input 
                           type="text"
                           className="gp-input px-5 h-12"
@@ -709,7 +713,7 @@ export default function RequestDetails() {
                            <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
                          </div>
                        ))}
-                       {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized && (
+                       {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized && (
                          <label className="border-2 border-dashed border-gp-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-gp-blue/30 hover:bg-gp-blue/[0.01] transition-all group">
                              <Plus size={20} className="text-gp-muted group-hover:text-gp-blue" />
                              <span className="text-[9px] font-black uppercase text-gp-muted">Anexar Mídia</span>
@@ -730,7 +734,7 @@ export default function RequestDetails() {
                           <p className="text-[12px] font-medium text-gp-muted">Valor sugerido para a cotação final de compras.</p>
                        </div>
                     </div>
-                    {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized ? (
+                    {(request.current_step === 'ti' || isAdmin) && (isTI || isAdmin) && !isFinalized ? (
                       <div className="relative group/val w-full md:w-64">
                         <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gp-blue-light text-sm tracking-widest leading-none pointer-events-none">R$</div>
                         <input 
@@ -936,72 +940,94 @@ export default function RequestDetails() {
               </div>
             </div>
           )}
-        </div>
 
-        {/* LADO DIREITO: Assets e Ferramentas */}
-        <div className="w-full lg:w-[400px] space-y-6 lg:sticky lg:top-24">
-          {/* CENTRAL DE DECISÃO */}
-          {isApprover && !isFinalized && (
+          {/* CENTRAL DE DECISÃO OU FERRAMENTAS DO SOLICITANTE */}
+          {(isApprover && !isFinalized) || (isOwner && isAdjustment) ? (
             <div className="gp-card p-6 sm:p-8 border-gp-blue/40 bg-gp-blue/[0.01] space-y-6 relative overflow-hidden shadow-2xl">
               <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 rounded-xl bg-gp-blue text-white flex items-center justify-center shadow-lg shadow-gp-blue/30 scale-105">
-                  <ShieldCheck size={24} strokeWidth={2.5} />
+                <div className={clsx(
+                  "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-transform scale-105",
+                  isAdjustment ? "bg-gp-amber text-white shadow-gp-amber/30" : "bg-gp-blue text-white shadow-gp-blue/30"
+                )}>
+                  {isAdjustment ? <AlertCircle size={24} strokeWidth={2.5} /> : <ShieldCheck size={24} strokeWidth={2.5} />}
                 </div>
                 <div>
                   <h4 className="font-black text-[18px] tracking-tighter uppercase leading-none">
-                     {request.current_step === 'gestor' && 'Validação Regional'}
-                     {request.current_step === 'ti' && 'Parecer Técnico'}
-                     {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS' && 'Análise de Mercado'}
-                     {request.current_step === 'diretoria' && 'Aprovação do Board'}
-                     {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL' && 'Finalização Fiscal'}
+                     {isAdjustment ? 'Ajuste Necessário' : (
+                       <>
+                         {request.current_step === 'gestor' && 'Validação Regional'}
+                         {request.current_step === 'ti' && 'Parecer Técnico'}
+                         {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS' && 'Análise de Mercado'}
+                         {request.current_step === 'diretoria' && 'Aprovação do Board'}
+                         {request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL' && 'Finalização Fiscal'}
+                       </>
+                     )}
                   </h4>
-                  <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">Aguardando sua decisão no fluxo</p>
+                  <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">
+                    {isAdjustment ? 'Revise sua solicitação e envie novamente' : 'Aguardando sua decisão no fluxo'}
+                  </p>
                 </div>
               </div>
-              <div className="space-y-4 pt-2 relative z-10">
-                <textarea 
-                  placeholder="Justificativa ou comentário (opcional)..."
-                  className="gp-input px-5 py-4 h-24 resize-none text-[14px] font-medium leading-relaxed"
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                />
-                <div className="grid grid-cols-1 gap-3">
-                  <button 
-                    disabled={actionLoading}
-                    onClick={() => {
-                      let ns = ''; let nst = '';
-                      if (request.status === 'PENDING_GESTOR') { ns = 'PENDING_TI'; nst = 'ti'; }
-                      else if (request.status === 'PENDING_TI') { ns = 'PENDING_COMPRAS'; nst = 'compras'; }
-                      else if (request.status === 'PENDING_COMPRAS') { ns = 'PENDING_DIRETORIA'; nst = 'diretoria'; }
-                      else if (request.status === 'PENDING_DIRETORIA') { ns = 'PENDING_COMPRAS_FINAL'; nst = 'compras'; }
-                      else if (request.status === 'PENDING_COMPRAS_FINAL') { ns = 'COMPLETED'; nst = 'compras'; }
-                      handleAction(ns, nst);
-                    }}
-                    className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
-                  >
-                    {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'AUTORIZAR E AVANÇAR ETAPA'}
-                  </button>
 
-                  <div className="grid grid-cols-2 gap-3">
+              {isOwner && isAdjustment ? (
+                <div className="space-y-4 pt-2 relative z-10">
+                   <p className="text-[12px] font-medium text-gp-text2 leading-relaxed">
+                     Sua solicitação foi devolvida para ajustes. Clique no botão abaixo para editar os campos e re-protocolar o pedido.
+                   </p>
+                   <button 
+                    onClick={() => navigate(`/solicitacoes/nova?id=${request.id}`)}
+                    className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
+                   >
+                     EDITAR SOLICITAÇÃO
+                   </button>
+                </div>
+              ) : (
+                <div className="space-y-4 pt-2 relative z-10">
+                  <textarea 
+                    placeholder="Justificativa ou comentário (opcional)..."
+                    className="gp-input px-5 py-4 h-24 resize-none text-[14px] font-medium leading-relaxed"
+                    value={comment}
+                    onChange={e => setComment(e.target.value)}
+                  />
+                  <div className="grid grid-cols-1 gap-3">
                     <button 
                       disabled={actionLoading}
-                      onClick={() => handleAction('ADJUSTMENT_NEEDED', 'usuario')}
-                      className="btn-premium-secondary py-3.5 rounded-xl text-gp-amber border-gp-amber/20 font-black uppercase text-[10px] tracking-widest"
+                      onClick={() => {
+                        let ns = ''; let nst = '';
+                        if (request.status === 'PENDING_GESTOR') { ns = 'PENDING_TI'; nst = 'ti'; }
+                        else if (request.status === 'PENDING_TI' || (request.status === 'ADJUSTMENT_NEEDED' && request.current_step === 'ti')) { ns = 'PENDING_COMPRAS'; nst = 'compras'; }
+                        else if (request.status === 'PENDING_COMPRAS') { ns = 'PENDING_DIRETORIA'; nst = 'diretoria'; }
+                        else if (request.status === 'PENDING_DIRETORIA') { ns = 'PENDING_COMPRAS_FINAL'; nst = 'compras'; }
+                        else if (request.status === 'PENDING_COMPRAS_FINAL') { ns = 'COMPLETED'; nst = 'compras'; }
+                        else if (request.status === 'ADJUSTMENT_NEEDED') { ns = 'PENDING_GESTOR'; nst = 'gestor'; }
+                        handleAction(ns, nst);
+                      }}
+                      className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
                     >
-                      SOLICITAR AJUSTE
+                      {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'AUTORIZAR E AVANÇAR ETAPA'}
                     </button>
-                    <button 
-                      disabled={actionLoading}
-                      onClick={() => handleAction('REJECTED', request.current_step)}
-                      className="btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
-                    >
-                      RECUSAR PEDIDO
-                    </button>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleAction('ADJUSTMENT_NEEDED', 'usuario')}
+                        className="btn-premium-secondary py-3.5 rounded-xl text-gp-amber border-gp-amber/20 font-black uppercase text-[10px] tracking-widest"
+                      >
+                        SOLICITAR AJUSTE
+                      </button>
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleAction('REJECTED', request.current_step as any)}
+                        className="btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
+                      >
+                        RECUSAR PEDIDO
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          ) : null}
 
           {/* TIMELINE DE PROCESSO (REPLACED BY NEW TOP TIMELINE) */}
 
