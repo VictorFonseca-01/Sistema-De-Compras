@@ -8,6 +8,18 @@ VALUES ('request-attachments', 'request-attachments', false)
 ON CONFLICT (id) DO UPDATE SET public = false;
 
 -- 2. CORREÇÃO DE RLS: TABELA public.request_attachments
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='request_attachments' AND column_name='is_fiscal') THEN
+        ALTER TABLE public.request_attachments ADD COLUMN is_fiscal BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='request_attachments' AND column_name='is_technical') THEN
+        ALTER TABLE public.request_attachments ADD COLUMN is_technical BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='request_attachments' AND column_name='is_quote') THEN
+        ALTER TABLE public.request_attachments ADD COLUMN is_quote BOOLEAN DEFAULT false;
+    END IF;
+END $$;
+
 ALTER TABLE public.request_attachments ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Inserir anexos da solicitação" ON public.request_attachments;

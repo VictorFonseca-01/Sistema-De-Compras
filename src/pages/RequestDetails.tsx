@@ -62,6 +62,7 @@ interface Attachment {
   file_type: string;
   is_technical?: boolean;
   is_quote?: boolean;
+  is_fiscal?: boolean;
   created_at: string;
 }
 
@@ -190,7 +191,7 @@ export default function RequestDetails() {
     fetchRequest();
   }, [id, profile]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isTechnical: boolean = false, isQuote: boolean = false) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isTechnical: boolean = false, isQuote: boolean = false, isFiscal: boolean = false) => {
     const file = e.target.files?.[0];
     if (!file || !id || !profile) return;
 
@@ -214,7 +215,8 @@ export default function RequestDetails() {
           file_path: filePath,
           file_type: file.type,
           is_technical: isTechnical,
-          is_quote: isQuote
+          is_quote: isQuote,
+          is_fiscal: isFiscal
         }]);
 
       if (dbError) throw dbError;
@@ -626,7 +628,7 @@ export default function RequestDetails() {
             </div>
 
             {/* Initial Links & Media */}
-            {(links.length > 0 || attachments.some(a => !a.is_technical && !a.is_quote)) && (
+            {(links.length > 0 || attachments.some(a => !a.is_technical && !a.is_quote && !a.is_fiscal)) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gp-border/30">
                 {links.length > 0 && (
                   <div className="space-y-3">
@@ -640,11 +642,11 @@ export default function RequestDetails() {
                     </div>
                   </div>
                 )}
-                {attachments.some(a => !a.is_technical && !a.is_quote) && (
+                {attachments.some(a => !a.is_technical && !a.is_quote && !a.is_fiscal) && (
                    <div className="space-y-3">
                     <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.15em] leading-none mb-2 block">Anexos Iniciais</label>
                     <div className="grid gap-2">
-                       {attachments.filter(a => !a.is_technical && !a.is_quote).map((file) => (
+                       {attachments.filter(a => !a.is_technical && !a.is_quote && !a.is_fiscal).map((file) => (
                          <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
                             <div className="flex items-center gap-3 overflow-hidden">
                               <div className="w-7 h-7 rounded-lg bg-gp-surface2 flex items-center justify-center shrink-0 border border-gp-border text-gp-muted">
@@ -866,7 +868,7 @@ export default function RequestDetails() {
                     <textarea placeholder="Prazos, garantias, frete..." className="gp-input px-5 py-4 h-24 resize-none" value={newQuote.observations} onChange={e => setNewQuote({...newQuote, observations: e.target.value})} />
                   </div>
 
-                  <div className="flex items-center gap-4 pt-4 border-t border-gp-border/30">
+              <div className="flex items-center gap-4 pt-4 border-t border-gp-border/30">
                     <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center gap-2">
                        <Plus size={16} /> ANEXAR PDFs / PROPOSTAS
                        <input type="file" className="hidden" multiple accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, false, true)} disabled={uploading} />
@@ -909,6 +911,26 @@ export default function RequestDetails() {
                    <p className="text-center py-6 text-gp-muted text-[11px] font-bold uppercase tracking-widest opacity-40">Nenhum orçamento oficial vinculado.</p>
                  )}
               </div>
+
+              {/* LISTA DE ANEXOS DE COTAÇÃO */}
+              {attachments.some(a => a.is_quote) && (
+                 <div className="pt-8 border-t border-gp-border/30">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] mb-4 block leading-none">Documentos de Cotação / Propostas PDF</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                       {attachments.filter(a => a.is_quote).map((file) => (
+                         <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
+                           <div className="flex items-center gap-3 overflow-hidden">
+                             <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted group-hover:text-gp-blue transition-colors">
+                               {file.file_type?.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
+                             </div>
+                             <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                           </div>
+                           <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+              )}
             </div>
           )}
 
@@ -985,7 +1007,7 @@ export default function RequestDetails() {
                        <div className="pt-4 flex flex-col sm:flex-row gap-4">
                           <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center justify-center gap-2 flex-1">
                              <Plus size={16} /> ANEXAR NF / COMPROVANTE
-                             <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, false)} disabled={uploading} />
+                             <input type="file" className="hidden" multiple accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, false, false, true)} disabled={uploading} />
                           </label>
                        </div>
                     </div>
@@ -1000,6 +1022,26 @@ export default function RequestDetails() {
                           <p className="font-bold text-gp-text">{request.tracking_code || '-'}</p>
                        </div>
                     </div>
+                 )}
+
+                 {/* LISTA DE ANEXOS FISCAIS */}
+                 {attachments.some(a => a.is_fiscal) && (
+                   <div className="pt-4">
+                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] mb-4 block leading-none">Comprovantes e Notas Fiscais</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         {attachments.filter(a => a.is_fiscal).map((file) => (
+                           <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
+                             <div className="flex items-center gap-3 overflow-hidden">
+                               <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted group-hover:text-gp-blue transition-colors">
+                                 {file.file_type?.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
+                               </div>
+                               <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                             </div>
+                             <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
+                           </div>
+                         ))}
+                      </div>
+                   </div>
                  )}
               </div>
             </div>
