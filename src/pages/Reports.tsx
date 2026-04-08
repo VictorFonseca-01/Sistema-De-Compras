@@ -84,9 +84,9 @@ export default function Reports() {
           </button>
           <h1 className="gp-page-title text-3xl flex items-center gap-4">
              <FileText className="text-gp-blue" size={32} strokeWidth={2.5} />
-             Relatório Executivo
+             Relatório de Compras
           </h1>
-          <p className="gp-page-subtitle">Panorama consolidado de hardware, software e logística corporativa.</p>
+          <p className="gp-page-subtitle">Panorama consolidado de fluxos, aquisições e ativos da rede Global Parts.</p>
         </div>
         <button 
           onClick={handlePrint} 

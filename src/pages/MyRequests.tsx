@@ -34,10 +34,10 @@ interface Request {
 const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-amber', icon: Clock },
   pending_ti: { label: 'Em Análise TI', badgeClass: 'gp-badge-blue', icon: FileText },
-  pending_compras: { label: 'Fila de Orçamentos', badgeClass: 'gp-badge-purple', icon: Clock },
+  pending_compras: { label: 'Etapa de Cotação', badgeClass: 'gp-badge-purple', icon: Clock },
   pending_diretoria: { label: 'Aguardando Diretoria', badgeClass: 'gp-badge-purple', icon: Clock },
-  pending_compras_final: { label: 'Finalização Compra', badgeClass: 'gp-badge-blue', icon: ShieldCheck },
-  approved: { label: 'Aprovado Final', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
+  pending_compras_final: { label: 'Finalização de Compra', badgeClass: 'gp-badge-blue', icon: ShieldCheck },
+  approved: { label: 'Solicitação Concluída', badgeClass: 'gp-badge-success', icon: CheckCircle2 },
   rejected: { label: 'Recusado', badgeClass: 'gp-badge-red', icon: XCircle },
   adjustment_needed: { label: 'Ajuste Necessário', badgeClass: 'gp-badge-amber', icon: Clock },
 };
@@ -98,8 +98,8 @@ export default function MyRequests() {
     <div className="space-y-8 animate-fade-up pb-16">
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="space-y-1">
-          <h1 className="gp-page-title">Solicitações</h1>
-          <p className="gp-page-subtitle">Central de acompanhamento e auditoria de compras corporativas.</p>
+          <h1 className="gp-page-title">Solicitações de Compras</h1>
+          <p className="gp-page-subtitle">Central de acompanhamento e auditoria de fluxo corporativo.</p>
         </div>
         <Link 
           to="/solicitacoes/nova"

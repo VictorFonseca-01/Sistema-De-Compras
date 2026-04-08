@@ -73,6 +73,16 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     }
   };
 
+  const markAllAsRead = async () => {
+    if (!profile) return;
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('user_id', profile.id).eq('is_read', false);
+    if (!error) {
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+      toast.success('Todas as notificações foram lidas.');
+    }
+  };
+
   useEffect(() => {
     if (!profile) return;
 
@@ -104,12 +114,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   }, [profile]);
 
   const roleLabels: Record<string, string> = {
-    master_admin: 'SUPREME ADMIN',
-    diretoria: 'EXECUTIVE BOARD',
-    gestor: 'REGIONAL MANAGER',
-    ti: 'IT ARCHITECT',
-    compras: 'SUPPLY CHAIN',
-    usuario: 'COLLABORATOR'
+    master_admin: 'ADMINISTRADOR MASTER',
+    diretoria: 'DIRETORIA EXECUTIVA',
+    gestor: 'GESTOR REGIONAL',
+    ti: 'ANALISTA DE TI',
+    compras: 'COMPRAS / SUPRIMENTOS',
+    usuario: 'COLABORADOR'
   };
 
   const actionBtn = 'w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 relative group border border-transparent';
@@ -172,12 +182,15 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                      <Zap size={14} className="text-gp-blue" strokeWidth={3} />
-                     <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gp-text">Central de Protocolos</span>
+                     <span className="text-[11px] font-black uppercase tracking-[0.3em] text-gp-text">Central de Notificações</span>
                   </div>
                   {unreadCount > 0 && (
-                    <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest bg-gp-blue/10 px-2 py-0.5 rounded-md">
-                       {unreadCount} PENDENTES
-                    </span>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); markAllAsRead(); }}
+                      className="text-[9px] font-black text-gp-blue uppercase tracking-widest bg-gp-blue/10 px-2 py-1 rounded-md hover:bg-gp-blue hover:text-white transition-all shadow-sm active:scale-95"
+                    >
+                       LIMPAR
+                    </button>
                   )}
                 </div>
               </div>
@@ -235,7 +248,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="flex items-center justify-end gap-2 mt-1.5">
                <div className="w-1 h-1 rounded-full bg-gp-blue shadow-lg shadow-gp-blue/40" />
                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gp-blue-light opacity-80 leading-none">
-                 {profile ? roleLabels[profile.role] : 'GUEST SESSION'}
+                 {profile ? roleLabels[profile.role] : 'SESSÃO VISITANTE'}
                </p>
             </div>
           </div>
@@ -255,7 +268,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           {showUserMenu && (
             <div className="absolute right-0 top-full mt-4 w-64 rounded-2xl overflow-hidden z-[100] animate-fade-zoom bg-gp-surface border border-gp-border shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)]">
               <div className="px-6 py-6 border-b border-gp-border bg-gp-surface2/80 backdrop-blur-md">
-                <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.3em] opacity-40 mb-3">Sustentação de Acesso</p>
+                <p className="text-[10px] font-black text-gp-muted uppercase tracking-[0.3em] opacity-40 mb-3">Informações de Acesso</p>
                 <div className="flex flex-col gap-1.5">
                    <p className="text-[13px] font-black truncate text-gp-text uppercase tracking-tight">{profile?.full_name}</p>
                    <p className="text-[11px] font-bold text-gp-blue-light opacity-80 truncate">{profile?.email}</p>

@@ -284,8 +284,8 @@ export default function AdminPanel() {
           <p className="flex items-center gap-2 text-gp-muted font-black text-[10px] uppercase tracking-[0.2em] mb-4">
              <Shield size={14} strokeWidth={3} className="text-gp-blue" /> Painel de Governança
           </p>
-          <h1 className="gp-page-title text-3xl">Gente e Performance</h1>
-          <p className="gp-page-subtitle">Gestão centralizada de usuários, unidades e privilégios na rede Global Parts.</p>
+          <h1 className="gp-page-title text-3xl">Usuários e Empresas</h1>
+          <p className="gp-page-subtitle">Gestão centralizada de contas, unidades e privilégios na rede Global Parts.</p>
         </div>
         <button 
           onClick={() => setIsAddingUser(true)}

@@ -16,12 +16,9 @@ import {
   Hash,
   ChevronRight,
   Activity,
-  Plus,
-  Paperclip,
   Trash2,
   Download,
   Image as ImageIcon,
-  File as FileIcon,
   Building2,
   Gavel
 } from 'lucide-react';
@@ -83,12 +80,12 @@ interface Quote {
 
 const statusMap: Record<string, { label: string; badge: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   pending_gestor:        { label: 'Aguardando Gestor',    badge: 'gp-badge-amber',  icon: Clock },
-  pending_ti:            { label: 'Em Análise TI',        badge: 'gp-badge-blue',   icon: FileText },
-  pending_compras:       { label: 'Fila de Orçamentos',   badge: 'gp-badge-purple', icon: Clock },
+  pending_ti:            { label: 'Análise Técnica (TI)',   badge: 'gp-badge-blue',   icon: FileText },
+  pending_compras:       { label: 'Em Cotação',           badge: 'gp-badge-purple', icon: Clock },
   pending_diretoria:     { label: 'Aguardando Diretoria', badge: 'gp-badge-purple', icon: Clock },
   pending_compras_final: { label: 'Finalização de Compra', badge: 'gp-badge-blue',   icon: ShieldCheck },
-  approved:              { label: 'Aprovado Final',       badge: 'gp-badge-success', icon: CheckCircle2 },
-  rejected:              { label: 'Recusado',             badge: 'gp-badge-red',    icon: XCircle },
+  approved:              { label: 'Solicitação Concluída',  badge: 'gp-badge-success', icon: CheckCircle2 },
+  rejected:              { label: 'Solicitação Recusada',   badge: 'gp-badge-red',    icon: XCircle },
   adjustment_needed:     { label: 'Ajuste Necessário',    badge: 'gp-badge-amber',  icon: AlertCircle },
 };
 
@@ -97,13 +94,13 @@ export default function RequestDetails() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const statusLabels: Record<string, string> = {
-    pending_gestor: 'Aguardando Gestor',
-    pending_ti: 'Em Análise TI',
-    pending_compras: 'Fila de Orçamentos',
-    pending_diretoria: 'Aguardando Diretoria',
-    pending_compras_final: 'Finalização de Compra',
-    approved: 'Aprovado',
-    rejected: 'Recusado',
+    pending_gestor: 'Validação Gestor',
+    pending_ti: 'Análise Técnica (TI)',
+    pending_compras: 'Mapa de Cotação',
+    pending_diretoria: 'Aprovação Diretoria',
+    pending_compras_final: 'Processamento de Compra',
+    approved: 'Solicitação Concluída',
+    rejected: 'Solicitação Recusada',
     adjustment_needed: 'Ajuste Necessário',
   };
 
@@ -247,7 +244,7 @@ export default function RequestDetails() {
       }
 
       setComment('');
-      toast.success(`Pedido ${nextStatus === 'rejected' ? 'recusado' : 'aprovado'} com sucesso.`);
+      toast.success(`Solicitação ${nextStatus === 'rejected' ? 'recusada' : 'processada'} com sucesso.`);
       fetchRequest();
     } else {
       toast.error('Erro ao processar ação: ' + updateError.message);
@@ -338,13 +335,112 @@ export default function RequestDetails() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 animate-fade-up">
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">
+      <nav className="flex items-center gap-2 text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] px-1 translate-y-1">
         <button onClick={() => navigate('/solicitacoes')} className="hover:text-gp-blue transition-colors">Solicitações</button>
         <ChevronRight size={14} className="opacity-30" />
         <span className="text-gp-text truncate max-w-xs">{request.title}</span>
       </nav>
 
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="flex flex-col gap-8">
+        {/* NEW PROFESSIONAL SAAS TIMELINE */}
+        <div className="gp-card p-6 sm:p-10 relative overflow-hidden group/timeline">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12 relative z-10">
+            <div>
+              <h3 className="text-[11px] font-black text-gp-blue uppercase tracking-[0.3em] mb-2 leading-none">Andamento do Fluxo</h3>
+              <p className="text-[13px] font-medium text-gp-text2 leading-tight">Acompanhe as fases de validação e aprovação corporativa.</p>
+            </div>
+            <div className="flex items-center gap-3">
+               <div className="flex items-center gap-2 px-3 py-1.5 bg-gp-surface2 rounded-lg border border-gp-border text-[9px] font-black text-gp-muted uppercase tracking-widest leading-none">
+                 <Clock size={12} className="text-gp-amber" /> {new Date(request.created_at).toLocaleDateString()}
+               </div>
+            </div>
+          </div>
+
+          <div className="relative z-10">
+             {/* TIMELINE TRACK */}
+             <div className="flex flex-col lg:flex-row gap-10 lg:gap-0 lg:items-center relative">
+                {/* Horizontal line for desktop */}
+                <div className="hidden lg:block absolute top-[22px] left-0 right-0 h-0.5 bg-gp-border z-0" />
+                
+                {[
+                  { step: 'solicitante', label: 'Solicitação', desc: 'Abertura', status: 'pending_gestor' },
+                  { step: 'gestor', label: 'Gestor', desc: 'Validação', status: 'pending_ti' },
+                  { step: 'ti', label: 'Técnico', desc: 'Análise IT', status: 'pending_compras' },
+                  { step: 'compras', label: 'Compras', desc: 'Cotações', status: 'pending_diretoria' },
+                  { step: 'diretoria', label: 'Diretoria', desc: 'Aprovação Boards', status: 'pending_compras_final' },
+                  { step: 'concluido', label: 'Conclusão', desc: 'Finalização NF', status: 'approved' },
+                ].map((stage, idx) => {
+                  const flowMap = ['pending_gestor', 'pending_ti', 'pending_compras', 'pending_diretoria', 'pending_compras_final', 'approved'];
+                  const currentIdx = flowMap.indexOf(request.status);
+                  
+                  // Encontrar log específico desta etapa
+                  const stageLog = history.find(h => h.new_status === stage.status);
+                  // O primeiro passo (Solicitação) não tem new_status no passado, pegamos o status de criação
+                  const isCurrent = request.status === (idx === 0 ? 'pending_gestor' : flowMap[idx-1]) && !isFinalized;
+                  const isPast = (currentIdx >= idx && request.status !== 'rejected') || request.status === 'approved';
+                  
+                  // Refined Status Logic
+                  let state: 'past' | 'current' | 'future' | 'refused' = 'future';
+                  if (request.status === 'rejected' && flowMap.indexOf(request.status) === -1) {
+                     // Check if this stage was the one rejected
+                     const lastLog = history[0];
+                     if (idx > 0 && lastLog?.new_status === 'rejected') {
+                        // If this stage matches the stage in charge when rejected?
+                        // Simplified: find the first non-completed stage
+                     }
+                  }
+                  
+                  if (isPast) state = 'past';
+                  if (isCurrent) state = 'current';
+                  if (request.status === 'rejected' && idx === currentIdx) state = 'refused';
+
+                  return (
+                    <div key={idx} className="flex-1 flex flex-row lg:flex-col items-start lg:items-center gap-6 lg:gap-5 group/node transition-all relative z-10 min-w-0">
+                      <div className={clsx(
+                        "w-11 h-11 rounded-[1.2rem] border-2 flex items-center justify-center transition-all duration-700 shadow-xl",
+                        state === 'past' ? "bg-gp-blue border-gp-blue text-white" :
+                        state === 'current' ? "bg-gp-surface2 border-gp-blue text-gp-blue animate-pulse-short shadow-gp-blue/20" :
+                        "bg-gp-surface border-gp-border text-gp-muted opacity-40"
+                      )}>
+                        {state === 'past' ? <CheckCircle2 size={20} strokeWidth={3} /> : <span className="font-black text-xs leading-none">0{idx+1}</span>}
+                      </div>
+                      
+                      <div className="flex flex-col lg:items-center text-left lg:text-center min-w-0 pt-1 lg:pt-0">
+                        <span className={clsx(
+                          "text-[12px] font-black uppercase tracking-widest leading-none mb-2 block",
+                          state === 'current' ? "text-gp-blue" : state === 'past' ? "text-gp-text" : "text-gp-muted"
+                        )}>{stage.label}</span>
+                        
+                        {stageLog ? (
+                          <div className="space-y-1 group">
+                            <p className="text-[10px] font-bold text-gp-text truncate max-w-[120px]">{stageLog.profiles?.full_name}</p>
+                            <p className="text-[9px] font-black text-gp-muted uppercase opacity-50">{new Date(stageLog.created_at).toLocaleDateString('pt-BR')}</p>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] font-black text-gp-muted uppercase tracking-tighter opacity-30 leading-none">{isCurrent ? 'AGUARDANDO...' : 'PENDENTE'}</span>
+                        )}
+                      </div>
+                      
+                      {/* Detailed Popover Tooltip on Hover (Desktop) */}
+                      {stageLog && (
+                        <div className="hidden lg:block absolute top-[110%] left-1/2 -translate-x-1/2 w-64 bg-gp-navy2 border border-white/10 p-5 rounded-2xl shadow-3xl opacity-0 group-hover/node:opacity-100 transition-all pointer-events-none z-50">
+                           <p className="text-[9px] font-black text-gp-blue-light uppercase tracking-widest mb-3 border-b border-white/10 pb-2">Feedback da Etapa</p>
+                           <p className="text-[12px] font-medium text-white/80 italic leading-relaxed">"{stageLog.comment || 'Nenhuma observação informada.'}"</p>
+                           <div className="flex items-center justify-between mt-4">
+                              <span className="text-[9px] font-black text-white/40 uppercase">{stageLog.profiles?.full_name}</span>
+                              <span className="text-[9px] font-black text-white/40 uppercase">{new Date(stageLog.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+             </div>
+          </div>
+          <Activity size={200} className="absolute -right-20 -bottom-20 text-gp-blue opacity-[0.015] -rotate-12 pointer-events-none" />
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* LADO ESQUERDO: Conteúdo Principal */}
         <div className="flex-1 space-y-6 w-full">
           {/* Cabeçalho do Pedido */}
@@ -360,7 +456,7 @@ export default function RequestDetails() {
                 </h1>
               </div>
               <div className="bg-gp-blue/[0.03] border border-gp-blue/20 p-6 rounded-2xl flex flex-col items-end shrink-0 shadow-inner group w-full md:w-auto">
-                <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-blue/10 pb-2 w-full text-right">ORÇAMENTO ESTIMADO</p>
+                <p className="text-[10px] font-black text-gp-blue-light uppercase tracking-[0.2em] mb-2 leading-none border-b border-gp-blue/10 pb-2 w-full text-right">INVESTIMENTO ESTIMADO</p>
                 <p className="text-3xl font-black text-gp-text group-hover:text-gp-blue transition-colors duration-500">
                   R$ {Number(request.estimated_cost || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
@@ -397,156 +493,217 @@ export default function RequestDetails() {
               </div>
             </div>
 
-            {/* Descrição */}
-            <div className="py-10 space-y-5">
-              <h3 className="text-[16px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
-                <FileText size={20} className="text-gp-blue" strokeWidth={2.5} />
-                Detalhamento da Necessidade
-              </h3>
-              <div className="bg-gp-surface2 p-6 sm:p-8 rounded-2xl border border-gp-border leading-relaxed text-gp-text2 text-[15px] font-medium whitespace-pre-wrap shadow-inner min-h-[120px]">
+          </div>
+
+          {/* 1. JUSTIFICATIVA — FUNCIONÁRIO/SOLICITANTE */}
+          <div className="gp-card p-6 sm:p-10 space-y-6">
+            <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight opacity-50">
+              <User size={18} className="text-gp-muted" /> Responsabilidade: Solicitante
+            </h3>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.15em] leading-none">Justificativa Operacional e Necessidade</label>
+              <div className="bg-gp-surface2 p-6 rounded-2xl border border-gp-border text-gp-text2 text-[15px] font-medium leading-relaxed whitespace-pre-wrap shadow-inner">
                 {request.description}
               </div>
             </div>
           </div>
 
-          {/* PAINEL DE ORÇAMENTOS E LICITAÇÃO */}
-          {(!isFinalized || quotes.length > 0) && (
-            <div className="gp-card p-6 sm:p-10 border-gp-purple/20 bg-gp-purple/[0.01]">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gp-purple text-white flex items-center justify-center shadow-lg shadow-gp-purple/20">
-                    <Gavel size={24} strokeWidth={2.5} />
+          {/* 2. VALIDAÇÃO — GESTOR */}
+          {(history.some(h => h.new_status === 'pending_ti') || request.current_step === 'gestor') && (
+            <div className={clsx(
+              "gp-card p-6 sm:p-10 space-y-6 transition-all",
+              request.current_step === 'gestor' ? "border-gp-amber/30 ring-1 ring-gp-amber/5" : "opacity-80"
+            )}>
+              <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                <CheckCircle2 size={18} className="text-gp-amber" /> Responsabilidade: Gestor de Área
+              </h3>
+              <div className="space-y-4">
+                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed italic">
+                   {request.current_step === 'gestor' 
+                     ? "Valide se a solicitação é pertinente à rotina da unidade e autorize o avanço técnico."
+                     : "Validação gerencial concluída conforme histórico de auditoria."
+                   }
+                 </p>
+                 {history.find(h => h.new_status === 'pending_ti') && (
+                    <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-amber">
+                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => h.new_status === 'pending_ti')?.comment || 'Validado sem observações.'}"</p>
+                       <span className="text-[9px] font-black text-gp-muted uppercase tracking-widest mt-3 block">{history.find(h => h.new_status === 'pending_ti')?.profiles?.full_name}</span>
+                    </div>
+                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 3. ANÁLISE TÉCNICA — TI (ONLY TI/ADMIN/AFTER GESTOR) */}
+          {(history.some(h => h.new_status === 'pending_compras') || request.current_step === 'ti' || profile?.role === 'ti') && (
+            <div className={clsx(
+              "gp-card p-6 sm:p-10 space-y-6 transition-all",
+              (request.current_step === 'ti' && !isFinalized) ? "border-gp-blue/30 ring-1 ring-gp-blue/5 shadow-lg" : "opacity-80"
+            )}>
+              <div className="flex justify-between items-center">
+                <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                  <FileText size={18} className="text-gp-blue" /> Responsabilidade: Auditoria de TI
+                </h3>
+                {request.current_step === 'ti' && profile?.role === 'ti' && !isFinalized && (
+                  <div className="flex items-center gap-2">
+                    <label className="btn-premium-ghost px-4 py-2 rounded-xl cursor-pointer text-[10px] font-black">
+                      {uploading ? 'ENVIANDO...' : 'PARECER TÉCNICO (DOCS)'}
+                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                    </label>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-black text-gp-text uppercase tracking-tight">Mapa de Cotações</h3>
-                    <p className="text-[10px] font-black text-gp-purple uppercase tracking-[0.2em] mt-1 opacity-70">Auditoria de Preços e Fornecedores</p>
-                  </div>
-                </div>
-                {(profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (
-                  <button 
-                    onClick={() => setShowQuoteForm(!showQuoteForm)}
-                    className="btn-premium-primary px-6 py-3 rounded-xl text-[10px] font-black"
-                  >
-                    {showQuoteForm ? 'CANCELAR' : 'NOVA COTAÇÃO'}
+                )}
+              </div>
+              <div className="space-y-4">
+                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed">
+                   Análise técnica de viabilidade, comparação com padrões internos e especificações de rede.
+                 </p>
+                 
+                 {/* Arquivos e Links Técnicos */}
+                 {(links.length > 0 || attachments.length > 0) && (
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {links.map((link, i) => (
+                        <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue transition-all group shadow-sm">
+                          <span className="font-bold text-[13px] text-gp-text truncate pr-2">{link.label}</span>
+                          <ExternalLink size={14} className="text-gp-muted group-hover:text-gp-blue" />
+                        </a>
+                      ))}
+                      {attachments.filter(a => !a.file_name.toLowerCase().includes('nf') && !a.file_name.toLowerCase().includes('comprovante')).map((file) => (
+                        <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted">
+                              <ImageIcon size={14} />
+                            </div>
+                            <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                          </div>
+                          <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue"><Download size={14} /></a>
+                        </div>
+                      ))}
+                   </div>
+                 )}
+
+                 {history.find(h => h.new_status === 'pending_compras') && (
+                    <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-blue">
+                       <p className="text-[13px] font-black text-gp-blue uppercase tracking-widest mb-2 opacity-60 leading-none">Parecer da Equipe Global TI</p>
+                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => h.new_status === 'pending_compras')?.comment || 'Avalizado tecnicamente.'}"</p>
+                    </div>
+                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 4. COTAÇÃO E ANÁLISE — COMPRAS (ONLY COMPRAS/ADMIN/AFTER TI) */}
+          {(history.some(h => h.new_status === 'pending_diretoria') || request.current_step === 'compras' || profile?.role === 'compras') && (
+            <div className={clsx(
+              "gp-card p-6 sm:p-10 space-y-6 transition-all",
+              (request.current_step === 'compras' && request.status === 'pending_compras') ? "border-gp-purple/30 ring-1 ring-gp-purple/5 shadow-lg" : "opacity-80"
+            )}>
+              <div className="flex justify-between items-center">
+                <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                  <Activity size={18} className="text-gp-purple" /> Responsabilidade: Compras e Suprimentos
+                </h3>
+                {request.current_step === 'compras' && request.status === 'pending_compras' && (profile?.role === 'compras' || profile?.role === 'master_admin') && (
+                  <button onClick={() => setShowQuoteForm(!showQuoteForm)} className="btn-premium-primary px-5 py-2 rounded-xl text-[10px] font-black">
+                     {showQuoteForm ? 'CANCELAR' : 'REGISTRAR COTAÇÃO'}
                   </button>
                 )}
               </div>
 
               {showQuoteForm && (
-                <div className="bg-gp-surface2 p-6 rounded-2xl border border-gp-border mb-8 animate-fade-down">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest ml-1">Fornecedor</label>
-                      <input 
-                        type="text" 
-                        placeholder="Nome da empresa..."
-                        className="gp-input h-12 px-5"
-                        value={newQuote.supplier_name}
-                        onChange={e => setNewQuote({...newQuote, supplier_name: e.target.value})}
-                      />
+                <div className="bg-gp-surface2 p-6 rounded-2xl border border-gp-border mb-8 animate-fade-down space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-gp-muted uppercase tracking-widest pl-1">Razão Social / Fornecedor</label>
+                      <input type="text" placeholder="Ex: Dell Brasil" className="gp-input px-5 h-12" value={newQuote.supplier_name} onChange={e => setNewQuote({...newQuote, supplier_name: e.target.value})} />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest ml-1">Preço (R$)</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-3.5 font-black text-gp-muted text-sm">R$</div>
-                        <input 
-                          type="number" 
-                          className="gp-input h-12 pl-12"
-                          value={newQuote.price}
-                          onChange={e => setNewQuote({...newQuote, price: e.target.value})}
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-gp-muted uppercase tracking-widest pl-1">Valor Unitário Bruto (R$)</label>
+                      <input type="number" placeholder="0,00" className="gp-input px-5 h-12" value={newQuote.price} onChange={e => setNewQuote({...newQuote, price: e.target.value})} />
                     </div>
                   </div>
-                  <div className="space-y-2 mb-6">
-                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest ml-1">Observações</label>
-                    <textarea 
-                      className="gp-input p-5 h-24 resize-none"
-                      placeholder="Ex: Entrega em 5 dias, garantia..."
-                      value={newQuote.description}
-                      onChange={e => setNewQuote({...newQuote, description: e.target.value})}
-                    />
-                  </div>
-                  <button 
-                    onClick={handleAddQuote}
-                    className="w-full btn-premium-primary py-4 rounded-xl font-black uppercase text-[11px] tracking-widest"
-                  >
-                    SALVAR COTAÇÃO
-                  </button>
+                  <button onClick={handleAddQuote} className="w-full btn-premium-primary py-3 rounded-xl font-black uppercase text-[11px]">SALVAR NO MAPA DE COTAÇÃO</button>
                 </div>
               )}
 
               <div className="space-y-4">
-                {quotes.length === 0 ? (
-                  <div className="py-12 text-center border-2 border-dashed border-gp-border rounded-2xl opacity-40">
-                    <div className="gp-empty-icon mb-4"><Building2 size={32} /></div>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-gp-muted">Aguardando orçamentos</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    {quotes.map((quote) => (
-                      <div 
-                        key={quote.id} 
-                        className={clsx(
-                          "group p-6 rounded-2xl border transition-all relative overflow-hidden",
-                          quote.is_selected 
-                            ? "bg-gp-blue/5 border-gp-blue/30 shadow-lg" 
-                            : "bg-gp-surface border-gp-border hover:border-gp-muted"
-                        )}
-                      >
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                          <div className="flex items-center gap-5">
-                            <div className={clsx(
-                              "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
-                              quote.is_selected ? "bg-gp-blue text-white" : "bg-gp-surface2 text-gp-muted border border-gp-border"
-                            )}>
-                              <Building2 size={24} />
+                 {quotes.length > 0 ? (
+                   quotes.map((q) => (
+                      <div key={q.id} className={clsx("p-5 rounded-2xl border transition-all flex items-center justify-between", q.is_selected ? "bg-gp-blue/5 border-gp-blue/30 shadow-lg scale-[1.02]" : "bg-gp-surface2/50 border-gp-border")}>
+                         <div className="flex items-center gap-4">
+                            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center shadow-inner", q.is_selected ? "bg-gp-blue text-white" : "bg-gp-surface border border-gp-border text-gp-muted")}>
+                               <Building2 size={20} />
                             </div>
-                            <div className="min-w-0">
-                              <h4 className="font-black text-lg text-gp-text truncate mb-1">{quote.supplier_name}</h4>
-                              <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-gp-muted uppercase tracking-widest">{new Date(quote.quote_date).toLocaleDateString()}</span>
-                                {quote.is_selected && (
-                                  <span className="gp-badge gp-badge-sm gp-badge-blue font-black uppercase text-[8px] tracking-widest">ESCOLHIDO</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-8 w-full md:w-auto mt-4 md:mt-0 border-t md:border-0 pt-4 md:pt-0">
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-1 opacity-60 leading-none">VALOR</p>
-                              <p className={clsx("text-2xl font-black transition-colors", quote.is_selected ? "text-gp-blue" : "text-gp-text")}>
-                                R$ {Number(quote.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <div>
+                              <p className="font-black text-[14px] text-gp-text leading-none mb-1.5 uppercase tracking-tight">{q.supplier_name}</p>
+                              <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest">
+                                R$ {Number(q.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {q.is_selected && <span className="ml-2 text-gp-blue">• VENCEDOR</span>}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {(profile?.role === 'compras' || profile?.role === 'master_admin') && !isFinalized && (
-                                <>
-                                  {!quote.is_selected && (
-                                    <button 
-                                      onClick={() => handleSelectQuote(quote)}
-                                      className="btn-premium-ghost px-4 h-11 border-gp-blue/20 text-gp-blue"
-                                    >
-                                      ESCOLHER
-                                    </button>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDeleteQuote(quote.id)}
-                                    className="w-11 h-11 flex items-center justify-center text-gp-muted hover:text-gp-error rounded-xl transition-all"
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {quote.description && <p className="mt-4 text-[13px] font-medium text-gp-text2 italic border-t border-gp-border/30 pt-4">"{quote.description}"</p>}
-                        {quote.is_selected && <div className="absolute right-0 bottom-0 opacity-[0.03] p-4"><ShieldCheck size={120} /></div>}
+                         </div>
+                         <div className="flex items-center gap-3">
+                           {request.current_step === 'compras' && !isFinalized && profile?.role === 'compras' && (
+                              <>
+                                {!q.is_selected && (
+                                   <button onClick={() => handleSelectQuote(q)} className="text-[10px] font-black text-gp-blue border border-gp-blue/20 px-3 py-1.5 rounded-lg hover:bg-gp-blue hover:text-white transition-all uppercase tracking-tighter">Escolher</button>
+                                )}
+                                <button onClick={() => handleDeleteQuote(q.id)} className="w-8 h-8 flex items-center justify-center text-gp-muted hover:text-gp-error transition-colors"><Trash2 size={16} /></button>
+                              </>
+                           )}
+                           {q.is_selected && <ShieldCheck size={20} className="text-gp-blue" />}
+                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                   ))
+                 ) : (
+                   <p className="text-center py-6 text-gp-muted text-[11px] font-bold uppercase tracking-widest opacity-40">Nenhum orçamento oficial vinculado.</p>
+                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 5. DECISÃO — DIRETORIA */}
+          {(history.some(h => h.new_status === 'pending_compras_final') || request.current_step === 'diretoria') && (
+            <div className={clsx(
+              "gp-card p-6 sm:p-10 space-y-6 transition-all",
+              request.current_step === 'diretoria' ? "border-gp-error/20 ring-1 ring-gp-error/5" : "opacity-80"
+            )}>
+              <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                <Gavel size={18} className="text-gp-blue-light" /> Responsabilidade: Diretoria Executiva
+              </h3>
+              <div className="space-y-4">
+                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed italic">
+                   Aprovação estratégica baseada no investimento total e cotações apresentadas.
+                 </p>
+                 {history.find(h => ["pending_compras_final", "approved"].includes(h.new_status) && h.comment) && (
+                    <div className="p-5 bg-gp-surface2 rounded-xl border border-gp-border border-l-4 border-l-gp-blue-light">
+                       <p className="text-[13px] font-medium text-gp-text2 italic">"{history.find(h => ["pending_compras_final", "approved"].includes(h.new_status))?.comment}"</p>
+                    </div>
+                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 6. FINALIZAÇÃO — COMPRAS */}
+          {(history.some(h => h.new_status === 'approved') || request.current_step === 'compras' && request.status === 'pending_compras_final') && (
+             <div className={clsx(
+              "gp-card p-6 sm:p-10 space-y-6 transition-all",
+              (request.status === 'pending_compras_final') ? "bg-gp-blue/[0.02] border-gp-blue/30" : "opacity-80"
+            )}>
+              <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
+                <ShieldCheck size={18} className="text-gp-success" /> Responsabilidade: Finalização de Compra
+              </h3>
+              <div className="space-y-4">
+                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed">
+                   Registro de nota fiscal, rastreio e comprovantes finais de aquisição.
+                 </p>
+                 {request.status === 'pending_compras_final' && profile?.role === 'compras' && (
+                    <div className="p-4 bg-gp-surface2 rounded-xl border border-dashed border-gp-border text-center">
+                       <p className="text-[10px] font-black text-gp-muted lowercase tracking-widest mb-4">Anexe os documentos fiscais aqui antes de aprovar final.</p>
+                       <label className="btn-premium-ghost px-6 py-2.5 rounded-xl cursor-pointer text-[10px] font-black">
+                         {uploading ? 'ENVIANDO...' : 'UPLOAD NF / COMPROVANTE'}
+                         <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                       </label>
+                    </div>
+                 )}
               </div>
             </div>
           )}
@@ -554,52 +711,6 @@ export default function RequestDetails() {
 
         {/* LADO DIREITO: Assets e Ferramentas */}
         <div className="w-full lg:w-[400px] space-y-6 lg:sticky lg:top-24">
-          <div className="gp-card overflow-hidden border-gp-blue/20 shadow-xl">
-            <div className="p-6 bg-gp-surface2 border-b border-gp-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gp-blue text-white flex items-center justify-center">
-                  <Paperclip size={18} strokeWidth={2.5} />
-                </div>
-                <h4 className="font-black text-[13px] text-gp-text uppercase tracking-widest">Ativos e Mídias</h4>
-              </div>
-              {(profile?.role === 'ti' || profile?.role === 'compras' || profile?.role === 'master_admin' || (profile?.id === request.user_id && request.status === 'adjustment_needed')) && (
-                <label className="w-9 h-9 rounded-xl bg-gp-surface border border-gp-border flex items-center justify-center text-gp-blue hover:bg-gp-blue hover:text-white cursor-pointer transition-all">
-                  {uploading ? <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full" /> : <Plus size={18} strokeWidth={3} />}
-                  <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
-                </label>
-              )}
-            </div>
-            <div className="p-4 sm:p-6 space-y-6 max-h-[450px] overflow-y-auto">
-              {links.length > 0 && (
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest flex items-center gap-2 mb-4 leading-none"><ExternalLink size={12} strokeWidth={3} /> Referências</p>
-                  <div className="space-y-2">
-                    {links.map((link, i) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gp-surface border border-gp-border rounded-xl hover:border-gp-blue transition-all group shadow-sm">
-                        <span className="font-bold text-[13px] text-gp-text truncate pr-2">{link.label}</span>
-                        <ChevronRight size={16} className="text-gp-muted group-hover:text-gp-blue transition-all" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {attachments.map((file) => (
-                <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 rounded-xl bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted shadow-inner">
-                      {file.file_type?.startsWith('image/') ? <ImageIcon size={20} /> : <FileIcon size={20} />}
-                    </div>
-                    <div className="truncate">
-                      <p className="font-black text-[12px] text-gp-text truncate leading-tight">{file.file_name}</p>
-                      <p className="text-[9px] font-bold text-gp-muted uppercase mt-1">{(file.file_type || 'file').split('/')[1]}</p>
-                    </div>
-                  </div>
-                  <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="w-8 h-8 rounded-lg flex items-center justify-center text-gp-muted hover:text-gp-blue hover:bg-gp-blue/10"><Download size={16} /></a>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* CENTRAL DE DECISÃO */}
           {isApprover && !isFinalized && (
             <div className="gp-card p-6 sm:p-8 border-gp-blue/40 bg-gp-blue/[0.01] space-y-6 relative overflow-hidden shadow-2xl">
@@ -608,13 +719,19 @@ export default function RequestDetails() {
                   <ShieldCheck size={24} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h4 className="font-black text-[18px] tracking-tighter uppercase leading-none">Verificação Regional</h4>
-                  <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">Aguardando seu veredito</p>
+                  <h4 className="font-black text-[18px] tracking-tighter uppercase leading-none">
+                     {request.current_step === 'gestor' && 'Validação Regional'}
+                     {request.current_step === 'ti' && 'Parecer Técnico'}
+                     {request.current_step === 'compras' && request.status === 'pending_compras' && 'Análise de Mercado'}
+                     {request.current_step === 'diretoria' && 'Aprovação do Board'}
+                     {request.current_step === 'compras' && request.status === 'pending_compras_final' && 'Finalização Fiscal'}
+                  </h4>
+                  <p className="text-[10px] uppercase font-black text-gp-blue-light tracking-[0.2em] mt-1.5 opacity-80 leading-none">Aguardando sua decisão no fluxo</p>
                 </div>
               </div>
               <div className="space-y-4 pt-2 relative z-10">
                 <textarea 
-                  placeholder="Justificativa (opcional)..."
+                  placeholder="Justificativa ou comentário (opcional)..."
                   className="gp-input px-5 py-4 h-24 resize-none text-[14px] font-medium leading-relaxed"
                   value={comment}
                   onChange={e => setComment(e.target.value)}
@@ -633,65 +750,21 @@ export default function RequestDetails() {
                     }}
                     className="w-full btn-premium-primary py-4 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
                   >
-                    {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'Confirmar Aprovação'}
+                    {actionLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'AUTORIZAR E AVANÇAR ETAPA'}
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleAction('rejected', request.current_step)}
                     className="w-full btn-premium-ghost py-3.5 rounded-xl text-gp-error hover:bg-gp-error/5 border-gp-error/20 font-black uppercase text-[10px] tracking-widest"
                   >
-                    Recusar Solicitação
+                    RECUSAR SOLICITAÇÃO
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TIMELINE DE PROCESSO */}
-          <div className="gp-card p-6 sm:p-8">
-            <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-gp-muted mb-10 flex items-center gap-3 leading-none underline decoration-gp-blue/30 underline-offset-8">
-              <Activity size={18} strokeWidth={3} /> Fluxo de Protocolo
-            </h4>
-            <div className="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gp-border">
-              {[
-                { step: 'gestor', label: 'Gestor Imediato', desc: 'SLA: 2h' },
-                { step: 'ti', label: 'Auditoria TI', desc: 'SLA: 4h' },
-                { step: 'compras', label: 'Cotação Compras', desc: 'Orçamentos' },
-                { step: 'diretoria', label: 'Conselho Exec.', desc: 'Avaliação' },
-                { step: 'compras_final', label: 'Compras Final', desc: 'Aquisição' },
-              ].map((s, idx) => {
-                const isActive = request.current_step === s.step && !isFinalized;
-                const flowOrder = ['pending_gestor', 'pending_ti', 'pending_compras', 'pending_diretoria', 'pending_compras_final', 'approved'];
-                const currentIdx = flowOrder.indexOf(request.status);
-                const isPast = currentIdx > idx || request.status === 'approved';
-                const isRejected = request.status === 'rejected' && request.current_step === s.step;
-                
-                return (
-                  <div key={idx} className="relative pl-10 group">
-                    <div className={clsx(
-                      "absolute left-0 top-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-500 z-10 shadow-sm",
-                      isRejected ? "bg-gp-error border-gp-error text-white" :
-                      isPast ? "bg-gp-success border-gp-success text-white" : 
-                      isActive ? "bg-gp-blue border-gp-blue text-white ring-4 ring-gp-blue/10" : 
-                      "bg-gp-surface border-gp-border text-gp-muted"
-                    )}>
-                      {isPast ? <CheckCircle2 size={12} strokeWidth={3} /> : 
-                       isRejected ? <XCircle size={12} strokeWidth={3} /> :
-                       <div className="w-1.5 h-1.5 rounded-full bg-current" />}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className={clsx("font-black text-[13px] uppercase tracking-wide leading-none", 
-                        isActive ? "text-gp-blue" : 
-                        isPast ? "text-gp-text" : 
-                        isRejected ? "text-gp-error" : "text-gp-muted"
-                      )}>{s.label}</span>
-                      <span className="text-[10px] font-bold text-gp-muted opacity-60 uppercase mt-1 tracking-tighter leading-none">{s.desc}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {/* TIMELINE DE PROCESSO (REPLACED BY NEW TOP TIMELINE) */}
 
           {/* HISTÓRICO */}
           {history.length > 0 && (
@@ -721,5 +794,6 @@ export default function RequestDetails() {
         </div>
       </div>
     </div>
+  </div>
   );
 }

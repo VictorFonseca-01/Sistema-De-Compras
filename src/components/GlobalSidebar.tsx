@@ -21,7 +21,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: LayoutDashboard, label: 'Painel de Controle', path: '/' },
     { icon: ListOrdered, label: 'Solicitações de Compras', path: '/solicitacoes' }, 
     { icon: Warehouse, label: 'Estoque / Inventário', path: '/estoque' }, 
   ];
@@ -114,7 +114,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             className="btn-premium-primary w-full py-4 rounded-xl shadow-xl shadow-gp-blue/10 uppercase text-[11px] font-black tracking-[0.2em] group"
           >
             <PlusCircle size={16} strokeWidth={3} className="mr-2.5 group-hover:rotate-90 transition-transform duration-500" />
-            Novo Pedido
+            Nova Solicitação
           </NavLink>
         </div>
       ) : (
@@ -179,7 +179,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         {!isCollapsed && (
            <div className="px-3 mb-4 flex items-center gap-2">
               <ShieldCheck size={12} className="text-gp-success opacity-60" />
-              <span className="text-[9px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-40">V3.0 Extended Design</span>
+              <span className="text-[9px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-40">Design v3.0 Estendido</span>
            </div>
         )}
         <NavLink

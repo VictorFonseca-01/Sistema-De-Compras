@@ -177,7 +177,7 @@ export default function Dashboard() {
           },
           { 
             group: 'pipeline',
-            label: 'Fila Gestor', 
+            label: 'Validação Gestor', 
             value: stats_pending_gestor.count,
             secondary: formatCurrency(stats_pending_gestor.sum),
             icon: FileText, 
@@ -186,7 +186,7 @@ export default function Dashboard() {
           },
           { 
             group: 'pipeline',
-            label: 'Fila TI', 
+            label: 'Análise Técnica', 
             value: stats_pending_ti.count,
             secondary: formatCurrency(stats_pending_ti.sum),
             icon: Activity, 
@@ -195,7 +195,7 @@ export default function Dashboard() {
           },
           { 
             group: 'pipeline',
-            label: 'Fila Diretoria', 
+            label: 'Aprovação Final', 
             value: stats_pending_diretoria.count,
             secondary: formatCurrency(stats_pending_diretoria.sum),
             icon: Clock, 
@@ -204,7 +204,7 @@ export default function Dashboard() {
           },
           { 
             group: 'pipeline',
-            label: 'Fila Compras', 
+            label: 'Cotação Compras', 
             value: stats_pending_compras.count,
             secondary: formatCurrency(stats_pending_compras.sum),
             icon: TrendingUp, 
@@ -266,7 +266,7 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="space-y-1">
-          <h1 className="gp-page-title">Dashboard</h1>
+          <h1 className="gp-page-title">Painel de Controle</h1>
           <p className="gp-page-subtitle">
             Olá, <span className="text-gp-blue font-black uppercase">{profile?.full_name?.split(' ')[0] || 'Usuário'}</span>. Visão geral do ecossistema Global Parts.
           </p>
@@ -284,7 +284,7 @@ export default function Dashboard() {
             className="btn-premium-primary flex-1 lg:flex-none uppercase text-[10px] font-black tracking-widest"
           >
             <Plus size={18} strokeWidth={3} />
-            Novo Pedido
+            Nova Solicitação
           </button>
         </div>
       </div>
@@ -333,7 +333,7 @@ export default function Dashboard() {
                     <Clock size={22} strokeWidth={2.5} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Potencial de Gasto (Fila)</p>
+                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Gasto Potencial (Fluxo)</p>
                     <p className="text-xl font-black text-gp-text tracking-tight uppercase">
                       {requestStats.find(s => s.label === 'Pendentes (Total)')?.secondary || 'R$ 0,00'}
                     </p>
@@ -374,7 +374,7 @@ export default function Dashboard() {
         {/* Approval Pipeline */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">Fila de Auditoria (Em Fluxo)</h3>
+            <h3 className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em]">Fluxo de Auditoria (Sincronizado)</h3>
             <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-40 leading-none">SLA médio: 4.2h</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

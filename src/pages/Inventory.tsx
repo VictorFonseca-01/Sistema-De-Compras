@@ -385,7 +385,7 @@ export default function Inventory() {
       </div>
 
       {/* Desktop/Tablet Table */}
-      <div className="gp-table-container hidden sm:block">
+      <div className="gp-table-wrap hidden sm:block">
         <table className="gp-table">
           <thead>
             <tr>
@@ -535,10 +535,7 @@ export default function Inventory() {
             <button 
               disabled={currentPage === 1} 
               onClick={() => setCurrentPage(prev => prev - 1)} 
-              className={clsx(
-                "h-11 px-5 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all",
-                currentPage === 1 ? "opacity-20 cursor-not-allowed border-gp-border text-gp-muted" : "border-gp-border bg-gp-surface text-gp-text hover:border-gp-blue hover:text-gp-blue active:scale-95 shadow-sm"
-              )}
+              className="gp-pagination-btn"
             >
               Anterior
             </button>
@@ -550,10 +547,8 @@ export default function Inventory() {
                   disabled={page === '...'} 
                   onClick={() => typeof page === 'number' && setCurrentPage(page)} 
                   className={clsx(
-                    "w-10 h-10 rounded-lg font-black text-[11px] transition-all duration-300",
-                    currentPage === page 
-                      ? "bg-gp-blue text-white shadow-lg shadow-gp-blue/20 scale-110 z-10" 
-                      : page === '...' ? "text-gp-muted opacity-40 cursor-default" : "text-gp-muted hover:text-gp-text hover:bg-gp-surface border border-transparent hover:border-gp-border"
+                    "gp-pagination-item",
+                    currentPage === page && "gp-pagination-item-active"
                   )}
                 >
                   {page}
@@ -564,10 +559,7 @@ export default function Inventory() {
             <button 
               disabled={currentPage === totalPages} 
               onClick={() => setCurrentPage(prev => prev + 1)} 
-              className={clsx(
-                "h-11 px-5 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all",
-                currentPage === totalPages ? "opacity-20 cursor-not-allowed border-gp-border text-gp-muted" : "border-gp-border bg-gp-surface text-gp-text hover:border-gp-blue hover:text-gp-blue active:scale-95 shadow-sm"
-              )}
+              className="gp-pagination-btn"
             >
               Próxima
             </button>
@@ -575,7 +567,6 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* Barra de Ações em Massa v5.5 */}
       {selectedAssetIds.size > 0 && ['master_admin', 'ti', 'compras', 'gestor', 'diretoria'].includes(profile?.role || '') && (
         <div className="fixed bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-slide-up w-[92%] sm:w-auto">
            <div className="bg-gp-navy2 border border-gp-blue/30 shadow-2xl shadow-gp-blue/40 rounded-2xl px-5 py-4 flex items-center justify-between sm:justify-start gap-8 backdrop-blur-xl">
