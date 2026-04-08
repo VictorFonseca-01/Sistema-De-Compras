@@ -126,7 +126,8 @@ export default function RequestDetails() {
   const [history, setHistory] = useState<RequestHistory[]>([]);
   const [comment, setComment] = useState('');
   
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [links, setLinks] = useState<any[]>([]);
   const [newQuote, setNewQuote] = useState({ 
     supplier_name: '', 
     price: '', 
@@ -179,6 +180,9 @@ export default function RequestDetails() {
 
     const { data: quoteData } = await supabase.from('request_quotes').select('*').eq('request_id', id).order('price', { ascending: true });
     if (quoteData) setQuotes(quoteData);
+
+    const { data: linkData } = await supabase.from('request_links').select('*').eq('request_id', id);
+    if (linkData) setLinks(linkData || []);
   };
 
   useEffect(() => {
@@ -604,6 +608,42 @@ export default function RequestDetails() {
                 {request.description}
               </div>
             </div>
+
+            {/* Initial Links & Media */}
+            {(links.length > 0 || attachments.some(a => !a.is_technical && !a.is_quote)) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gp-border/30">
+                {links.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.15em] leading-none mb-2 block">Links de Referência</label>
+                    <div className="grid gap-2">
+                       {links.map((link, i) => (
+                         <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-gp-surface border border-gp-border rounded-xl text-gp-blue font-bold text-[12px] hover:border-gp-blue transition-all truncate">
+                           <LinkIcon size={14} /> {link.label || link.url}
+                         </a>
+                       ))}
+                    </div>
+                  </div>
+                )}
+                {attachments.some(a => !a.is_technical && !a.is_quote) && (
+                   <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.15em] leading-none mb-2 block">Anexos Iniciais</label>
+                    <div className="grid gap-2">
+                       {attachments.filter(a => !a.is_technical && !a.is_quote).map((file) => (
+                         <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="w-7 h-7 rounded-lg bg-gp-surface2 flex items-center justify-center shrink-0 border border-gp-border text-gp-muted">
+                                {file.file_type?.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
+                              </div>
+                              <p className="font-bold text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
+                            </div>
+                            <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
+                          </div>
+                       ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 2. VALIDAÇÃO — GESTOR */}
