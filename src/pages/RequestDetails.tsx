@@ -453,28 +453,29 @@ export default function RequestDetails() {
                 ].map((stage, idx) => {
                   const flowMap = ['PENDING_GESTOR', 'PENDING_TI', 'PENDING_COMPRAS', 'PENDING_DIRETORIA', 'PENDING_COMPRAS_FINAL', 'COMPLETED'];
                   
-                  // Refined Status Logic for ADJUSTMENT_NEEDED
+                  // Refined Status Logic
                   let state: 'past' | 'current' | 'future' | 'refused' | 'warning' = 'future';
                   const currentIdx = flowMap.indexOf(request.status);
                   
                   // Encontrar log específico desta etapa e variáveis auxiliares
                   const stageLog = history.find(h => h.new_status === stage.status);
-                  const isCurrent = (currentIdx === idx && !isFinalized) || (request.status === 'ADJUSTMENT_NEEDED' && idx === 0);
+                  
+                  // A etapa 0 (Solicitação) sempre ocorreu se o request existe
+                  // A etapa atual é o índice do status atual + 1 (ex: PENDING_GESTOR [0] -> Etapa do Gestor [1] é a atual)
+                  const isCurrent = (currentIdx === idx - 1 && !isFinalized) || (request.status === 'ADJUSTMENT_NEEDED' && idx === 0);
+                  const isPast = (currentIdx >= idx) || request.status === 'COMPLETED';
 
                   if (request.status === 'ADJUSTMENT_NEEDED') {
                     if (idx === 0) state = 'warning';
                     else state = 'future';
                   } else if (request.status === 'REJECTED') {
-                    // Find where it was rejected
-                    const lastLog = history[0]; // status_history is ordered by created_at desc
+                    const lastLog = history[0];
                     const rejectedAtIdx = flowMap.indexOf(lastLog?.old_status || '');
                     if (idx < rejectedAtIdx) state = 'past';
                     else if (idx === rejectedAtIdx) state = 'refused';
                     else state = 'future';
                   } else {
-                    const isPast = (currentIdx > idx) || request.status === 'COMPLETED';
-                    
-                    if (isPast) state = 'past';
+                    if (isPast && !isCurrent) state = 'past';
                     else if (isCurrent) state = 'current';
                     else state = 'future';
                   }
@@ -506,8 +507,15 @@ export default function RequestDetails() {
                             <p className="text-[10px] font-bold text-gp-text truncate max-w-[120px]">{stageLog.profiles?.full_name}</p>
                             <p className="text-[9px] font-black text-gp-muted uppercase opacity-50">{new Date(stageLog.created_at).toLocaleDateString('pt-BR')}</p>
                           </div>
+                        ) : idx === 0 ? (
+                          <div className="space-y-1 group">
+                             <p className="text-[10px] font-bold text-gp-text truncate max-w-[120px]">{request.profiles?.full_name}</p>
+                             <p className="text-[9px] font-black text-gp-muted uppercase opacity-50">{new Date(request.created_at).toLocaleDateString('pt-BR')}</p>
+                          </div>
                         ) : (
-                          <span className="text-[9px] font-black text-gp-muted uppercase tracking-tighter opacity-30 leading-none">{isCurrent ? 'AGUARDANDO...' : 'PENDENTE'}</span>
+                          <span className="text-[9px] font-black text-gp-muted uppercase tracking-tighter opacity-30 leading-none">
+                            {state === 'past' ? 'CONCLUÍDO' : state === 'current' ? 'AGUARDANDO...' : 'PENDENTE'}
+                          </span>
                         )}
                       </div>
                       
