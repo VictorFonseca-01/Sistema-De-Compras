@@ -105,14 +105,16 @@ export default function Reports() {
         {/* Report Brand Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gp-border pb-12 mb-16 relative z-10">
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-gp-surface2 border border-gp-border rounded-[2rem] flex items-center justify-center shadow-inner">
+              <div className="w-20 h-20 bg-gp-surface2 border border-gp-border rounded-[2rem] flex items-center justify-center p-5 shadow-inner">
                 <img 
-                  src="/logo-branca.png" 
+                  src="/logo-preta.png" 
                   alt="Global Parts" 
-                  className={clsx(
-                    "w-12 h-12 object-contain",
-                    theme === 'light' && "invert brightness-0"
-                  )} 
+                  className="w-12 h-12 object-contain hidden print:block" 
+                />
+                <img 
+                  src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} 
+                  alt="Global Parts" 
+                  className="w-12 h-12 object-contain print:hidden" 
                 />
               </div>
               <div className="space-y-1">

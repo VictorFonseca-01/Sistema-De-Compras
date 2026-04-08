@@ -34,11 +34,11 @@ export function MainLayout() {
           <div className="w-20 h-20 rounded-[2.5rem] flex items-center justify-center bg-gp-surface2 border border-gp-border shadow-2xl relative group">
             <div className="absolute inset-0 bg-gp-blue/5 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <img 
-              src="/logo-branca.png" 
+              src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} 
               alt="GP" 
               className={clsx(
                 "w-10 h-10 object-contain transition-all duration-700",
-                theme === 'light' ? "invert brightness-0" : "animate-pulse-short"
+                theme === 'dark' && "animate-pulse-short"
               )} 
             />
           </div>

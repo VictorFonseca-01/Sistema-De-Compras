@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, Lock, AlertCircle, ArrowRight, User, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { clsx } from 'clsx';
 import { formatSyntheticEmail } from '../lib/auth-utils';
 import { toast } from 'react-hot-toast';
 
@@ -75,12 +74,9 @@ export default function Login() {
           <div className="px-10 pt-12 pb-10 text-center bg-gp-surface2/50 border-b border-gp-border relative overflow-hidden">
             <div className="w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center p-5 bg-gp-surface border border-gp-border shadow-2xl relative z-10 group hover:scale-105 transition-transform duration-500">
               <img 
-                src="/logo-branca.png" 
+                src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} 
                 alt="Global Parts" 
-                className={clsx(
-                  "w-full h-full object-contain transition-all duration-300",
-                  theme === 'light' ? "invert" : "brightness-110"
-                )} 
+                className="w-full h-full object-contain transition-all duration-300"
               />
             </div>
             <div className="relative z-10 space-y-2">

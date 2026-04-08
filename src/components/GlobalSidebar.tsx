@@ -18,9 +18,11 @@ import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 import { supabase } from '../lib/supabase';
 import { useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { profile, loading } = useProfile();
+  const { theme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -125,8 +127,8 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       <div className="h-24 flex items-center justify-between px-6 flex-shrink-0 border-b border-gp-sidebar-border/50 relative overflow-hidden bg-gp-surface2/30">
         {!isCollapsed && (
           <div className="flex items-center gap-4 min-w-0 group cursor-pointer" onClick={() => setIsCollapsed(true)}>
-            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gp-blue rounded-xl shadow-lg shadow-gp-blue/20 transform group-hover:scale-110 transition-all duration-500">
-               <img src="/logo-branca.png" alt="Global Parts" className="w-6 h-6 object-contain" />
+            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center transition-all duration-500">
+               <img src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} alt="Global Parts" className="w-8 h-8 object-contain" />
              </div>
             <div className="min-w-0 flex flex-col justify-center">
                <p className="text-[14px] font-black leading-none tracking-tight uppercase text-gp-text">

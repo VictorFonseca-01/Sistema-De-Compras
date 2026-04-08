@@ -136,7 +136,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           <Menu size={18} strokeWidth={3} />
         </button>
         <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-           <img src="/logo-branca.png" alt="GP" className="w-5 h-5 object-contain invert dark:invert-0 shrink-0" />
+           <img src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} alt="GP" className="w-5 h-5 object-contain shrink-0" />
            <span className="font-black text-[11px] sm:text-[12px] uppercase tracking-widest text-gp-text truncate">GLOBALP</span>
         </div>
       </div>
