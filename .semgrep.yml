@@ -1,0 +1,27 @@
+rules:
+  - id: hardcoded-secrets
+    pattern: |
+      $SECRET = "..."
+    message: "Possível segredo (token/senha) chumbado no código detectado."
+    languages: [javascript, typescript, tsx]
+    severity: ERROR
+
+  - id: no-console-log
+    pattern: console.log(...)
+    message: "Remova os console.log em produção para evitar vazamento de informações ou poluição do console."
+    languages: [javascript, typescript, tsx]
+    severity: WARNING
+
+  - id: insecure-innerhtml
+    pattern-either:
+      - pattern: $EL.innerHTML = $VAL
+      - pattern: $EL.dangerouslySetInnerHTML = { __html: $VAL }
+    message: "Uso inseguro de innerHTML detectado. Isso pode levar a ataques de XSS. Use textContent ou sanitize o conteúdo."
+    languages: [javascript, typescript, tsx]
+    severity: WARNING
+
+  - id: react-missing-key
+    pattern: $LIST.map(($ITEM) => <$TAG ... />)
+    message: "Elementos em listas React devem ter uma propriedade 'key' única para performance e estabilidade de estado."
+    languages: [typescript, tsx]
+    severity: WARNING

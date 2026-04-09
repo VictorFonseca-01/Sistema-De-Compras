@@ -1,0 +1,8 @@
+[
+  { "id": "usuario", "name": "Solicitante", "role": "usuario" },
+  { "id": "gestor", "name": "Gestor", "role": "gestor" },
+  { "id": "ti", "name": "TI", "role": "ti" },
+  { "id": "compras", "name": "Compras", "role": "compras" },
+  { "id": "diretoria", "name": "Diretoria", "role": "diretoria" },
+  { "id": "master_admin", "name": "Administrador", "role": "master_admin" }
+]

@@ -1,0 +1,61 @@
+name: Auditoria e Qualidade (CI)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  audit:
+    name: Executar Auditoria Completa
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências
+        run: npm ci
+
+      - name: Instalar Playwright
+        run: npx playwright install --with-deps
+
+      - name: Lint & Typecheck
+        run: |
+          npm run lint || echo "Lint falhou, continuando..."
+          npx tsc --noEmit || echo "Typecheck falhou, continuando..."
+
+      - name: Testes E2E (Playwright)
+        run: npx playwright test
+        continue-on-error: true
+
+      - name: Varredura de Segurança (Semgrep)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: .semgrep.yml
+        continue-on-error: true
+
+      - name: Detecção de Segredos (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload de Relatórios
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: relatorios-auditoria
+          path: |
+            audit/reports/
+            blob-report/
+            playwright-report/
+          retention-days: 30

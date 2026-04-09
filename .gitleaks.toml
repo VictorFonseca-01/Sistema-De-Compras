@@ -1,0 +1,22 @@
+[allowlist]
+description = "Global allowlist"
+paths = [
+    '''node_modules''',
+    '''audit/reports''',
+    '''package-lock.json'''
+]
+
+[[rules]]
+description = "Generic API Key"
+id = "generic-api-key"
+regex = '''(?i)(?:key|api|token|secret|client|auth)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|'|"]+)(?:[:=]+)(?:[\s|'|"]+)([0-9a-z\-_\t .]{20,})'''
+entropy = 3.5
+keywords = [
+    "key", "api", "token", "secret", "client", "auth"
+]
+
+[[rules]]
+description = "Supabase Key"
+id = "supabase-key"
+regex = '''(?i)(?:supabase)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|'|"]+)(?:[:=]+)(?:[\s|'|"]+)(ey[0-9a-z]{30,})'''
+keywords = ["supabase"]
