@@ -64,6 +64,7 @@ interface Request {
   completion_notes?: string;
   completed_at?: string;
   completed_by?: string;
+  final_purchase_amount?: number;
   profiles: {
     full_name: string;
     email: string;
@@ -137,6 +138,8 @@ export default function RequestDetails() {
     ADJUSTMENT_NEEDED: 'Ajuste Necessário',
   };
 
+  const labelClass = "text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1";
+
   const [request, setRequest] = useState<Request | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,7 +180,8 @@ export default function RequestDetails() {
     tracking_carrier: '',
     tracking_url: '',
     shipping_status: 'Aguardando Envio',
-    completion_notes: ''
+    completion_notes: '',
+    final_purchase_amount: ''
   });
   const [isEditingFinalization, setIsEditingFinalization] = useState(false);
 
@@ -214,7 +218,8 @@ export default function RequestDetails() {
       tracking_carrier: data.tracking_carrier || '',
       tracking_url: data.tracking_url || '',
       shipping_status: data.shipping_status || 'Aguardando Envio',
-      completion_notes: data.completion_notes || ''
+      completion_notes: data.completion_notes || '',
+      final_purchase_amount: data.final_purchase_amount?.toString() || data.actual_cost?.toString() || ''
     });
     setLoading(false);
 
@@ -399,11 +404,17 @@ export default function RequestDetails() {
       return;
     }
 
+    if (isCompleting && !finalizationForm.invoice_number) {
+        toast.error('O número da NF é obrigatório para finalizar.');
+        return;
+    }
+
     setActionLoading(true);
     try {
       const payload: any = {
         ...finalizationForm,
-        actual_cost: request?.actual_cost // Ensure actual_cost is preserved or updated
+        final_purchase_amount: finalizationForm.final_purchase_amount ? parseFloat(finalizationForm.final_purchase_amount) : null,
+        actual_cost: request?.actual_cost 
       };
 
       if (isCompleting) {
@@ -420,23 +431,18 @@ export default function RequestDetails() {
 
       if (error) throw error;
 
-      if (isCompleting) {
-        await supabase.from('request_status_history').insert([{
-          request_id: id,
-          old_status: request?.status,
-          new_status: 'COMPLETED',
-          changed_by: profile.id,
-          comment: finalizationForm.completion_notes || 'Solicitação concluída com sucesso (NF/Rastreio vinculados).'
-        }]);
-      } else {
-        await supabase.from('request_status_history').insert([{
-          request_id: id,
-          old_status: request?.status,
-          new_status: request?.status,
-          changed_by: profile.id,
-          comment: 'Dados de finalização (NF/Rastreio) atualizados.'
-        }]);
-      }
+      // Detailed History
+      let logMsg = isCompleting ? 'Solicitação concluída com sucesso (NF/Rastreio vinculados).' : 'Dados de finalização (NF/Rastreio) atualizados.';
+      if (finalizationForm.invoice_number && !request?.invoice_number) logMsg = `Nota Fiscal ${finalizationForm.invoice_number} registrada.`;
+      if (finalizationForm.tracking_code && !request?.tracking_code) logMsg = `Código de Rastreio ${finalizationForm.tracking_code} informado.`;
+
+      await supabase.from('request_status_history').insert([{
+        request_id: id,
+        old_status: request?.status,
+        new_status: isCompleting ? 'COMPLETED' : request?.status,
+        changed_by: profile.id,
+        comment: logMsg
+      }]);
 
       toast.success(isCompleting ? 'Solicitação concluída com sucesso!' : 'Informações salvas com sucesso.');
       setIsEditingFinalization(false);
@@ -445,6 +451,45 @@ export default function RequestDetails() {
       toast.error('Erro ao salvar: ' + err.message);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (file: Attachment) => {
+    if (!profile || !id) return;
+    if (!isAdmin && profile.role !== 'compras') {
+      toast.error('Você não tem permissão para remover anexos desta etapa.');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja remover o arquivo "${file.file_name}"?`)) return;
+
+    try {
+      // 1. Storage
+      await supabase.storage
+        .from('request-attachments')
+        .remove([file.file_path]);
+      
+      // 2. DB
+      const { error: dbError } = await supabase
+        .from('request_attachments')
+        .delete()
+        .eq('id', file.id);
+
+      if (dbError) throw dbError;
+
+      // 3. History
+      await supabase.from('request_status_history').insert([{
+        request_id: id,
+        old_status: request?.status,
+        new_status: request?.status,
+        changed_by: profile.id,
+        comment: `Anexo de finalização removido: ${file.file_name}`
+      }]);
+
+      toast.success('Arquivo removido com sucesso.');
+      fetchRequest();
+    } catch (err: any) {
+      toast.error('Erro ao remover arquivo: ' + err.message);
     }
   };
 
@@ -999,6 +1044,32 @@ export default function RequestDetails() {
                 )}
               </div>
 
+              {/* COMPARATIVO DE PREÇOS VS TI BASE PRICE */}
+              {quotes.length > 0 && request.ti_estimated_cost && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                   <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border flex flex-col justify-center">
+                      <p className="text-[9px] font-black text-gp-muted uppercase tracking-widest leading-none mb-1.5">Preço Base (Auditoria TI)</p>
+                      <p className="text-[14px] font-black text-gp-text">R$ {Number(request.ti_estimated_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                   </div>
+                   <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border flex flex-col justify-center">
+                      <p className="text-[9px] font-black text-gp-muted uppercase tracking-widest leading-none mb-1.5">Menor Valor Cotado</p>
+                      <p className="text-[14px] font-black text-gp-blue">R$ {Number(Math.min(...quotes.map(q => q.price))).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                   </div>
+                   <div className="p-4 bg-gp-blue/[0.03] rounded-xl border border-gp-blue/20 flex flex-col justify-center">
+                      <p className="text-[9px] font-black text-gp-blue-light uppercase tracking-widest leading-none mb-1.5">Diferença / Economia</p>
+                      <div className="flex items-center gap-2">
+                         <p className={clsx(
+                           "text-[14px] font-black",
+                           (Math.min(...quotes.map(q => q.price)) <= request.ti_estimated_cost) ? "text-gp-success" : "text-gp-error"
+                         )}>
+                            R$ {Number(request.ti_estimated_cost - Math.min(...quotes.map(q => q.price))).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                         </p>
+                         <span className="text-[10px] lowercase text-gp-muted italic">({(((request.ti_estimated_cost - Math.min(...quotes.map(q => q.price))) / request.ti_estimated_cost) * 100).toFixed(1)}%)</span>
+                      </div>
+                   </div>
+                </div>
+              )}
+
               {showQuoteForm && (
                 <div className="bg-gp-surface2 p-8 rounded-2xl border border-gp-border mb-8 animate-fade-down space-y-6 shadow-2xl">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1160,7 +1231,7 @@ export default function RequestDetails() {
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 py-2 border-b border-gp-border/50">
                       <FileText size={16} className="text-gp-blue" />
-                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Dados da Nota Fiscal</h4>
+                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Bloco 1 — Dados da Nota Fiscal</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-1.5">
@@ -1193,28 +1264,39 @@ export default function RequestDetails() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-1.5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1.5 md:col-span-2">
                         <label className={labelClass}>Chave da NF-e (44 dígitos)</label>
                         <input 
                           type="text" 
                           className="gp-input px-5 h-11 text-[12px] font-mono" 
-                          placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000" 
+                          placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000" 
                           maxLength={44}
                           value={finalizationForm.invoice_key}
                           onChange={e => setFinalizationForm({...finalizationForm, invoice_key: e.target.value.replace(/\D/g, '')})}
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className={labelClass}>Fornecedor Faturado</label>
+                        <label className={labelClass}>Valor Final da Compra <span className="text-gp-error">*</span></label>
                         <input 
-                          type="text" 
-                          className="gp-input px-5 h-11" 
-                          placeholder="Nome do Fornecedor na NF" 
-                          value={finalizationForm.invoice_supplier}
-                          onChange={e => setFinalizationForm({...finalizationForm, invoice_supplier: e.target.value})}
+                          type="number"
+                          step="0.01"
+                          className="gp-input px-5 h-11 text-gp-blue font-bold" 
+                          placeholder="R$ 0,00" 
+                          value={finalizationForm.final_purchase_amount}
+                          onChange={e => setFinalizationForm({...finalizationForm, final_purchase_amount: e.target.value})}
                         />
                       </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className={labelClass}>Fornecedor Faturado</label>
+                      <input 
+                        type="text" 
+                        className="gp-input px-5 h-11" 
+                        placeholder="Nome do Fornecedor na NF" 
+                        value={finalizationForm.invoice_supplier}
+                        onChange={e => setFinalizationForm({...finalizationForm, invoice_supplier: e.target.value})}
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1233,7 +1315,7 @@ export default function RequestDetails() {
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 py-2 border-b border-gp-border/50">
                       <Navigation size={16} className="text-gp-purple" />
-                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Dados Logísticos</h4>
+                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Bloco 2 — Dados Logísticos</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-1.5">
@@ -1275,20 +1357,23 @@ export default function RequestDetails() {
                       <input 
                         type="url" 
                         className="gp-input px-5 h-11" 
-                        placeholder="https://transportadora.com/rastreio?id=..." 
+                        placeholder="https://transportadora.com/rastreio" 
                         value={finalizationForm.tracking_url}
                         onChange={e => setFinalizationForm({...finalizationForm, tracking_url: e.target.value})}
                       />
                     </div>
                     <label className="btn-premium-ghost px-6 py-4 rounded-xl cursor-pointer text-[10px] font-black flex items-center justify-center gap-2 border-dashed border-2">
-                       {uploading ? 'ENVIANDO...' : <><Plus size={16} /> ANEXAR COMPROVANTE POSTAGEM / ETIQUETA</>}
+                       {uploading ? 'ENVIANDO...' : <><Plus size={16} /> ANEXAR COMPROVANTE POSTAGEM</>}
                        <input type="file" className="hidden" multiple accept=".pdf,image/*" onChange={(e) => handleFileUpload(e, false, false, false, false, true)} disabled={uploading} />
                     </label>
                   </div>
 
-                  {/* Bloco 3: Observações e Ações */}
-                  <div className="space-y-4 pt-4 border-t border-gp-border">
-                    <label className={labelClass}>Observações Finais de Conclusão</label>
+                  {/* Bloco 4: Notas de Conclusão */}
+                  <div className="space-y-6 pt-4 border-t border-gp-border">
+                    <div className="flex items-center gap-3 py-2 border-b border-gp-border/50">
+                      <FileText size={16} className="text-gp-muted" />
+                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Bloco 4 — Observações Finais</h4>
+                    </div>
                     <textarea 
                       className="gp-input px-5 py-4 min-h-[100px] resize-none" 
                       placeholder="Informações adicionais sobre o fechamento da compra..."
@@ -1302,7 +1387,7 @@ export default function RequestDetails() {
                         onClick={() => handleSaveFinalization(false)}
                         className="flex-1 btn-premium-secondary py-4 rounded-xl font-black uppercase text-[11px] tracking-widest border-gp-blue/20 text-gp-blue hover:bg-gp-blue/5"
                       >
-                        {actionLoading ? 'PROCESSANDO...' : 'SALVAR INFORMAÇÕES (SEM CONCLUIR)'}
+                        {actionLoading ? 'PROCESSANDO...' : 'SALVAR INFORMAÇÕES'}
                       </button>
                       <button 
                         disabled={actionLoading}
@@ -1318,7 +1403,7 @@ export default function RequestDetails() {
                 <div className="space-y-10 relative z-10 animate-fade-in">
                   {/* Visualização de Resumo (Estado não editando) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     {/* Nota Fiscal Resumo */}
+                     {/* Bloco 1 — Nota Fiscal Resumo */}
                      <div className="space-y-4">
                         <div className="flex items-center gap-3 py-2 border-b border-gp-border/30 opacity-60">
                           <FileText size={14} className="text-gp-blue" />
@@ -1334,9 +1419,13 @@ export default function RequestDetails() {
                                 <p className={labelClass}>Data Emissão</p>
                                 <p className="font-bold text-gp-text">{request.invoice_issue_date ? new Date(request.invoice_issue_date).toLocaleDateString() : '-'}</p>
                              </div>
-                             <div className="col-span-full p-4 bg-gp-surface2 rounded-xl border border-gp-border">
-                                <p className={labelClass}>Chave da NF-e</p>
-                                <p className="font-mono text-[11px] text-gp-blue-light break-all">{request.invoice_key || 'Não informada'}</p>
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Valor Final</p>
+                                <p className="font-black text-gp-blue">R$ {Number(request.final_purchase_amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                             </div>
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Fornecedor</p>
+                                <p className="font-bold text-gp-text truncate">{request.invoice_supplier || '-'}</p>
                              </div>
                           </div>
                         ) : (
@@ -1346,7 +1435,7 @@ export default function RequestDetails() {
                         )}
                      </div>
 
-                     {/* Logística Resumo */}
+                     {/* Bloco 2 — Logística Resumo */}
                      <div className="space-y-4">
                         <div className="flex items-center gap-3 py-2 border-b border-gp-border/30 opacity-60">
                           <Navigation size={14} className="text-gp-purple" />
@@ -1378,10 +1467,6 @@ export default function RequestDetails() {
                                     {request.shipping_status || 'Aguardando Envio'}
                                   </span>
                                 </div>
-                                <div className="text-right">
-                                  <p className={labelClass}>Previsão</p>
-                                  <p className="font-bold text-[12px] text-gp-text">{request.delivery_prediction ? new Date(request.delivery_prediction).toLocaleDateString() : '-'}</p>
-                                </div>
                              </div>
                           </div>
                         ) : (
@@ -1392,57 +1477,72 @@ export default function RequestDetails() {
                      </div>
                   </div>
 
-                  {/* Bloco de Anexos Finais */}
+                  {/* Bloco 3 — Anexos de Conclusão */}
                   {(attachments.some(a => a.is_fiscal_invoice || a.is_fiscal_receipt || a.is_tracking_doc)) && (
                     <div className="space-y-6 pt-4 border-t border-gp-border/30">
-                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-60">Ativos e Media da Conclusão</label>
+                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-60">Bloco 3 — Ativos e Mídias de Conclusão</label>
                        
                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           {/* Nota Fiscal */}
                           <div className="space-y-3">
-                             <span className="text-[9px] font-black text-gp-blue uppercase">Nota Fiscal (NF)</span>
+                             <span className="text-[9px] font-black text-gp-blue uppercase">Notas Fiscais</span>
                              <div className="space-y-2">
-                               {attachments.filter(a => a.is_fiscal_invoice).length > 0 ? (
-                                 attachments.filter(a => a.is_fiscal_invoice).map(file => (
-                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
-                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
-                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
-                                   </div>
-                                 ))
-                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum PDF de NF anexado.</p>}
+                               {attachments.filter(a => a.is_fiscal_invoice).map(file => (
+                                 <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                    <p className="font-bold text-[10px] text-gp-text truncate shrink min-w-0" title={file.file_name}>{file.file_name}</p>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue p-1"><Download size={12} /></a>
+                                      {(isCompras || isAdmin) && !isFinalized && (
+                                        <button onClick={() => handleDeleteAttachment(file)} className="text-gp-muted hover:text-gp-error p-1"><Trash2 size={12} /></button>
+                                      )}
+                                    </div>
+                                 </div>
+                               ))}
                              </div>
                           </div>
-
                           {/* Comprovantes */}
                           <div className="space-y-3">
-                             <span className="text-[9px] font-black text-gp-success uppercase">Comprovantes Finais</span>
+                             <span className="text-[9px] font-black text-gp-success uppercase">Comprovantes</span>
                              <div className="space-y-2">
-                               {attachments.filter(a => a.is_fiscal_receipt).length > 0 ? (
-                                 attachments.filter(a => a.is_fiscal_receipt).map(file => (
-                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
-                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
-                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
-                                   </div>
-                                 ))
-                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum comprovante anexado.</p>}
+                               {attachments.filter(a => a.is_fiscal_receipt).map(file => (
+                                 <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                    <p className="font-bold text-[10px] text-gp-text truncate shrink min-w-0" title={file.file_name}>{file.file_name}</p>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue p-1"><Download size={12} /></a>
+                                      {(isCompras || isAdmin) && !isFinalized && (
+                                        <button onClick={() => handleDeleteAttachment(file)} className="text-gp-muted hover:text-gp-error p-1"><Trash2 size={12} /></button>
+                                      )}
+                                    </div>
+                                 </div>
+                               ))}
                              </div>
                           </div>
-
                           {/* Logística */}
                           <div className="space-y-3">
-                             <span className="text-[9px] font-black text-gp-purple uppercase">Arquivos Logísticos</span>
+                             <span className="text-[9px] font-black text-gp-purple uppercase">Logística</span>
                              <div className="space-y-2">
-                               {attachments.filter(a => a.is_tracking_doc).length > 0 ? (
-                                 attachments.filter(a => a.is_tracking_doc).map(file => (
-                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
-                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
-                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
-                                   </div>
-                                 ))
-                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum registro de postagem.</p>}
+                               {attachments.filter(a => a.is_tracking_doc).map(file => (
+                                 <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                    <p className="font-bold text-[10px] text-gp-text truncate shrink min-w-0" title={file.file_name}>{file.file_name}</p>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue p-1"><Download size={12} /></a>
+                                      {(isCompras || isAdmin) && !isFinalized && (
+                                        <button onClick={() => handleDeleteAttachment(file)} className="text-gp-muted hover:text-gp-error p-1"><Trash2 size={12} /></button>
+                                      )}
+                                    </div>
+                                 </div>
+                               ))}
                              </div>
                           </div>
                        </div>
+                    </div>
+                  )}
+
+                  {/* Observações Resumo */}
+                  {request.completion_notes && (
+                    <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                       <p className={labelClass}>Notas de Conclusão</p>
+                       <p className="text-[12px] text-gp-text2 leading-relaxed italic">"{request.completion_notes}"</p>
                     </div>
                   )}
                 </div>
