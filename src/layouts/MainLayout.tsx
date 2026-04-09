@@ -15,10 +15,33 @@ export function MainLayout() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    const initializeAuth = async () => {
+      // Timeout de segurança: Se o Supabase não responder em 5s, pula o loading
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          console.warn('Timeout na inicialização do Supabase. Prosseguindo...');
+          setLoading(false);
+        }
+      }, 5000);
+
+      try {
+        console.log('Iniciando verificação de sessão...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Erro ao buscar sessão:', error);
+        }
+        
+        setSession(session);
+      } catch (err) {
+        console.error('Falha crítica na inicialização:', err);
+      } finally {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);

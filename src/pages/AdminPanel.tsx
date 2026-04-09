@@ -17,7 +17,6 @@ import {
   Globe
 } from 'lucide-react';
 import { useProfile, type Profile } from '../hooks/useProfile';
-import { createClient } from '@supabase/supabase-js';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { MultiSearchableSelect } from '../components/MultiSearchableSelect';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -52,12 +51,6 @@ const roleOptions = [
   { value: 'diretoria', label: 'Conselho / Diretoria' },
   { value: 'master_admin', label: 'Super Administrador' }
 ];
-
-const supabaseAdminAuth = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
 
 const labelClass = 'block text-[10px] font-black uppercase tracking-[0.2em] mb-2.5 text-gp-muted ml-0.5 leading-none';
 
@@ -290,7 +283,15 @@ export default function AdminPanel() {
 
     const authEmail = formatSyntheticEmail(addForm.name, addForm.email);
 
-    const { data: newUser, error: signUpError } = await supabaseAdminAuth.auth.signUp({
+    // Cria um cliente temporário apenas para este provisionamento sem persistir sessão
+    const { createClient } = await import('@supabase/supabase-js');
+    const tempAuth = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+
+    const { data: newUser, error: signUpError } = await tempAuth.auth.signUp({
       email: authEmail,
       password: addForm.password,
       options: { data: { 
