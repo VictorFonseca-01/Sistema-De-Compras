@@ -54,6 +54,16 @@ interface Request {
   needs_ti_analysis?: boolean;
   subcategoria_solicitacao?: string;
   actual_cost?: number;
+  invoice_series?: string;
+  invoice_key?: string;
+  invoice_issue_date?: string;
+  invoice_supplier?: string;
+  tracking_carrier?: string;
+  tracking_url?: string;
+  shipping_status?: string;
+  completion_notes?: string;
+  completed_at?: string;
+  completed_by?: string;
   profiles: {
     full_name: string;
     email: string;
@@ -69,6 +79,9 @@ interface Attachment {
   is_technical?: boolean;
   is_quote?: boolean;
   is_fiscal?: boolean;
+  is_fiscal_invoice?: boolean;
+  is_fiscal_receipt?: boolean;
+  is_tracking_doc?: boolean;
   created_at: string;
 }
 
@@ -153,6 +166,20 @@ export default function RequestDetails() {
     ti_reference_link: '',
     ti_reference_site: ''
   });
+  
+  const [finalizationForm, setFinalizationForm] = useState({
+    invoice_number: '',
+    invoice_series: '',
+    invoice_key: '',
+    invoice_issue_date: '',
+    invoice_supplier: '',
+    tracking_code: '',
+    tracking_carrier: '',
+    tracking_url: '',
+    shipping_status: 'Aguardando Envio',
+    completion_notes: ''
+  });
+  const [isEditingFinalization, setIsEditingFinalization] = useState(false);
 
   const fetchRequest = async () => {
     setLoading(true);
@@ -177,6 +204,18 @@ export default function RequestDetails() {
       ti_reference_link: data.ti_reference_link || '',
       ti_reference_site: data.ti_reference_site || ''
     });
+    setFinalizationForm({
+      invoice_number: data.invoice_number || '',
+      invoice_series: data.invoice_series || '',
+      invoice_key: data.invoice_key || '',
+      invoice_issue_date: data.invoice_issue_date || '',
+      invoice_supplier: data.invoice_supplier || '',
+      tracking_code: data.tracking_code || '',
+      tracking_carrier: data.tracking_carrier || '',
+      tracking_url: data.tracking_url || '',
+      shipping_status: data.shipping_status || 'Aguardando Envio',
+      completion_notes: data.completion_notes || ''
+    });
     setLoading(false);
 
     // Parallel fetch for associated data
@@ -197,7 +236,14 @@ export default function RequestDetails() {
     fetchRequest();
   }, [id, profile]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isTechnical: boolean = false, isQuote: boolean = false, isFiscal: boolean = false) => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    isTechnical: boolean = false, 
+    isQuote: boolean = false, 
+    isFiscalInvoice: boolean = false,
+    isFiscalReceipt: boolean = false,
+    isTrackingDoc: boolean = false
+  ) => {
     const file = e.target.files?.[0];
     if (!file || !id || !profile) return;
 
@@ -222,7 +268,10 @@ export default function RequestDetails() {
           file_type: file.type,
           is_technical: isTechnical,
           is_quote: isQuote,
-          is_fiscal: isFiscal
+          is_fiscal: isFiscalInvoice || isFiscalReceipt || isTrackingDoc,
+          is_fiscal_invoice: isFiscalInvoice,
+          is_fiscal_receipt: isFiscalReceipt,
+          is_tracking_doc: isTrackingDoc
         }]);
 
       if (dbError) throw dbError;
@@ -341,6 +390,64 @@ export default function RequestDetails() {
     setActionLoading(false);
   };
 
+  const handleSaveFinalization = async (isCompleting: boolean = false) => {
+    if (!id || !profile) return;
+    
+    // Validations for completion
+    if (isCompleting && !finalizationForm.invoice_issue_date) {
+      toast.error('A data de emissão da NF é obrigatória para finalizar.');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const payload: any = {
+        ...finalizationForm,
+        actual_cost: request?.actual_cost // Ensure actual_cost is preserved or updated
+      };
+
+      if (isCompleting) {
+        payload.status = 'COMPLETED';
+        payload.current_step = 'compras'; 
+        payload.completed_at = new Date().toISOString();
+        payload.completed_by = profile.id;
+      }
+
+      const { error } = await supabase
+        .from('requests')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      if (isCompleting) {
+        await supabase.from('request_status_history').insert([{
+          request_id: id,
+          old_status: request?.status,
+          new_status: 'COMPLETED',
+          changed_by: profile.id,
+          comment: finalizationForm.completion_notes || 'Solicitação concluída com sucesso (NF/Rastreio vinculados).'
+        }]);
+      } else {
+        await supabase.from('request_status_history').insert([{
+          request_id: id,
+          old_status: request?.status,
+          new_status: request?.status,
+          changed_by: profile.id,
+          comment: 'Dados de finalização (NF/Rastreio) atualizados.'
+        }]);
+      }
+
+      toast.success(isCompleting ? 'Solicitação concluída com sucesso!' : 'Informações salvas com sucesso.');
+      setIsEditingFinalization(false);
+      fetchRequest();
+    } catch (err: any) {
+      toast.error('Erro ao salvar: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleAddQuote = async () => {
     if (!newQuote.supplier_name || !newQuote.price || !id) return;
     
@@ -433,8 +540,9 @@ export default function RequestDetails() {
   const currentStatus = statusMap[request.status] || { label: request.status, badge: 'gp-badge-gray', icon: Clock };
   const isAdmin = profile?.role === 'master_admin';
   const isTI = profile?.role === 'ti';
+  const isCompras = profile?.role === 'compras' || profile?.department === 'Compras' || profile?.department === 'Suprimentos';
   const isOwner = profile?.id === request.user_id;
-  const isApprover = profile?.role === request.current_step || isAdmin;
+  const isApprover = (profile?.role === request.current_step && (profile?.role !== 'usuario')) || isAdmin;
   const isFinalized = request.status === 'COMPLETED' || request.status === 'REJECTED';
   const isAdjustment = request.status === 'ADJUSTMENT_NEEDED';
 
@@ -1008,94 +1116,338 @@ export default function RequestDetails() {
             </div>
           )}
 
-          {/* 6. FINALIZAÇÃO — COMPRAS */}
-          {(history.some(h => h.new_status === 'COMPLETED') || request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL') && (
+          {/* 6. FINALIZAÇÃO OPERACIONAL — COMPRAS */}
+          {(history.some(h => h.new_status === 'COMPLETED') || (request.current_step === 'compras' && request.status === 'PENDING_COMPRAS_FINAL') || isAdmin) && (
              <div className={clsx(
-              "gp-card p-6 sm:p-10 space-y-6 transition-all",
-              (request.status === 'PENDING_COMPRAS_FINAL') ? "bg-gp-blue/[0.02] border-gp-blue/30" : "opacity-80"
+              "gp-card p-6 sm:p-10 space-y-8 transition-all relative overflow-hidden",
+              (request.status === 'PENDING_COMPRAS_FINAL') ? "border-gp-success/30 ring-1 ring-gp-success/5 shadow-2xl" : "opacity-90"
             )}>
-              <h3 className="text-[14px] font-black flex items-center gap-3 text-gp-text uppercase tracking-tight">
-                <ShieldCheck size={18} className="text-gp-success" /> Responsabilidade: Finalização de Compra
-              </h3>
-              <div className="space-y-6">
-                 <p className="text-[12px] font-medium text-gp-muted leading-relaxed">
-                   Registro de nota fiscal, rastreio e comprovantes finais de aquisição.
-                 </p>
-                 
-                 {request.status === 'PENDING_COMPRAS_FINAL' && profile?.role === 'compras' ? (
-                    <div className="space-y-6 bg-gp-surface2 p-8 rounded-2xl border border-gp-border shadow-inner">
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Número da Nota Fiscal</label>
-                             <input 
-                                type="text" 
-                                className="gp-input px-5 h-12" 
-                                placeholder="Ex: NF-12345"
-                                value={request.invoice_number || ''}
-                                onChange={e => setRequest({...request, invoice_number: e.target.value})}
-                             />
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Código de Rastreio</label>
-                             <input 
-                                type="text" 
-                                className="gp-input px-5 h-12" 
-                                placeholder="Ex: BR123456789"
-                                value={request.tracking_code || ''}
-                                onChange={e => setRequest({...request, tracking_code: e.target.value})}
-                             />
-                          </div>
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-black text-gp-muted uppercase tracking-widest pl-1">Previsão de Entrega</label>
-                          <input 
-                             type="date" 
-                             className="gp-input px-5 h-12" 
-                             value={request.delivery_prediction || ''}
-                             onChange={e => setRequest({...request, delivery_prediction: e.target.value})}
-                          />
-                       </div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gp-success/10 text-gp-success flex items-center justify-center shadow-inner border border-gp-success/20">
+                    <ShieldCheck size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-gp-text uppercase tracking-tight leading-none mb-2">Finalização de Compra</h3>
+                    <p className="text-[11px] font-black text-gp-muted uppercase tracking-[0.2em] leading-none opacity-60">Etapa de Registro Fiscal e Logístico</p>
+                  </div>
+                </div>
 
-                       <div className="pt-4 flex flex-col sm:flex-row gap-4">
-                          <label className="btn-premium-ghost px-6 py-3 rounded-xl cursor-pointer text-[11px] font-black flex items-center justify-center gap-2 flex-1">
-                             <Plus size={16} /> ANEXAR NF / COMPROVANTE
-                             <input type="file" className="hidden" multiple accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, false, false, true)} disabled={uploading} />
-                          </label>
-                       </div>
-                    </div>
-                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
-                          <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-1">Nota Fiscal</p>
-                          <p className="font-bold text-gp-text">{request.invoice_number || '-'}</p>
-                       </div>
-                       <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
-                          <p className="text-[10px] font-black text-gp-muted uppercase tracking-widest mb-1">Cód. Rastreio</p>
-                          <p className="font-bold text-gp-text">{request.tracking_code || '-'}</p>
-                       </div>
-                    </div>
-                 )}
-
-                 {/* LISTA DE ANEXOS FISCAIS */}
-                 {attachments.some(a => a.is_fiscal) && (
-                   <div className="pt-4">
-                      <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] mb-4 block leading-none">Comprovantes e Notas Fiscais</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         {attachments.filter(a => a.is_fiscal).map((file) => (
-                           <div key={file.id} className="flex items-center justify-between p-4 bg-gp-surface2 border border-gp-border rounded-xl group hover:border-gp-blue/40 transition-all shadow-sm">
-                             <div className="flex items-center gap-3 overflow-hidden">
-                               <div className="w-8 h-8 rounded-lg bg-gp-surface flex items-center justify-center shrink-0 border border-gp-border text-gp-muted group-hover:text-gp-blue transition-colors">
-                                 {file.file_type?.startsWith('image/') ? <ImageIcon size={14} /> : <FileText size={14} />}
-                               </div>
-                               <p className="font-black text-[11px] text-gp-text truncate leading-tight">{file.file_name}</p>
-                             </div>
-                             <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-2"><Download size={14} /></a>
-                           </div>
-                         ))}
-                      </div>
-                   </div>
-                 )}
+                {((isCompras || isAdmin) && !isFinalized) && (
+                  <div className="flex items-center gap-3">
+                    {!isEditingFinalization ? (
+                      <button 
+                        onClick={() => setIsEditingFinalization(true)}
+                        className="btn-premium-primary px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-gp-blue/20"
+                      >
+                         OPERAR ETAPA FINAL
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => setIsEditingFinalization(false)}
+                        className="btn-premium-ghost px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                      >
+                         CANCELAR EDIÇÃO
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {isEditingFinalization ? (
+                <div className="space-y-10 animate-fade-down relative z-10">
+                  {/* Bloco 1: Nota Fiscal */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 py-2 border-b border-gp-border/50">
+                      <FileText size={16} className="text-gp-blue" />
+                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Dados da Nota Fiscal</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Número da NF <span className="text-gp-error">*</span></label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11" 
+                          placeholder="Ex: 000.123.456" 
+                          value={finalizationForm.invoice_number}
+                          onChange={e => setFinalizationForm({...finalizationForm, invoice_number: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Série</label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11" 
+                          placeholder="Ex: 1" 
+                          value={finalizationForm.invoice_series}
+                          onChange={e => setFinalizationForm({...finalizationForm, invoice_series: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Data de Emissão <span className="text-gp-error">*</span></label>
+                        <input 
+                          type="date" 
+                          className="gp-input px-5 h-11" 
+                          value={finalizationForm.invoice_issue_date}
+                          onChange={e => setFinalizationForm({...finalizationForm, invoice_issue_date: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Chave da NF-e (44 dígitos)</label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11 text-[12px] font-mono" 
+                          placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000" 
+                          maxLength={44}
+                          value={finalizationForm.invoice_key}
+                          onChange={e => setFinalizationForm({...finalizationForm, invoice_key: e.target.value.replace(/\D/g, '')})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Fornecedor Faturado</label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11" 
+                          placeholder="Nome do Fornecedor na NF" 
+                          value={finalizationForm.invoice_supplier}
+                          onChange={e => setFinalizationForm({...finalizationForm, invoice_supplier: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label className="btn-premium-ghost px-6 py-4 rounded-xl cursor-pointer text-[10px] font-black flex items-center justify-center gap-2 border-dashed border-2">
+                           {uploading ? 'ENVIANDO...' : <><Plus size={16} /> ANEXAR NOTA FISCAL (PDF/XML)</>}
+                           <input type="file" className="hidden" multiple accept=".pdf,.xml,image/*" onChange={(e) => handleFileUpload(e, false, false, true, false, false)} disabled={uploading} />
+                        </label>
+                        <label className="btn-premium-ghost px-6 py-4 rounded-xl cursor-pointer text-[10px] font-black flex items-center justify-center gap-2 border-dashed border-2">
+                           {uploading ? 'ENVIANDO...' : <><Plus size={16} /> ANEXAR COMPROVANTE PAGAMENTO</>}
+                           <input type="file" className="hidden" multiple accept=".pdf,image/*" onChange={(e) => handleFileUpload(e, false, false, false, true, false)} disabled={uploading} />
+                        </label>
+                    </div>
+                  </div>
+
+                  {/* Bloco 2: Logística */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 py-2 border-b border-gp-border/50">
+                      <Navigation size={16} className="text-gp-purple" />
+                      <h4 className="text-[12px] font-black text-gp-text uppercase tracking-widest">Dados Logísticos</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Código de Rastreio</label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11" 
+                          placeholder="Ex: BR789012345" 
+                          value={finalizationForm.tracking_code}
+                          onChange={e => setFinalizationForm({...finalizationForm, tracking_code: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Transportadora</label>
+                        <input 
+                          type="text" 
+                          className="gp-input px-5 h-11" 
+                          placeholder="Ex: Correios, Azul, DHL..." 
+                          value={finalizationForm.tracking_carrier}
+                          onChange={e => setFinalizationForm({...finalizationForm, tracking_carrier: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className={labelClass}>Status Logístico</label>
+                        <select 
+                          className="gp-input px-5 h-11 outline-none appearance-none"
+                          value={finalizationForm.shipping_status}
+                          onChange={e => setFinalizationForm({...finalizationForm, shipping_status: e.target.value})}
+                        >
+                          <option value="Aguardando Envio">Aguardando Envio</option>
+                          <option value="Em Trânsito">Em Trânsito</option>
+                          <option value="Entregue">Entregue</option>
+                          <option value="Cancelado">Cancelado</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className={labelClass}>URL de Acompanhamento</label>
+                      <input 
+                        type="url" 
+                        className="gp-input px-5 h-11" 
+                        placeholder="https://transportadora.com/rastreio?id=..." 
+                        value={finalizationForm.tracking_url}
+                        onChange={e => setFinalizationForm({...finalizationForm, tracking_url: e.target.value})}
+                      />
+                    </div>
+                    <label className="btn-premium-ghost px-6 py-4 rounded-xl cursor-pointer text-[10px] font-black flex items-center justify-center gap-2 border-dashed border-2">
+                       {uploading ? 'ENVIANDO...' : <><Plus size={16} /> ANEXAR COMPROVANTE POSTAGEM / ETIQUETA</>}
+                       <input type="file" className="hidden" multiple accept=".pdf,image/*" onChange={(e) => handleFileUpload(e, false, false, false, false, true)} disabled={uploading} />
+                    </label>
+                  </div>
+
+                  {/* Bloco 3: Observações e Ações */}
+                  <div className="space-y-4 pt-4 border-t border-gp-border">
+                    <label className={labelClass}>Observações Finais de Conclusão</label>
+                    <textarea 
+                      className="gp-input px-5 py-4 min-h-[100px] resize-none" 
+                      placeholder="Informações adicionais sobre o fechamento da compra..."
+                      value={finalizationForm.completion_notes}
+                      onChange={e => setFinalizationForm({...finalizationForm, completion_notes: e.target.value})}
+                    />
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleSaveFinalization(false)}
+                        className="flex-1 btn-premium-secondary py-4 rounded-xl font-black uppercase text-[11px] tracking-widest border-gp-blue/20 text-gp-blue hover:bg-gp-blue/5"
+                      >
+                        {actionLoading ? 'PROCESSANDO...' : 'SALVAR INFORMAÇÕES (SEM CONCLUIR)'}
+                      </button>
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleSaveFinalization(true)}
+                        className="flex-1 btn-premium-primary py-4 rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-gp-blue/20"
+                      >
+                        {actionLoading ? 'CONCLUINDO...' : 'FINALIZAR E CONCLUIR SOLICITAÇÃO'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-10 relative z-10 animate-fade-in">
+                  {/* Visualização de Resumo (Estado não editando) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     {/* Nota Fiscal Resumo */}
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-3 py-2 border-b border-gp-border/30 opacity-60">
+                          <FileText size={14} className="text-gp-blue" />
+                          <h4 className="text-[10px] font-black text-gp-muted uppercase tracking-widest">Resumo Fiscal</h4>
+                        </div>
+                        {request.invoice_number ? (
+                          <div className="grid grid-cols-2 gap-4">
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Nº Nota Fiscal</p>
+                                <p className="font-bold text-gp-text">{request.invoice_number}</p>
+                             </div>
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Data Emissão</p>
+                                <p className="font-bold text-gp-text">{request.invoice_issue_date ? new Date(request.invoice_issue_date).toLocaleDateString() : '-'}</p>
+                             </div>
+                             <div className="col-span-full p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Chave da NF-e</p>
+                                <p className="font-mono text-[11px] text-gp-blue-light break-all">{request.invoice_key || 'Não informada'}</p>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="py-10 text-center bg-gp-surface2 rounded-2xl border-2 border-dashed border-gp-border opacity-40">
+                             <p className="text-[10px] font-black text-gp-muted uppercase">Nenhuma nota fiscal registrada</p>
+                          </div>
+                        )}
+                     </div>
+
+                     {/* Logística Resumo */}
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-3 py-2 border-b border-gp-border/30 opacity-60">
+                          <Navigation size={14} className="text-gp-purple" />
+                          <h4 className="text-[10px] font-black text-gp-muted uppercase tracking-widest">Resumo Logístico</h4>
+                        </div>
+                        {request.tracking_code ? (
+                          <div className="grid grid-cols-2 gap-4">
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Cód. Rastreio</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-bold text-gp-text uppercase">{request.tracking_code}</p>
+                                  {request.tracking_url && (
+                                    <a href={request.tracking_url} target="_blank" className="text-gp-blue hover:text-gp-blue-light"><LinkIcon size={12} /></a>
+                                  )}
+                                </div>
+                             </div>
+                             <div className="p-4 bg-gp-surface2 rounded-xl border border-gp-border">
+                                <p className={labelClass}>Transportadora</p>
+                                <p className="font-bold text-gp-text">{request.tracking_carrier || '-'}</p>
+                             </div>
+                             <div className="col-span-full p-4 bg-gp-surface2 rounded-xl border border-gp-border flex justify-between items-center">
+                                <div>
+                                  <p className={labelClass}>Status de Entrega</p>
+                                  <span className={clsx(
+                                    "text-[9px] font-black uppercase px-2 py-0.5 rounded-md",
+                                    request.shipping_status === 'Entregue' ? 'bg-gp-success/10 text-gp-success' :
+                                    request.shipping_status === 'Em Trânsito' ? 'bg-gp-blue/10 text-gp-blue' : 'bg-gp-surface3 text-gp-muted'
+                                  )}>
+                                    {request.shipping_status || 'Aguardando Envio'}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  <p className={labelClass}>Previsão</p>
+                                  <p className="font-bold text-[12px] text-gp-text">{request.delivery_prediction ? new Date(request.delivery_prediction).toLocaleDateString() : '-'}</p>
+                                </div>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="py-10 text-center bg-gp-surface2 rounded-2xl border-2 border-dashed border-gp-border opacity-40">
+                             <p className="text-[10px] font-black text-gp-muted uppercase">Nenhum rastreio informado</p>
+                          </div>
+                        )}
+                     </div>
+                  </div>
+
+                  {/* Bloco de Anexos Finais */}
+                  {(attachments.some(a => a.is_fiscal_invoice || a.is_fiscal_receipt || a.is_tracking_doc)) && (
+                    <div className="space-y-6 pt-4 border-t border-gp-border/30">
+                       <label className="text-[10px] font-black text-gp-muted uppercase tracking-[0.2em] opacity-60">Ativos e Media da Conclusão</label>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {/* Nota Fiscal */}
+                          <div className="space-y-3">
+                             <span className="text-[9px] font-black text-gp-blue uppercase">Nota Fiscal (NF)</span>
+                             <div className="space-y-2">
+                               {attachments.filter(a => a.is_fiscal_invoice).length > 0 ? (
+                                 attachments.filter(a => a.is_fiscal_invoice).map(file => (
+                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
+                                   </div>
+                                 ))
+                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum PDF de NF anexado.</p>}
+                             </div>
+                          </div>
+
+                          {/* Comprovantes */}
+                          <div className="space-y-3">
+                             <span className="text-[9px] font-black text-gp-success uppercase">Comprovantes Finais</span>
+                             <div className="space-y-2">
+                               {attachments.filter(a => a.is_fiscal_receipt).length > 0 ? (
+                                 attachments.filter(a => a.is_fiscal_receipt).map(file => (
+                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
+                                   </div>
+                                 ))
+                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum comprovante anexado.</p>}
+                             </div>
+                          </div>
+
+                          {/* Logística */}
+                          <div className="space-y-3">
+                             <span className="text-[9px] font-black text-gp-purple uppercase">Arquivos Logísticos</span>
+                             <div className="space-y-2">
+                               {attachments.filter(a => a.is_tracking_doc).length > 0 ? (
+                                 attachments.filter(a => a.is_tracking_doc).map(file => (
+                                   <div key={file.id} className="flex items-center justify-between p-3 bg-gp-surface2 border border-gp-border rounded-xl">
+                                      <p className="font-bold text-[10px] text-gp-text truncate">{file.file_name}</p>
+                                      <a href={supabase.storage.from('request-attachments').getPublicUrl(file.file_path).data.publicUrl} target="_blank" download className="text-gp-muted hover:text-gp-blue transition-colors p-1"><Download size={12} /></a>
+                                   </div>
+                                 ))
+                               ) : <p className="text-[9px] text-gp-muted italic opacity-40">Nenhum registro de postagem.</p>}
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <ShieldCheck size={280} className="absolute -right-32 -bottom-32 text-gp-success opacity-[0.015] -rotate-12 pointer-events-none" />
             </div>
           )}
 
