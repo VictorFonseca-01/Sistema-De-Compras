@@ -20,6 +20,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import { clsx } from 'clsx';
 
+/**
+ * GLOBAL PARTS — Dashboard Executivo (Nível 4 Calibration)
+ * 
+ * Agora consome Views de Governança para KPIs em tempo real.
+ */
+
 const statusMap: Record<string, { label: string; color: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   PENDING_GESTOR:        { label: 'Ag. Gestor',    color: 'var(--gp-warning)', icon: Clock },
   PENDING_TI:            { label: 'Analise TI',    color: 'var(--gp-blue)',    icon: FileText },
@@ -300,10 +306,10 @@ export default function Dashboard() {
       {/* Access Denied Banner */}
       {showAccessDenied && (
         <div className="flex items-center justify-between p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gp-error/10 rounded-xl flex items-center justify-center shrink-0">
-               <AlertCircle size={22} strokeWidth={2.5} />
-            </div>
+          <div className="flex items-center justify-between mb-8 relative z-10">
+          <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:rotate-12", "bg-gp-error")}>
+             <AlertCircle size={22} strokeWidth={3} className="opacity-100 text-white" />
+          </div>
             <span className="text-[13px] font-black uppercase tracking-wider">Acesso Negado: Sua função não possui permissão para esta área.</span>
           </div>
           <button onClick={() => setShowAccessDenied(false)} className="px-4 py-2 text-[10px] font-black opacity-60 hover:opacity-100 uppercase tracking-widest">FECHAR</button>

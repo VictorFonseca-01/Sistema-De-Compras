@@ -13,6 +13,22 @@ export function MainLayout() {
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme } = useTheme();
+  const [forceEntry, setForceEntry] = useState(false);
+
+  // Fail-safe para evitar Splash Screen infinita (Nível 4 Stability)
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        console.warn('Splash Screen timeout: Forçando entrada para verificar integridade.');
+        setForceEntry(true);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  // Se estiver carregando mas o fail-safe foi ativado, permitimos prosseguir 
+  // para que o resto da lógica de sessão (Navigate to login se não houver session) atue.
+  const shouldShowSplash = loading && !forceEntry;
 
   useEffect(() => {
     const initializeAuth = async () => {
