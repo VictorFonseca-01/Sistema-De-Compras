@@ -66,7 +66,7 @@ export function MainLayout() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
+  if (shouldShowSplash) {
     return (
       <div className={clsx("min-h-screen flex flex-col items-center justify-center bg-gp-bg", theme)} data-theme={theme}>
         <div className="flex flex-col items-center gap-8 animate-fade-in">
