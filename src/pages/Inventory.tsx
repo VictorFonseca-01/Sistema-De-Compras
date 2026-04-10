@@ -57,7 +57,7 @@ export default function Inventory() {
   };
 
   const getSortIcon = (key: string) => {
-    if (sortConfig?.key !== key) return <ArrowUpDown size={12} className="opacity-20 group-hover/th:opacity-50 transition-opacity" />;
+    if (sortConfig?.key !== key) return <ArrowUpDown size={12} className="opacity-60 group-hover/th:opacity-100 transition-opacity" />;
     return sortConfig.direction === 'asc' ? <ChevronUp size={12} className="text-gp-blue" /> : <ChevronDown size={12} className="text-gp-blue" />;
   };
 
@@ -444,10 +444,13 @@ export default function Inventory() {
             ) : filteredAssets.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-20 text-center">
-                  <div className="gp-empty">
-                    <div className="gp-empty-icon"><Package size={32} /></div>
-                    <p className="text-gp-text3 font-medium">Nenhum item encontrado no inventário.</p>
-                  </div>
+                    <div className="gp-empty flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 rounded-3xl bg-gp-surface3 flex items-center justify-center mb-6 text-gp-blue">
+                         <Package size={32} strokeWidth={3} />
+                      </div>
+                      <p className="text-[14px] font-black uppercase tracking-widest text-gp-text">Nenhum item encontrado no inventário</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gp-muted mt-2">Refine sua pesquisa ou filtros corporativos</p>
+                    </div>
                 </td>
               </tr>
             ) : (

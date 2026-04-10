@@ -306,7 +306,7 @@ export default function Dashboard() {
       {/* Access Denied Banner */}
       {showAccessDenied && (
         <div className="flex items-center justify-between p-5 bg-gp-error/10 border border-gp-error/20 text-gp-error rounded-2xl animate-shake">
-          <div className="flex items-center justify-between mb-8 relative z-10">
+       <div className="flex items-center justify-between mb-8 relative z-10">
           <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:rotate-12", "bg-gp-error")}>
              <AlertCircle size={22} strokeWidth={3} className="opacity-100 text-white" />
           </div>
@@ -319,9 +319,13 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="space-y-1">
-          <h1 className="gp-page-title">Painel de Controle</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="w-2 h-2 rounded-full bg-gp-success animate-pulse" />
+            <span className="text-[10px] font-black text-gp-blue uppercase tracking-[0.3em]">Global Parts • Enterprise V4.0</span>
+          </div>
+          <h1 className="gp-page-title">Panorama Corporativo</h1>
           <p className="gp-page-subtitle">
-            Olá, <span className="text-gp-blue font-black uppercase">{profile?.full_name?.split(' ')[0] || 'Usuário'}</span>. Visão geral do ecossistema Global Parts.
+            Olá, <span className="text-gp-blue font-black uppercase">{profile?.full_name?.split(' ')[0] || 'Usuário'}</span>. Indicadores estratégicos e monitoramento de fluxo SLA.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full lg:w-auto">
@@ -347,7 +351,7 @@ export default function Dashboard() {
         {/* Financial Summary */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-[10px] font-black text-gp-text uppercase tracking-[0.2em] opacity-80">Balanço Financeiro</h3>
+            <h3 className="text-[10px] font-black text-gp-text uppercase tracking-[0.2em]">Balanço Financeiro</h3>
             <span className="text-[9px] font-black text-gp-blue uppercase tracking-widest opacity-60 flex items-center gap-1.5">
               <CheckCircle size={10} strokeWidth={3} /> Controladoria Global
             </span>
@@ -363,7 +367,7 @@ export default function Dashboard() {
                 
                 <div className="relative flex items-start justify-between">
                   <div className="w-14 h-14 rounded-2xl bg-gp-blue text-white shadow-xl shadow-gp-blue/30 flex items-center justify-center transform group-hover:rotate-6 transition-transform">
-                    <BarChart3 size={24} strokeWidth={2.5} />
+                    <BarChart3 size={24} strokeWidth={3} />
                   </div>
                 </div>
                 
@@ -383,10 +387,10 @@ export default function Dashboard() {
               <div className="gp-card group relative overflow-hidden p-6">
                 <div className="flex items-center gap-5">
                   <div className="w-12 h-12 rounded-xl bg-gp-amber/10 text-gp-amber flex items-center justify-center border border-gp-amber/20 shadow-inner">
-                    <Clock size={22} strokeWidth={2.5} />
+                    <Clock size={22} strokeWidth={3} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Gasto Potencial (Fluxo)</p>
+                    <p className="text-[10px] font-extrabold text-gp-text2 uppercase tracking-widest leading-none mb-2">Gasto Potencial (Fluxo)</p>
                     <p className="text-xl font-black text-gp-text tracking-tight uppercase">
                       {requestStats.find(s => s.label === 'Gasto Potencial')?.secondary || 'R$ 0,00'}
                     </p>
@@ -406,10 +410,10 @@ export default function Dashboard() {
               <div className="gp-card group relative overflow-hidden p-6">
                 <div className="flex items-center gap-5">
                   <div className="w-12 h-12 rounded-xl bg-gp-success/10 text-gp-success flex items-center justify-center border border-gp-success/20 shadow-inner">
-                    <CheckCircle size={22} strokeWidth={2.5} />
+                    <CheckCircle size={22} strokeWidth={3} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-gp-muted uppercase tracking-widest opacity-70 leading-none mb-2">Aquisições Capitalizadas</p>
+                    <p className="text-[10px] font-extrabold text-gp-text2 uppercase tracking-widest leading-none mb-2">Aquisições Capitalizadas</p>
                     <p className="text-xl font-black text-gp-text tracking-tight uppercase">
                       {requestStats.find(s => s.label === 'Aquisições Capitalizadas')?.value || 0} Equipamentos
                     </p>
@@ -442,7 +446,7 @@ export default function Dashboard() {
                       "w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-md group-hover:scale-110 group-hover:rotate-3",
                       stat.bgClass, stat.colorClass, "border border-gp-border/20"
                     )}>
-                      <stat.icon size={20} strokeWidth={2.5} />
+                      <stat.icon size={20} strokeWidth={3} className="opacity-100" />
                     </div>
                     <div className="mt-6 flex flex-col">
                       <p className="text-2xl font-black text-gp-text leading-none tracking-tight mb-2">

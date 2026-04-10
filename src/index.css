@@ -58,11 +58,11 @@
   --gp-sidebar: #FFFFFF;
   --gp-sidebar-border: #E5E7EB;
   
-  /* Theme Text (Light Mode) */
-  --gp-text: #111827;
-  --gp-text2: #6B7280;
-  --gp-text3: #9CA3AF;
-  --gp-muted: #9CA3AF;
+  /* Theme Text (Light Mode) - High Contrast Refinement */
+  --gp-text: #0F172A;
+  --gp-text2: #475569;
+  --gp-text3: #64748B;
+  --gp-muted: #64748B;
   
   /* Theme Borders (Light Mode) */
   --gp-border: #E5E7EB;
@@ -91,10 +91,10 @@
   --gp-sidebar: #111827;
   --gp-sidebar-border: #1F2937;
   
-  --gp-text: #F9FAFB;
-  --gp-text2: #9CA3AF;
-  --gp-text3: #4B5563;
-  --gp-muted: #4B5563;
+  --gp-text: #F8FAFC;
+  --gp-text2: #CBD5E1;
+  --gp-text3: #94A3B8;
+  --gp-muted: #64748B;
   
   --gp-border: #374151;
   --gp-border2: #4B5563;
