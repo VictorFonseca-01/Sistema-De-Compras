@@ -149,8 +149,8 @@ export default function RequestDetails() {
   const [history, setHistory] = useState<RequestHistory[]>([]);
   const [comment, setComment] = useState('');
   
-  const [quotes, setQuotes] = useState<any[]>([]);
-  const [links, setLinks] = useState<any[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [links, setLinks] = useState<{ id: string; label: string; url: string }[]>([]);
   const [newQuote, setNewQuote] = useState({ 
     supplier_name: '', 
     price: '', 
@@ -230,10 +230,10 @@ export default function RequestDetails() {
       supabase.from('request_quotes').select('*').eq('request_id', id).order('price', { ascending: true }),
       supabase.from('request_links').select('*').eq('request_id', id)
     ]).then(([attachRes, historyRes, quoteRes, linkRes]) => {
-      if (attachRes.data) setAttachments(attachRes.data);
-      if (historyRes.data) setHistory(historyRes.data);
-      if (quoteRes.data) setQuotes(quoteRes.data);
-      if (linkRes.data) setLinks(linkRes.data || []);
+      if (attachRes.data) setAttachments(attachRes.data as Attachment[]);
+      if (historyRes.data) setHistory(historyRes.data as RequestHistory[]);
+      if (quoteRes.data) setQuotes(quoteRes.data as Quote[]);
+      if (linkRes.data) setLinks(linkRes.data as { id: string; label: string; url: string }[]);
     });
   };
 
@@ -295,15 +295,15 @@ export default function RequestDetails() {
     if (!request || !profile) return;
     setActionLoading(true);
     
-    const updatePayload: any = { 
-      status: nextStatus,
+    const updatePayload: Partial<Request> = { 
+      status: nextStatus as any,
       current_step: nextStep
     };
 
     // If step is TI, include tech fields
     if (request.current_step === 'ti' && (isTI || isAdmin)) {
       updatePayload.ti_technical_opinion = tiForm.ti_technical_opinion;
-      const techCost = tiForm.ti_estimated_cost ? parseFloat(tiForm.ti_estimated_cost) : null;
+      const techCost = tiForm.ti_estimated_cost ? parseFloat(tiForm.ti_estimated_cost) : undefined;
       updatePayload.ti_estimated_cost = techCost;
       updatePayload.ti_reference_link = tiForm.ti_reference_link;
       updatePayload.ti_reference_site = tiForm.ti_reference_site;

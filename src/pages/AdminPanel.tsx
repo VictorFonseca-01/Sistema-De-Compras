@@ -439,7 +439,7 @@ export default function AdminPanel() {
                     <td>
                       <div className="flex items-center gap-3 text-[13px] font-black text-gp-text uppercase tracking-tight">
                         <Building2 size={16} className="text-gp-blue-light opacity-40 shrink-0" strokeWidth={2.5} />
-                        <span className="truncate">{u.department || 'GERAL GLOBALP'}</span>
+                        <span className="truncate">{u.department || 'GLOBAL PARTS'}</span>
                       </div>
                     </td>
                     <td>
@@ -513,7 +513,7 @@ export default function AdminPanel() {
                        </div>
                        <div className="space-y-1">
                           <label className={labelClass}>E-mail Corporativo (@globalp.com.br)</label>
-                          <input required type="email" placeholder="v.fonseca@globalp.com.br" value={addForm.email} onChange={e => setAddForm({...addForm, email: e.target.value})} className="gp-input" />
+                          <input required type="email" placeholder="usuario@globalp.com.br" value={addForm.email} onChange={e => setAddForm({...addForm, email: e.target.value})} className="gp-input" />
                        </div>
                        <div className="space-y-1">
                           <label className={labelClass}>Senha Temporária</label>

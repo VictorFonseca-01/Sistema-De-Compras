@@ -23,6 +23,7 @@ interface Request {
   id: string;
   title: string;
   category: string;
+  subcategoria_solicitacao?: string;
   estimated_cost: number;
   priority: string;
   status: string;
@@ -32,9 +33,11 @@ interface Request {
     full_name: string;
     department: string;
   };
+  companies?: { name: string };
+  departments?: { name: string };
 }
 
-const statusMap: Record<string, { label: string; badgeClass: string; icon: any }> = {
+const statusMap: Record<string, { label: string; badgeClass: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }> = {
   PENDING_GESTOR: { label: 'Aguardando Gestor', badgeClass: 'gp-badge-amber', icon: Clock },
   PENDING_TI: { label: 'Análise do TI', badgeClass: 'gp-badge-blue', icon: FileText },
   PENDING_COMPRAS: { label: 'Em COTAÇÃO', badgeClass: 'gp-badge-purple', icon: Clock },
@@ -177,7 +180,7 @@ export default function MyRequests() {
                 <div className="flex justify-between items-start gap-3 relative z-10">
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] text-gp-text3 font-black uppercase tracking-widest truncate opacity-60">
-                       {new Date(req.created_at).toLocaleDateString()} • { (req as any).companies?.name || 'MATRIZ' }
+                       {new Date(req.created_at).toLocaleDateString()} • { req.companies?.name || 'MATRIZ' }
                     </span>
                     <span className="font-bold text-gp-text truncate mt-1 text-[15px]">
                       {req.profiles?.full_name}
@@ -201,9 +204,9 @@ export default function MyRequests() {
                        )}>
                             {req.priority} • {req.category}
                        </span>
-                       { (req as any).subcategoria_solicitacao && (
+                       { req.subcategoria_solicitacao && (
                             <span className="text-[10px] font-bold text-gp-muted lowercase opacity-60 italic leading-none">
-                              › {(req as any).subcategoria_solicitacao}
+                              › {req.subcategoria_solicitacao}
                             </span>
                         )}
                     </div>
@@ -268,7 +271,7 @@ export default function MyRequests() {
                           {req.profiles?.full_name || 'Usuário'}
                         </span>
                         <span className="text-[10px] text-gp-muted font-black uppercase tracking-widest mt-1.5 leading-none">
-                          { (req as any).departments?.name || 'Geral' } • { (req as any).companies?.name || 'MATRIZ' }
+                          { req.departments?.name || 'Geral' } • { req.companies?.name || 'MATRIZ' }
                         </span>
                       </div>
                     </td>
@@ -288,8 +291,8 @@ export default function MyRequests() {
                           <span className="text-[9px] text-gp-text3 opacity-30">•</span>
                           <span className="text-[9px] text-gp-muted font-black uppercase tracking-widest">
                             {req.category}
-                            { (req as any).subcategoria_solicitacao && (
-                                <span className="text-gp-blue-light/70 ml-1.5 lowercase italic font-medium">› {(req as any).subcategoria_solicitacao}</span>
+                            { req.subcategoria_solicitacao && (
+                                <span className="text-gp-blue-light/70 ml-1.5 lowercase italic font-medium">› {req.subcategoria_solicitacao}</span>
                             )}
                           </span>
                         </div>

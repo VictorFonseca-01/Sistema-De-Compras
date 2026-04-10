@@ -18,7 +18,12 @@ import { clsx } from 'clsx';
 export default function Reports() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<{
+    assetKPIs: { total: number; value: number; inUse: number; stock: number; maintenance: number };
+    requestKPIs: { total: number; approved: number; pending: number; rejected: number };
+    departments: Record<string, number>;
+    categoryAgg: Record<string, { count: number; investment: number }>;
+  } | null>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -58,13 +63,13 @@ export default function Reports() {
     });
 
     // 3. Departments distribution
-    const departments = assets?.reduce((acc: any, a) => {
+    const departments = assets?.reduce((acc: Record<string, number>, a) => {
       const dept = a.departamento || 'OPERACIONAL';
       acc[dept] = (acc[dept] || 0) + 1;
       return acc;
     }, {});
 
-    setReportData({ assetKPIs, requestKPIs, departments, categoryAgg });
+    setReportData({ assetKPIs, requestKPIs, departments: departments || {}, categoryAgg });
     setLoading(false);
   }
 
@@ -72,7 +77,7 @@ export default function Reports() {
     window.print();
   };
 
-  if (loading) {
+  if (loading || !reportData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-6">
         <div className="w-12 h-12 border-4 border-gp-blue/10 border-t-gp-blue rounded-full animate-spin" />
@@ -200,10 +205,10 @@ export default function Reports() {
                  <Building2 className="text-gp-blue" size={16} strokeWidth={3} /> DENSIDADE POR SETOR
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                 {Object.entries(reportData.departments).map(([dept, count]: any) => (
+                 {Object.entries((reportData as any).departments).map(([dept, count]) => (
                    <div key={dept} className="p-5 bg-gp-surface2 border border-gp-border rounded-xl flex flex-col items-center justify-center text-center shadow-inner group hover:bg-gp-surface transition-all">
-                      <span className="text-[9px] font-black text-gp-muted uppercase tracking-[0.2em] mb-2 truncate w-full group-hover:text-gp-blue transition-colors">{dept}</span>
-                      <span className="text-2xl font-black text-gp-text tracking-tight leading-none">{count}</span>
+                      <span className="text-[9px] font-black text-gp-muted uppercase tracking-[0.2em] mb-2 truncate w-full group-hover:text-gp-blue transition-colors">{dept as string}</span>
+                      <span className="text-2xl font-black text-gp-text tracking-tight leading-none">{count as number}</span>
                       <span className="text-[9px] font-black text-gp-muted uppercase mt-2 opacity-40">Unidades Hardware</span>
                    </div>
                  ))}

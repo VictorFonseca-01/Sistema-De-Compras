@@ -91,8 +91,9 @@ export default function Settings() {
         toast.success('Fluxo de solicitações zerado.');
       }
       setEmptyConfirmStep(3);
-    } catch (err: any) {
-      toast.error('Erro na operação: ' + err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      toast.error('Erro na operação: ' + errorMessage);
       setShowEmptyConfirm(false);
     } finally {
       setIsDeleting(false);

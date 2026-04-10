@@ -131,7 +131,7 @@ export default function Login() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="USUARIO@GLOBALP.COM.BR"
+                    placeholder="usuario@globalp.com.br"
                     required
                     className="gp-input pl-14 pr-6 py-4 text-[14px] font-black tracking-tight"
                   />

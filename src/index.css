@@ -354,8 +354,11 @@
 .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gp-border); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--gp-blue); }
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+@utility no-scrollbar {
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* 
    PRINT OPTIMIZATION SYSTEM 

@@ -31,8 +31,9 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.QR_CODE
-      ]
-    } as any);
+      ],
+      verbose: false
+    });
     scannerRef.current = html5QrCode;
 
     const startScanner = async () => {
@@ -81,10 +82,10 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
   const toggleFlash = async () => {
     if (scannerRef.current && scannerRef.current.isScanning) {
       try {
-        const track = (scannerRef.current as any).getRunningTrack();
-        const capabilities = track.getCapabilities() as any;
+        const track = (scannerRef.current as any).getRunningTrack() as MediaStreamTrack;
+        const capabilities = (track as any).getCapabilities?.() || {};
         if (capabilities.torch) {
-          await track.applyConstraints({
+          await (track as any).applyConstraints({
             advanced: [{ torch: !isFlashOn }]
           });
           setIsFlashOn(!isFlashOn);
@@ -101,7 +102,7 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
     if (!scannerRef.current || cameras.length < 2) return;
     
     await stopScanner();
-    const currentIndex = cameras.findIndex(c => c.id === currentCameraId);
+    const currentIndex = cameras.findIndex((c: any) => c.id === currentCameraId);
     const nextIndex = (currentIndex + 1) % cameras.length;
     const nextCamera = cameras[nextIndex];
     setCurrentCameraId(nextCamera.id);
@@ -110,7 +111,7 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
       await scannerRef.current.start(
         nextCamera.id,
         { fps: 10, qrbox: { width: 250, height: 150 } },
-        (decodedText) => {
+        (decodedText: string) => {
           stopScanner();
           onScan(decodedText);
         },

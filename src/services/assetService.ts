@@ -53,7 +53,7 @@ export const assetService = {
   /**
    * Cria um novo ativo e registra a movimentação inicial.
    */
-  async createAsset(asset: Asset, userId: string): Promise<{ data: any; error: any }> {
+  async createAsset(asset: Asset, userId: string): Promise<{ data: Asset | null; error: any }> {
     // 1. Inserir o ativo
     const { data, error } = await supabase
       .from('assets')

@@ -24,7 +24,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; is_read: boolean; link?: string; created_at: string }[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       .limit(10);
     if (!error && data) {
       setNotifications(data);
-      setUnreadCount(data.filter((n: any) => !n.is_read).length);
+      setUnreadCount(data.filter(n => !n.is_read).length);
     }
   };
 
@@ -97,8 +97,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           table: 'notifications',
           filter: `user_id=eq.${profile.id}`
         },
-        (payload) => {
-          setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+        (payload: any) => {
+          setNotifications(prev => [payload.new as any, ...prev].slice(0, 10));
           setUnreadCount(prev => prev + 1);
           toast.success(payload.new.title || 'Nova Notificação Recebida', {
             icon: '🔔',
@@ -137,7 +137,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
         <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
            <img src={theme === 'light' ? '/logo-preta.png' : '/logo-branca.png'} alt="GP" className="w-5 h-5 object-contain shrink-0" />
-           <span className="font-black text-[11px] sm:text-[12px] uppercase tracking-widest text-gp-text truncate">GLOBALP</span>
+           <span className="font-black text-[11px] sm:text-[12px] uppercase tracking-widest text-gp-text truncate">GLOBAL PARTS</span>
         </div>
       </div>
 
@@ -297,7 +297,15 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   );
 }
 
-function SidebarMenuBtn({ icon: Icon, label, onClick, variant = 'default', badge }: any) {
+interface SidebarMenuBtnProps {
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  label: string;
+  onClick: () => void;
+  variant?: 'default' | 'danger';
+  badge?: string;
+}
+
+function SidebarMenuBtn({ icon: Icon, label, onClick, variant = 'default', badge }: SidebarMenuBtnProps) {
   return (
     <button
       onClick={onClick}
