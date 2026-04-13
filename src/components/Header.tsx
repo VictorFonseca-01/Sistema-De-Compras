@@ -20,7 +20,7 @@ import { toast } from 'react-hot-toast';
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, loading: profileLoading } = useProfile();
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -249,7 +249,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="flex items-center justify-end gap-2 mt-1.5">
                <div className="w-1 h-1 rounded-full bg-gp-blue shadow-lg shadow-gp-blue/40" />
                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gp-blue-light opacity-80 leading-none">
-                 {profile ? roleLabels[profile.role] : 'SESSÃO VISITANTE'}
+                 {profileLoading ? 'AUTENTICANDO...' : (profile ? roleLabels[profile.role] : 'SESSÃO VISITANTE')}
                </p>
             </div>
           </div>

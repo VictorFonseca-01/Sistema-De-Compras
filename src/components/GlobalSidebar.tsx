@@ -169,7 +169,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
           <NavLink
             to="/solicitacoes/nova"
             onClick={() => window.innerWidth < 1024 && onClose && onClose()}
-            className="btn-premium-primary w-full py-4 rounded-xl shadow-xl shadow-gp-blue/10 uppercase text-[11px] font-black tracking-[0.2em] group"
+            className="btn-premium-primary w-full py-4 rounded-xl shadow-xl shadow-gp-blue/10 uppercase text-[11px] font-black tracking-[0.2em] group relative z-10"
           >
             <PlusCircle size={16} strokeWidth={3} className="mr-2.5 group-hover:rotate-90 transition-transform duration-500" />
             Nova Solicitação
@@ -273,7 +273,7 @@ function SidebarItem({ item, isCollapsed, onClose, variant = 'blue' }: { item: a
       end={item.path === '/'}
       onClick={() => window.innerWidth < 1024 && onClose && onClose()}
       className={({ isActive }) => clsx(
-        'flex items-center gap-3.5 rounded-xl transition-all duration-300 relative group overflow-hidden',
+        'flex items-center gap-3.5 rounded-xl transition-all duration-300 relative z-10 group overflow-hidden',
         isCollapsed ? 'justify-center py-4' : 'px-4 py-3.5',
         isActive
           ? clsx(

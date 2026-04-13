@@ -26,13 +26,7 @@ export default function Reports() {
   } | null>(null);
   const { theme } = useTheme();
 
-  useEffect(() => {
-    fetchReportData();
-  }, []);
-
   async function fetchReportData() {
-    setLoading(true);
-    
     // 1. Assets KPIs
     const { data: assets } = await supabase.from('assets').select('*');
     const assetKPIs = {
@@ -69,9 +63,21 @@ export default function Reports() {
       return acc;
     }, {});
 
-    setReportData({ assetKPIs, requestKPIs, departments: departments || {}, categoryAgg });
-    setLoading(false);
+    return { assetKPIs, requestKPIs, departments: departments || {}, categoryAgg };
   }
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    fetchReportData().then(data => {
+      if (isMounted) {
+        setReportData(data);
+        setLoading(false);
+      }
+    });
+
+    return () => { isMounted = false; };
+  }, []);
 
   const handlePrint = () => {
     window.print();

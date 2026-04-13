@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Auditoria Técnica (Integração)', () => {
   test('deve carregar dashboard técnico sem falhas de rede', async ({ page }) => {
-    await page.goto('/auditoria-ti');
+    await page.goto('/relatorios');
     // Monitorar erros 500
     page.on('response', response => {
       if (response.status() >= 500) {
@@ -11,7 +11,7 @@ test.describe('Auditoria Técnica (Integração)', () => {
     });
     
     // Se não cair no login, validar elementos de TI
-    if (page.url().includes('auditoria-ti')) {
+    if (page.url().includes('relatorios')) {
       await expect(page.getByText(/TI|Análise Técnica/i)).toBeVisible();
     }
   });

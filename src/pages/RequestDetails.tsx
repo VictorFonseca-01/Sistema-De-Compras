@@ -283,8 +283,8 @@ export default function RequestDetails() {
 
       toast.success('Arquivo enviado com sucesso!');
       fetchRequest();
-    } catch (err: any) {
-      toast.error('Erro no upload: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Erro no upload: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setUploading(false);
     }
@@ -411,9 +411,9 @@ export default function RequestDetails() {
 
     setActionLoading(true);
     try {
-      const payload: any = {
+      const payload: Partial<Request> & { completed_at?: string; completed_by?: string } = {
         ...finalizationForm,
-        final_purchase_amount: finalizationForm.final_purchase_amount ? parseFloat(finalizationForm.final_purchase_amount) : null,
+        final_purchase_amount: finalizationForm.final_purchase_amount ? parseFloat(finalizationForm.final_purchase_amount) : undefined,
         actual_cost: request?.actual_cost 
       };
 
@@ -447,8 +447,8 @@ export default function RequestDetails() {
       toast.success(isCompleting ? 'Solicitação concluída com sucesso!' : 'Informações salvas com sucesso.');
       setIsEditingFinalization(false);
       fetchRequest();
-    } catch (err: any) {
-      toast.error('Erro ao salvar: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Erro ao salvar: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setActionLoading(false);
     }
