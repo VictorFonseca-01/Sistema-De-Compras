@@ -8,13 +8,13 @@ test.describe('Fluxos de Aprovação e Gestão (Integração)', () => {
   });
 
   test('deve carregar tela de auditoria técnica para TI', async ({ page }) => {
-    await page.goto('/auditoria-ti' || '/ti');
+    await page.goto('/auditoria-ti');
     if (page.url().includes('login')) return; // Silencioso se cair no login (permissoes tratam disso)
-    await expect(page.getByText(/Auditoria/i || /Análise/i)).toBeVisible();
+    await expect(page.getByText(/Auditoria|Análise/i)).toBeVisible();
   });
 
   test('deve carregar seção de fechamento de compra', async ({ page }) => {
-    await page.goto('/compras' || '/suprimentos');
+    await page.goto('/compras');
     if (page.url().includes('login')) return;
     await expect(page.getByRole('heading')).toBeVisible();
   });

@@ -21,16 +21,13 @@ npx playwright install --with-deps
 Write-Host "[3/4] Verificando Ferramentas de Auditoria..." -ForegroundColor Gray
 
 # Semgrep
-$semgrepActive = $false
 try {
     semgrep --version | Out-Null
     Write-Host "  - Semgrep: OK (Global)" -ForegroundColor Green
-    $semgrepActive = $true
 } catch {
     try {
         python -m semgrep --version | Out-Null
         Write-Host "  - Semgrep: OK (via Python Module)" -ForegroundColor Green
-        $semgrepActive = $true
     } catch {
         Write-Host "  - Semgrep: NÃO ENCONTRADO. Recomenda-se: 'pip install semgrep' ou 'brew install semgrep'" -ForegroundColor Yellow
     }

@@ -18,12 +18,12 @@ test.describe('Solicitação (Integração)', () => {
   });
 
   test('deve validar formulário de solicitação no frontend', async ({ page }) => {
-    await page.goto('/solicitacoes/nova' || '/nova-solicitacao');
+    await page.goto('/solicitacoes/nova');
     const submitBtn = page.getByRole('button', { name: /ENVIAR|CRIAR/i });
     if (await submitBtn.isVisible()) {
        await submitBtn.click();
        // Espera-se erros de validação se campos obrigatórios estiverem vazios
-       await expect(page.locator('text=obrigatório' || 'text=Erro')).toBeVisible();
+       await expect(page.getByText(/obrigatório|Erro/i)).toBeVisible();
     }
   });
 });

@@ -6,7 +6,7 @@ test.describe('Autenticação (Componente)', () => {
   });
 
   test('deve carregar a tela de login corretamente', async ({ page }) => {
-    await expect(page).toHaveTitle(/Global Parts/i || /Login/i);
+    await expect(page).toHaveTitle(/Global Parts|Login/i);
     await expect(page.getByRole('heading', { name: /Autenticação/i })).toBeVisible();
   });
 
@@ -16,6 +16,6 @@ test.describe('Autenticação (Componente)', () => {
     await page.getByRole('button', { name: /ENTRAR/i }).click();
 
     // Deve exibir erro de domínio se o formulário validar no submit
-    await expect(page.getByText(/Uso exclusivo @globalp.com.br/i || /Acesso restrito/i)).toBeVisible();
+    await expect(page.getByText(/Uso exclusivo @globalp.com.br|Acesso restrito/i)).toBeVisible();
   });
 });

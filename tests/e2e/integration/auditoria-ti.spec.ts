@@ -12,7 +12,7 @@ test.describe('Auditoria Técnica (Integração)', () => {
     
     // Se não cair no login, validar elementos de TI
     if (page.url().includes('auditoria-ti')) {
-      await expect(page.getByText(/TI/i || /Análise Técnica/i)).toBeVisible();
+      await expect(page.getByText(/TI|Análise Técnica/i)).toBeVisible();
     }
   });
 });

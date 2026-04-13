@@ -10,7 +10,7 @@ test.describe('Conclusão e Anexos (Integração)', () => {
       await page.waitForLoadState('networkidle');
       
       // Checar se existem as seções de finalização (NF, Rastreio, etc)
-      const fiscalData = page.getByText(/Nota Fiscal/i || /Faturamento/i);
+      const fiscalData = page.getByText(/Nota Fiscal|Faturamento/i);
       if (await fiscalData.isVisible()) {
          await expect(fiscalData).toBeVisible();
       }
@@ -18,7 +18,7 @@ test.describe('Conclusão e Anexos (Integração)', () => {
   });
 
   test('deve validar zona de upload em solicitações abertas', async ({ page }) => {
-     await page.goto('/solicitacoes/nova' || '/nova-solicitacao');
+     await page.goto('/solicitacoes/nova');
      const uploadZone = page.locator('input[type="file"]');
      // Se houver zona de anexo na criação
      if (await uploadZone.count() > 0) {

@@ -11,7 +11,7 @@ test.describe('Controle de Permissões (Mocked)', () => {
   });
 
   test('TI deve ver áreas técnicas mas não deve aprovar diretoria', async ({ tiPage }) => {
-    await expect(tiPage.getByText(/Auditoria Técnica/i || /TI/i)).toBeVisible();
+    await expect(tiPage.getByText(/Auditoria Técnica|TI/i)).toBeVisible();
     await expect(tiPage.getByRole('button', { name: /APROVAR DIRETORIA/i })).not.toBeVisible();
   });
 
