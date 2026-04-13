@@ -1,36 +1,36 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, Page } from '@playwright/test';
 import { mockSupabaseSession } from '../helpers/auth';
 
 type RolePages = {
-  solicitantePage: any;
-  gestorPage: any;
-  tiPage: any;
-  comprasPage: any;
-  diretoriaPage: any;
+  solicitantePage: Page;
+  gestorPage: Page;
+  tiPage: Page;
+  comprasPage: Page;
+  diretoriaPage: Page;
 };
 
 export const test = base.extend<RolePages>({
-  solicitantePage: async ({ page }, use) => {
+  solicitantePage: async ({ page }: { page: Page }, use: (r: Page) => Promise<void>) => {
     await mockSupabaseSession(page, 'usuario');
     await page.goto('/');
     await use(page);
   },
-  gestorPage: async ({ page }, use) => {
+  gestorPage: async ({ page }: { page: Page }, use: (r: Page) => Promise<void>) => {
     await mockSupabaseSession(page, 'gestor');
     await page.goto('/');
     await use(page);
   },
-  tiPage: async ({ page }, use) => {
+  tiPage: async ({ page }: { page: Page }, use: (r: Page) => Promise<void>) => {
     await mockSupabaseSession(page, 'ti');
     await page.goto('/');
     await use(page);
   },
-  comprasPage: async ({ page }, use) => {
+  comprasPage: async ({ page }: { page: Page }, use: (r: Page) => Promise<void>) => {
     await mockSupabaseSession(page, 'compras');
     await page.goto('/');
     await use(page);
   },
-  diretoriaPage: async ({ page }, use) => {
+  diretoriaPage: async ({ page }: { page: Page }, use: (r: Page) => Promise<void>) => {
     await mockSupabaseSession(page, 'diretoria');
     await page.goto('/');
     await use(page);
